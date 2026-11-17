@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="900" height="600">
+  <!-- 14 alternating red and white stripes -->
+  <rect width="900" height="600" fill="#ffffff"/>
+  <rect y="0" width="900" height="42.85" fill="#cc0000"/>
+  <rect y="85.7" width="900" height="42.85" fill="#cc0000"/>
+  <rect y="171.4" width="900" height="42.85" fill="#cc0000"/>
+  <rect y="257.1" width="900" height="42.85" fill="#cc0000"/>
+  <rect y="342.8" width="900" height="42.85" fill="#cc0000"/>
+  <rect y="428.5" width="900" height="42.85" fill="#cc0000"/>
+  <rect y="514.2" width="900" height="42.85" fill="#cc0000"/>
+  <!-- Blue canton (half width, 8 stripes height) -->
+  <rect width="450" height="342.85" fill="#000066"/>
+  <!-- Yellow crescent -->
+  <circle cx="180" cy="171.4" r="100" fill="#ffcc00"/>
+  <circle cx="210" cy="171.4" r="85" fill="#000066"/>
+  <!-- 14-point star -->
+  <polygon points="265,171.4 245,183 250,205 230,195 220,215 212,195 190,200 200,180 185,165 205,160 210,140 225,155 245,145 240,165" fill="#ffcc00"/>
+</svg>

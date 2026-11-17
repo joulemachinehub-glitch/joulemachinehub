@@ -1,0 +1,172 @@
+# Joule Machine Hub - Hostinger Safe LiteSpeed / Apache Config
+DirectoryIndex index.php index.html
+ErrorDocument 404 /404.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. Force Canonical HTTPS and Non-WWW (https://joulemachinehub.com/)
+    # Redirect any www.joulemachinehub.com requests to non-www https://joulemachinehub.com/
+    RewriteCond %{HTTP_HOST} ^www\.joulemachinehub\.com$ [NC]
+    RewriteRule ^(.*)$ https://joulemachinehub.com/$1 [L,R=301]
+
+    # Redirect insecure HTTP requests on joulemachinehub.com to https://joulemachinehub.com/
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP_HOST} ^joulemachinehub\.com$ [NC]
+    RewriteRule ^(.*)$ https://joulemachinehub.com/$1 [L,R=301]
+
+    # Prevent rewriting existing real files or directories
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Directly serve real asset directories without any rewriting
+    RewriteRule ^(assets|includes|data)/.*$ - [L]
+
+    # Fallback safety net: if a relative URL reaches /product/assets/... or /category/assets/..., redirect directly to /assets/...
+    RewriteRule ^.*/(assets/.*)$ /$1 [L,R=301]
+
+    # Direct Admin & Dashboard Slugs
+    RewriteRule ^admin/?$ admin.php [L,QSA]
+    RewriteRule ^dashboard/?$ dashboard/index.php [L,QSA]
+    RewriteCond %{DOCUMENT_ROOT}/dashboard/$1.php -f
+    RewriteRule ^dashboard/([a-zA-Z0-9_-]+)/?$ dashboard/$1.php [L,QSA]
+    RewriteRule ^thank-you/?$ thank-you.php [L,QSA]
+
+    # Master Categories Hub Directory: /category or /categories
+    RewriteRule ^category/?$ categories.php [L,QSA]
+    RewriteRule ^categories/?$ categories.php [L,QSA]
+
+    # SEO Friendly URLs for Individual Categories: /category/slug
+    RewriteRule ^category/([a-zA-Z0-9-]+)/?$ category.php?slug=$1 [L,QSA]
+
+    # About Us Page: /about or /about-us
+    RewriteRule ^about/?$ about.php [L,QSA]
+    RewriteRule ^about-us/?$ about.php [L,QSA]
+
+    # Blog Directory Hub: /blog or /blogs
+    RewriteRule ^blog/?$ blog.php [L,QSA]
+    RewriteRule ^blogs/?$ blog.php [L,QSA]
+
+    # SEO Friendly URLs for Individual Blog Posts: /blog/slug
+    RewriteRule ^blog/([a-zA-Z0-9-]+)/?$ blog-post.php?slug=$1 [L,QSA]
+
+    # SEO Friendly URLs for Product & Machine Details: /product/slug or /machine/slug
+    RewriteRule ^product/([a-zA-Z0-9-]+)/?$ product.php?slug=$1 [L,QSA]
+    RewriteRule ^machine/([a-zA-Z0-9-]+)/?$ product.php?slug=$1 [L,QSA]
+
+    # SEO Friendly URLs for Country Hubs: /country/country-name
+    RewriteRule ^country/([a-zA-Z0-9-]+)/?$ country.php?country=$1 [L,QSA]
+
+    # SEO Friendly URLs for City Hubs: /city/city-name
+    RewriteRule ^city/([a-zA-Z0-9-]+)/?$ city.php?city=$1 [L,QSA]
+
+    # Direct Root Keyword Slugs: /used-chun-zu-cbf-35s-cold-bolt-former-header
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(used-[a-zA-Z0-9-]+)/?$ product.php?slug=$1 [L,QSA]
+
+    # Clean extensionless URLs: /login -> login.php, /register -> register.php, /sitemap -> sitemap.php
+    RewriteCond $1 !^(category|categories|blog|blogs|product|machine|country|city)$ [NC]
+    RewriteCond %{DOCUMENT_ROOT}/$1.php -f
+    RewriteRule ^([a-zA-Z0-9_-]+)/?$ $1.php [L,QSA]
+</IfModule>
+
+# Gzip / Brotli Output Compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript text/xml
+    AddOutputFilterByType DEFLATE application/javascript application/x-javascript application/json application/xml
+    AddOutputFilterByType DEFLATE image/svg+xml image/x-icon font/woff font/woff2 application/font-woff
+</IfModule>
+
+# Browser Caching via mod_expires
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 month"
+
+    # Images & Media - 1 Year Cache
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+
+    # Webfonts - 1 Year Cache
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/ttf "access plus 1 year"
+
+    # CSS & JavaScript - 1 Month Cache
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+
+    # HTML & Dynamic Pages - Instant Refresh (Zero Browser Cache)
+    ExpiresByType text/html "access plus 0 seconds"
+    ExpiresByType application/json "access plus 0 seconds"
+</IfModule>
+
+# LiteSpeed Native Server-Level Full Page Cache
+<IfModule LiteSpeed>
+    CacheLookup on
+    RewriteEngine on
+    # Instant Cache Bypass for Admin, Clear-Cache, and any URL with ?v= or ?nocache
+    RewriteCond %{REQUEST_METHOD} !^GET$ [OR]
+    RewriteCond %{REQUEST_URI} ^/(admin|login|dashboard|api|clear-cache) [OR]
+    RewriteCond %{QUERY_STRING} (nocache|v=|refresh)
+    RewriteRule .* - [E=Cache-Control:no-cache]
+
+    # Cache standard static GET requests
+    RewriteCond %{REQUEST_METHOD} ^HEAD|GET$
+    RewriteCond %{REQUEST_URI} !^/(admin|login|dashboard|api|clear-cache)
+    RewriteCond %{QUERY_STRING} !(nocache|v=|refresh)
+    RewriteRule .* - [E=Cache-Control:max-age=3600]
+</IfModule>
+
+# PHP Output Compression Flag
+<IfModule mod_php.c>
+    php_flag zlib.output_compression On
+    php_value zlib.output_compression_level 5
+</IfModule>
+
+# Cache-Control & Security Headers via mod_headers
+<IfModule mod_headers.c>
+    # HTML & PHP Pages - Zero CDN/Proxy Stale Cache
+    <FilesMatch "\.(php|html|htm)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0"
+        Header set Pragma "no-cache"
+    </FilesMatch>
+
+    # Private Admin, Login, Register & Dashboard - Never Cached & Google Non-Index
+    <FilesMatch "^(admin|login|register|dashboard)\.php$|\.json$">
+        Header set Cache-Control "private, no-store, no-cache, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header set X-LiteSpeed-Cache-Control "no-cache"
+        Header set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
+    </FilesMatch>
+
+    SetEnvIf Request_URI "^/(admin|login|register|dashboard)" NOINDEX_RESTRICTED=1
+    Header set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet" env=NOINDEX_RESTRICTED
+
+    # Blog Directory & Posts - User Requested noindex, nofollow
+    <FilesMatch "^(blog|blog-post)\.php$">
+        Header set X-Robots-Tag "noindex, nofollow"
+    </FilesMatch>
+
+    SetEnvIf Request_URI "^/(blog|blogs)" NOINDEX_BLOG=1
+    Header set X-Robots-Tag "noindex, nofollow" env=NOINDEX_BLOG
+
+    # 1 Year Cache for Static Images & Media
+    <FilesMatch "\.(ico|jpe?g|png|gif|svg|webp|woff2?|ttf|eot)$">
+        Header set Cache-Control "max-age=31536000, public, immutable"
+    </FilesMatch>
+
+    # CSS / JS - Revalidate with versioning
+    <FilesMatch "\.(css|js)$">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
+
+    # Security & Performance
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>

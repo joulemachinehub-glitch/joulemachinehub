@@ -1,0 +1,112 @@
+[
+    {
+        "id": "lead_20261101_6ae7537e34755",
+        "type": "inquiry",
+        "db_saved": false,
+        "timestamp": "2026-11-01 14:58:06 UTC",
+        "data": {
+            "Form Type": "Buyer Machine Inquiry",
+            "Machine Title": "Zhejiang Dingli JCPT1412HD Scissor Lift",
+            "Machine ID": "0001-2025",
+            "Listed Price": "$6,000 USD (₹5.10 Lakhs)",
+            "Original Seller": "Joule Machine Hub Verified Inventory",
+            "Buyer Name \/ Company": "Balamurugan Test Buyer",
+            "Buyer Mobile (WhatsApp)": "+91 98450 12345",
+            "Buyer Email": "buyer.test@gmail.com",
+            "Buyer Location": "Chennai",
+            "Target Budget Offer": "₹5 Lakhs",
+            "Purchase Timeline": "Immediate (< 7 Days)",
+            "Buyer Note \/ Question": "Please confirm working condition and share plant video.",
+            "Submitted At": "2026-11-01 14:58:06 UTC",
+            "IP Address": "127.0.0.1"
+        }
+    },
+    {
+        "id": "lead_20261101_6ae6f1c9ce971",
+        "type": "inquiry",
+        "db_saved": false,
+        "timestamp": "2026-11-01 08:01:13 UTC",
+        "data": {
+            "Form Type": "Buyer Machine Inquiry",
+            "Machine Title": "Zhejiang Dingli JCPT1412HD Scissor Lift",
+            "Machine ID": "0001-2025",
+            "Listed Price": "₹5.10 Lakhs",
+            "Original Seller": "Shanghai Apex Access Equipment",
+            "Buyer Name \/ Company": "Balamurugan Test Buyer",
+            "Buyer Mobile (WhatsApp)": "+919876543210",
+            "Buyer Email": "balamuruganp0405@gmail.com",
+            "Buyer Location": "Chennai, Tamil Nadu",
+            "Target Budget Offer": "₹5,00,000",
+            "Purchase Timeline": "Immediate (< 7 Days)",
+            "Buyer Note \/ Question": "Test inquiry to verify all 3 emails and database storage.",
+            "Submitted At": "2026-11-01 08:01:13 UTC",
+            "IP Address": "Unknown"
+        }
+    },
+    {
+        "id": "lead_20261026_6adf27eee1582",
+        "type": "inquiry",
+        "db_saved": false,
+        "timestamp": "2026-10-26 10:14:06 UTC",
+        "data": {
+            "Form Type": "Buyer Machine Inquiry",
+            "Machine Title": "Komatsu E2M200",
+            "Machine ID": "N\/A",
+            "Listed Price": "N\/A",
+            "Original Seller": "N\/A",
+            "Buyer Name \/ Company": "Test Buyer",
+            "Buyer Mobile (WhatsApp)": "9876543210",
+            "Buyer Email": "",
+            "Buyer Location": "N\/A",
+            "Target Budget Offer": "N\/A",
+            "Purchase Timeline": "N\/A",
+            "Buyer Note \/ Question": "No notes provided",
+            "Submitted At": "2026-10-26 10:14:06 UTC",
+            "IP Address": "127.0.0.1"
+        }
+    },
+    {
+        "id": "lead_20261026_6adf27884be6d",
+        "type": "inquiry",
+        "db_saved": false,
+        "timestamp": "2026-10-26 10:12:24 UTC",
+        "data": {
+            "Form Type": "Buyer Machine Inquiry",
+            "Machine Title": "Komatsu E2M200 Mechanical Power Press",
+            "Machine ID": "0006-2025",
+            "Listed Price": "JPY 7,000,000",
+            "Original Seller": "N\/A",
+            "Buyer Name \/ Company": "Hiroshi Tanaka",
+            "Buyer Mobile (WhatsApp)": "+81 90 9876 5432",
+            "Buyer Email": "tanaka@tokyometal.jp",
+            "Buyer Location": "N\/A",
+            "Target Budget Offer": "N\/A",
+            "Purchase Timeline": "N\/A",
+            "Buyer Note \/ Question": "No notes provided",
+            "Submitted At": "2026-10-26 10:12:24 UTC",
+            "IP Address": "Unknown"
+        }
+    },
+    {
+        "id": "lead_20261026_6adf2775333a4",
+        "type": "inquiry",
+        "db_saved": false,
+        "timestamp": "2026-10-26 10:12:05 UTC",
+        "data": {
+            "Form Type": "Buyer Machine Inquiry",
+            "Machine Title": "Komatsu E2M200 Mechanical Power Press",
+            "Machine ID": "0006-2025",
+            "Listed Price": "JPY 7,000,000",
+            "Original Seller": "Tokyo Stamping Corp",
+            "Buyer Name \/ Company": "Hiroshi Tanaka",
+            "Buyer Mobile (WhatsApp)": "+81 90 9876 5432",
+            "Buyer Email": "tanaka@tokyometal.jp",
+            "Buyer Location": "Tokyo",
+            "Target Budget Offer": "JPY 6,500,000",
+            "Purchase Timeline": "Immediate (Within 15 Days)",
+            "Buyer Note \/ Question": "Please confirm if on-site power testing is available next Tuesday.",
+            "Submitted At": "2026-10-26 10:12:05 UTC",
+            "IP Address": "Unknown"
+        }
+    }
+]

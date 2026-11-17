@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+Allow: /product/
+Allow: /category/
+Allow: /blog/
+Allow: /blog
+Allow: /country/
+Allow: /city/
+Allow: /collections/
+Allow: /sitemap.php
+Allow: /sitemap.xml
+Disallow: /*?*
+Disallow: /admin
+Disallow: /admin/
+Disallow: /admin.php
+Disallow: /login
+Disallow: /login.php
+Disallow: /register
+Disallow: /register.php
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /dashboard.php
+Disallow: /api/
+
+Sitemap: https://joulemachinehub.com/sitemap.xml

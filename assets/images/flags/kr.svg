@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="900" height="600">
+  <rect width="900" height="600" fill="#ffffff" stroke="#e2e8f0" stroke-width="8"/>
+  <g transform="translate(450,300) rotate(-33.69)">
+    <!-- Taegeuk -->
+    <path d="M-150,0 A150,150 0 0,1 150,0 A75,75 0 0,1 0,0 A75,75 0 0,0 -150,0" fill="#cd2e3a"/>
+    <path d="M-150,0 A150,150 0 0,0 150,0 A75,75 0 0,0 0,0 A75,75 0 0,1 -150,0" fill="#0047a0"/>
+  </g>
+  <!-- Trigrams -->
+  <g fill="#000000" transform="translate(450,300)">
+    <!-- Top-left: Geon (3 unbroken) -->
+    <g transform="rotate(-56.31) translate(0,-240)">
+      <rect x="-80" y="-28" width="160" height="12"/>
+      <rect x="-80" y="-8" width="160" height="12"/>
+      <rect x="-80" y="12" width="160" height="12"/>
+    </g>
+    <!-- Bottom-right: Gon (3 broken) -->
+    <g transform="rotate(123.69) translate(0,-240)">
+      <rect x="-80" y="-28" width="72" height="12"/><rect x="8" y="-28" width="72" height="12"/>
+      <rect x="-80" y="-8" width="72" height="12"/><rect x="8" y="-8" width="72" height="12"/>
+      <rect x="-80" y="12" width="72" height="12"/><rect x="8" y="12" width="72" height="12"/>
+    </g>
+    <!-- Top-right: Gam (broken, unbroken, broken) -->
+    <g transform="rotate(56.31) translate(0,-240)">
+      <rect x="-80" y="-28" width="72" height="12"/><rect x="8" y="-28" width="72" height="12"/>
+      <rect x="-80" y="-8" width="160" height="12"/>
+      <rect x="-80" y="12" width="72" height="12"/><rect x="8" y="12" width="72" height="12"/>
+    </g>
+    <!-- Bottom-left: Ri (unbroken, broken, unbroken) -->
+    <g transform="rotate(-123.69) translate(0,-240)">
+      <rect x="-80" y="-28" width="160" height="12"/>
+      <rect x="-80" y="-8" width="72" height="12"/><rect x="8" y="-8" width="72" height="12"/>
+      <rect x="-80" y="12" width="160" height="12"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,15 @@
+[
+    {
+        "user_id": "usr-1794058887-373",
+        "plan_key": "basic",
+        "plan_name": "Basic Seller Plan",
+        "amount": 999,
+        "currency": "INR",
+        "gateway": "razorpay",
+        "txn_id": "TXN-3BEEC286E1E0",
+        "status": "active",
+        "start_date": "2026-11-07 13:41:27",
+        "end_date": "2026-12-07 13:41:27",
+        "updated_at": "2026-11-07 13:41:27"
+    }
+]

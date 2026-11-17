@@ -1,0 +1,15 @@
+[
+    {
+        "invoice_id": "INV-20261107-3EF42F",
+        "user_id": "usr-1794058887-373",
+        "title": "Basic Seller Plan",
+        "type": "membership",
+        "amount": 999,
+        "currency": "INR",
+        "gateway": "razorpay",
+        "txn_id": "TXN-3BEEC286E1E0",
+        "status": "paid",
+        "date": "2026-11-07 13:41:27",
+        "created_at": "2026-11-07 13:41:27"
+    }
+]
