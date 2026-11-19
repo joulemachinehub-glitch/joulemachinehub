@@ -12,6 +12,32 @@ $leads = file_exists($leadsFile) ? (json_decode(file_get_contents($leadsFile), t
 $recentLeads = array_slice($leads, 0, 5);
 ?>
 
+<?php if (!empty($_GET['registered'])): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof gtag === 'function') {
+    gtag('event', 'seller_registration', {
+      user_id: <?php echo json_encode((string)$userId); ?>,
+      role: 'seller'
+    });
+  }
+});
+</script>
+<?php endif; ?>
+
+<?php if (!empty($_GET['plan_upgraded']) || !empty($_GET['plan_purchased'])): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof gtag === 'function') {
+    gtag('event', 'seller_plan_purchase', {
+      user_id: <?php echo json_encode((string)$userId); ?>,
+      plan: <?php echo json_encode($userSub['plan_name'] ?? ''); ?>
+    });
+  }
+});
+</script>
+<?php endif; ?>
+
 <!-- TOP WELCOME & MEMBERSHIP STATUS BANNER -->
 <div class="bg-gradient-to-r from-joule-blue to-blue-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border-b-4 border-joule-yellow">
   <!-- Accent icon -->

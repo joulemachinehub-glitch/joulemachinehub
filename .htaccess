@@ -61,13 +61,16 @@ ErrorDocument 404 /404.php
     # SEO Friendly URLs for City Hubs: /city/city-name
     RewriteRule ^city/([a-zA-Z0-9-]+)/?$ city.php?city=$1 [L,QSA]
 
+    # SEO Friendly URLs for Manufacturer Hubs: /manufacturer/manufacturer-name
+    RewriteRule ^manufacturer/([a-zA-Z0-9-]+)/?$ manufacturer.php?manufacturer=$1 [L,QSA]
+
     # Direct Root Keyword Slugs: /used-chun-zu-cbf-35s-cold-bolt-former-header
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(used-[a-zA-Z0-9-]+)/?$ product.php?slug=$1 [L,QSA]
 
     # Clean extensionless URLs: /login -> login.php, /register -> register.php, /sitemap -> sitemap.php
-    RewriteCond $1 !^(category|categories|blog|blogs|product|machine|country|city)$ [NC]
+    RewriteCond $1 !^(category|categories|blog|blogs|product|machine|country|city|manufacturer)$ [NC]
     RewriteCond %{DOCUMENT_ROOT}/$1.php -f
     RewriteRule ^([a-zA-Z0-9_-]+)/?$ $1.php [L,QSA]
 </IfModule>

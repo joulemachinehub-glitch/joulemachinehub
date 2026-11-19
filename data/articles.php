@@ -655,6 +655,14 @@ HTML
     ]
 ];
 
+// Merge additional high-intent SEO articles
+if (file_exists(__DIR__ . '/articles_additional.php')) {
+    $addArticles = require __DIR__ . '/articles_additional.php';
+    foreach ($addArticles as $addArt) {
+        $articles[] = $addArt;
+    }
+}
+
 // Helper functions for blog articles
 function getArticleBySlug($slug) {
     global $articles;

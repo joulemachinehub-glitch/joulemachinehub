@@ -255,6 +255,42 @@ arsort($uniqueBrands);
     </div>
   </div>
 
+  <!-- 3B. Priority Manufacturers Directory -->
+  <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 space-y-4 shadow-xs">
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+        <i class="fa-solid fa-industry text-joule-brightblue"></i>
+        <span>Priority Manufacturers Directory</span>
+      </h3>
+      <span class="text-xs text-slate-500 font-bold">Key Global OEMs</span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
+      <?php 
+        $priorityMfgs = [
+          'komatsu' => ['name' => 'Komatsu', 'desc' => 'Mechanical Power Presses & Stamping'],
+          'amada' => ['name' => 'Amada', 'desc' => 'Power Presses & Sheet Metal Machinery'],
+          'dingli' => ['name' => 'Dingli', 'desc' => 'Aerial Work Platforms & Scissor Lifts'],
+          'haitian' => ['name' => 'Haitian', 'desc' => 'Plastic Injection Molding Machines']
+        ];
+        foreach ($priorityMfgs as $mSlug => $mData):
+      ?>
+        <a href="manufacturer/<?php echo htmlspecialchars($mSlug); ?>" class="p-4 rounded-xl border border-slate-200 hover:border-joule-brightblue hover:bg-blue-50/50 flex flex-col justify-between transition-all group shadow-xs">
+          <div>
+            <div class="font-black text-xs sm:text-sm text-slate-800 group-hover:text-joule-brightblue flex items-center justify-between">
+              <span><?php echo htmlspecialchars($mData['name']); ?></span>
+              <i class="fa-solid fa-arrow-right text-[11px] text-slate-300 group-hover:text-joule-brightblue"></i>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1"><?php echo htmlspecialchars($mData['desc']); ?></p>
+          </div>
+          <div class="mt-3 pt-2 border-t border-slate-100 text-[10px] text-joule-brightblue font-bold">
+            View <?php echo htmlspecialchars($mData['name']); ?> Inventory →
+          </div>
+        </a>
+      <?php endforeach; ?>
+    </div>
+  </div>
+
   <!-- 4. Complete Machinery Listing Directory (All Verified Units Grouped by Category) -->
   <div class="space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-slate-200 pb-4">

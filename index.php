@@ -65,13 +65,13 @@ $pageRobots = "index, follow, max-image-preview:large, max-snippet:-1, max-video
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $canonicalUrl = $protocol . $host . '/';
-$pageTitle = "Second Hand / Used / Old / Imported & New Industrial Machines for Sale | Direct Factory Sellers | Joule Machine Hub";
-$pageDesc = "Buy second hand, used, old, imported & new industrial machinery through Joule Machine Hub's global B2B portal. Verified CNC, presses, textile, injection molding equipment with structured mediator desk support.";
-$pageKeywords = "second hand industrial machinery, used machinery, old machines for sale, imported machinery, used cnc machines for sale, buy new cnc machines, industrial equipment for sale, factory machinery liquidation";
+$pageTitle = "Used Industrial Machinery for Sale | Joule Machine Hub";
+$pageDesc = "Buy used and new industrial machinery from verified sellers. Browse CNC machines, power presses, lathes and packaging equipment on Joule Machine Hub.";
+$pageKeywords = "used industrial machinery for sale, new industrial machinery, b2b machinery marketplace, industrial equipment for sale, used manufacturing equipment, global machinery marketplace, used cnc machines for sale, power presses for sale, industrial lathes, injection moulding machines";
 $ogTitle = $pageTitle;
 $ogDesc = $pageDesc;
 $ogImage = $protocol . $host . '/assets/images/haas-vmc-1.jpg';
-$ogImageAlt = "Joule Machine Hub - Second Hand / Used / Old / Imported & New Industrial Machinery Network";
+$ogImageAlt = "Joule Machine Hub - Global B2B Industrial Machinery Marketplace";
 $ogType = "website";
 $pageRobots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
 
@@ -195,20 +195,35 @@ require_once __DIR__ . '/includes/header.php';
   <div class="max-w-7xl mx-auto px-4 relative z-10 space-y-8">
     
     <!-- Top Hero Header -->
-    <div class="text-center max-w-3xl mx-auto space-y-3">
+    <div class="text-center max-w-4xl mx-auto space-y-4">
       <div class="inline-flex items-center gap-2 bg-joule-yellow/20 border border-joule-yellow/50 text-joule-yellow px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-xs">
         <i class="fa-solid fa-bolt text-joule-yellow"></i>
-        <span>VERIFIED B2B SECOND HAND / USED / OLD / IMPORTED & NEW INDUSTRIAL MACHINERY PORTAL</span>
+        <span>GLOBAL B2B INDUSTRIAL MACHINERY MARKETPLACE</span>
       </div>
 
       <h1 class="text-2xl sm:text-4xl md:text-5xl font-black text-white leading-tight tracking-tight">
-        Buy Second Hand / Used / Old / Imported & New Industrial Machines <br class="hidden sm:inline">
-        <span class="text-joule-yellow">Verified B2B Machinery Sourcing Portal</span>
+        Buy Used &amp; New Industrial Machinery from Verified Sellers
       </h1>
 
-      <p class="text-blue-100 text-xs sm:text-base leading-relaxed">
-        Joule Machine Hub connects qualified buyers with verified machine sellers <strong>worldwide</strong> through our professional B2B mediator desk.
+      <p class="text-blue-100 text-xs sm:text-base leading-relaxed max-w-2xl mx-auto">
+        <strong>Joule Machine Hub</strong> is a premier <strong>global machinery marketplace</strong> connecting qualified buyers with verified machine sellers worldwide. Find <strong>used industrial machinery for sale</strong>, verified <strong>new industrial machinery</strong>, and surplus <strong>used manufacturing equipment</strong> directly from factory floors and certified equipment sellers.
       </p>
+
+      <!-- Clear Hero CTAs -->
+      <div class="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 pt-1">
+        <a href="#catalog" onclick="scrollToCatalog();" class="px-5 py-2.5 rounded-xl bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber-400/20 transition-all hover:scale-105 border border-amber-300">
+          <i class="fa-solid fa-boxes-stacked"></i>
+          <span>Browse Machinery</span>
+        </a>
+        <button type="button" onclick="openRequirementModal()" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 border border-emerald-300 cursor-pointer">
+          <i class="fa-solid fa-file-signature"></i>
+          <span>Submit RFQ</span>
+        </button>
+        <a href="register.php?role=seller" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 border border-white/20 transition-all hover:scale-105">
+          <i class="fa-solid fa-store text-amber-400"></i>
+          <span>List Your Machinery</span>
+        </a>
+      </div>
     </div>
 
     <!-- MAIN SEARCH ENGINE & MULTI-FILTER BAR (Placed prominently in Hero Section) -->
@@ -328,7 +343,7 @@ require_once __DIR__ . '/includes/header.php';
         <span class="text-joule-yellow font-black uppercase text-[10px] tracking-wider">Trending:</span>
         <a href="product/used-komatsu-e2m200-mechanical-power-press" class="bg-blue-950/60 hover:bg-blue-900 border border-blue-400/30 px-2.5 py-0.5 rounded-full text-slate-200 hover:text-white text-[11px]">Komatsu 200T Press</a>
         <a href="product/used-amada-pdl-300-mechanical-power-press" class="bg-blue-950/60 hover:bg-blue-900 border border-blue-400/30 px-2.5 py-0.5 rounded-full text-slate-200 hover:text-white text-[11px]">Amada 300T Press</a>
-        <a href="category/cold-header-bolt-former" class="bg-blue-950/60 hover:bg-blue-900 border border-blue-400/30 px-2.5 py-0.5 rounded-full text-slate-200 hover:text-white text-[11px]">Parts Former / Cold Header</a>
+        <a href="category/used-cold-formers-headers" class="bg-blue-950/60 hover:bg-blue-900 border border-blue-400/30 px-2.5 py-0.5 rounded-full text-slate-200 hover:text-white text-[11px]">Parts Former / Cold Header</a>
         <a href="product/used-tornos-bechler-sas-16-6-multi-spindle-automatic-lathe" class="bg-blue-950/60 hover:bg-blue-900 border border-blue-400/30 px-2.5 py-0.5 rounded-full text-slate-200 hover:text-white text-[11px]">Tornos Lathe</a>
         <a href="product/used-dingli-jcpt1412hd-self-propelled-scissor-lift" class="bg-blue-950/60 hover:bg-blue-900 border border-blue-400/30 px-2.5 py-0.5 rounded-full text-slate-200 hover:text-white text-[11px]">Dingli Scissor Lift</a>
       </div>
@@ -389,13 +404,13 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
     <div>
       <h2 class="text-2xl font-black text-slate-950 flex items-center gap-2.5">
-        <span>Verified Used / New Industrial Machines Catalog</span>
+        <span>Used Industrial Machinery for Sale &amp; Verified Equipment Catalog</span>
         <span id="catalogCountBadge" class="text-xs bg-joule-yellow text-slate-950 font-black px-2.5 py-0.5 rounded-full border border-amber-300">
           Showing <?php echo count($machines); ?> of <?php echo count($machines); ?> Available Now
         </span>
       </h2>
       <p class="text-xs text-slate-500 mt-1">
-        Click on <strong>"Enquire Now"</strong> to submit your inquiry directly to our B2B mediator desk.
+        Browse verified industrial equipment for sale across CNC machining centers, power presses, lathes, injection moulding, and heavy manufacturing. Click <strong>"Enquire Now"</strong> to connect directly with verified sellers.
       </p>
     </div>
 
@@ -1331,6 +1346,149 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
 
 </main>
 
+<!-- 2B. BROWSE BY INDUSTRIAL MACHINERY CATEGORY (Homepage SEO Internal Linking) -->
+<section id="categories-directory" class="bg-white py-12 border-t-2 border-b-2 border-slate-200">
+  <div class="max-w-7xl mx-auto px-4 space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <div class="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-joule-brightblue bg-blue-100/80 border border-blue-200 px-3 py-1 rounded-full mb-1">
+          <i class="fa-solid fa-shapes"></i>
+          <span>Machinery Taxonomy • 13 Core Sectors</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black text-slate-950">
+          Browse Used &amp; New Industrial Machinery by Category
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-600 mt-0.5">
+          Explore specialized machinery categories to find verified used industrial machinery for sale, new manufacturing equipment, and surplus plant assets.
+        </p>
+      </div>
+      <a href="category" class="inline-flex items-center gap-2 text-xs font-black text-joule-brightblue hover:text-blue-800 transition-colors self-start sm:self-auto">
+        <span>View Full Categories Directory</span>
+        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+      </a>
+    </div>
+
+    <!-- Category Grid: 13 Internal Links with Target Keyword Anchors -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 pt-2">
+      <?php foreach ($categoryMap as $cSlug => $cData): ?>
+        <a href="category/<?php echo htmlspecialchars($cSlug); ?>" class="group bg-slate-50 hover:bg-blue-50/60 border border-slate-200 hover:border-joule-brightblue p-3.5 rounded-2xl transition-all shadow-2xs hover:shadow-md flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2.5 mb-2">
+              <div class="w-8 h-8 rounded-xl bg-joule-blue/10 text-joule-blue group-hover:bg-joule-blue group-hover:text-joule-yellow flex items-center justify-center text-xs shrink-0 transition-colors">
+                <i class="fa-solid <?php echo htmlspecialchars($cData['icon']); ?>"></i>
+              </div>
+              <h3 class="font-black text-slate-900 text-xs sm:text-sm group-hover:text-joule-brightblue transition-colors line-clamp-1">
+                <?php echo htmlspecialchars($cData['h1'] ?? ($cData['name'] . ' for Sale')); ?>
+              </h3>
+            </div>
+            <p class="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+              <?php echo htmlspecialchars($cData['tagline']); ?>
+            </p>
+          </div>
+          <div class="flex items-center justify-between pt-3 mt-2 border-t border-slate-200/60 text-[11px]">
+            <span class="text-slate-600 font-bold">Explore Listings</span>
+            <span class="text-joule-brightblue font-black group-hover:translate-x-1 transition-transform">→</span>
+          </div>
+        </a>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+
+<!-- 2C. MARKETPLACE BUSINESS MODEL & PAID SELLER REGISTRATION PLANS -->
+<section id="how-it-works-marketplace" class="bg-gradient-to-br from-slate-950 via-[#071626] to-slate-900 text-white py-14 sm:py-16 border-b-4 border-joule-yellow">
+  <div class="max-w-7xl mx-auto px-4 space-y-8">
+    <div class="text-center max-w-3xl mx-auto space-y-2.5">
+      <div class="inline-flex items-center gap-2 bg-joule-yellow/20 border border-joule-yellow/40 text-joule-yellow px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider">
+        <i class="fa-solid fa-handshake"></i>
+        <span>Transparent B2B Operation</span>
+      </div>
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight">
+        Marketplace Business Model &amp; Paid Seller Registration Plans
+      </h2>
+      <p class="text-blue-100 text-xs sm:text-sm leading-relaxed">
+        Joule Machine Hub operates as a dedicated B2B mediator connecting verified buyers with industrial machinery sellers worldwide through a transparent, paid listing model.
+      </p>
+    </div>
+
+    <!-- 5 Workflow Steps -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+      
+      <!-- Step 1 -->
+      <div class="bg-white/5 border border-white/10 hover:border-joule-yellow/50 rounded-2xl p-4.5 space-y-2.5 backdrop-blur-md transition-all">
+        <div class="w-8 h-8 rounded-xl bg-joule-yellow text-slate-950 font-black text-xs flex items-center justify-center">
+          1
+        </div>
+        <h3 class="font-black text-white text-xs sm:text-sm uppercase tracking-wide">Seller Registration</h3>
+        <p class="text-slate-300 text-[11px] leading-relaxed">
+          Create a verified seller account with legitimate industrial business details, contact information, and plant location.
+        </p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="bg-white/5 border border-white/10 hover:border-joule-yellow/50 rounded-2xl p-4.5 space-y-2.5 backdrop-blur-md transition-all">
+        <div class="w-8 h-8 rounded-xl bg-joule-yellow text-slate-950 font-black text-xs flex items-center justify-center">
+          2
+        </div>
+        <h3 class="font-black text-white text-xs sm:text-sm uppercase tracking-wide">Choose a Plan</h3>
+        <p class="text-slate-300 text-[11px] leading-relaxed">
+          Select from our transparent paid listing plans tailored for individual machine owners, machinery dealers, and large manufacturers.
+        </p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="bg-white/5 border border-white/10 hover:border-joule-yellow/50 rounded-2xl p-4.5 space-y-2.5 backdrop-blur-md transition-all">
+        <div class="w-8 h-8 rounded-xl bg-joule-yellow text-slate-950 font-black text-xs flex items-center justify-center">
+          3
+        </div>
+        <h3 class="font-black text-white text-xs sm:text-sm uppercase tracking-wide">List Machinery</h3>
+        <p class="text-slate-300 text-[11px] leading-relaxed">
+          Upload detailed technical specifications, OEM nameplate photographs, manufacturing year, machine condition, and location.
+        </p>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="bg-white/5 border border-white/10 hover:border-joule-yellow/50 rounded-2xl p-4.5 space-y-2.5 backdrop-blur-md transition-all">
+        <div class="w-8 h-8 rounded-xl bg-joule-yellow text-slate-950 font-black text-xs flex items-center justify-center">
+          4
+        </div>
+        <h3 class="font-black text-white text-xs sm:text-sm uppercase tracking-wide">Buyer Enquiries</h3>
+        <p class="text-slate-300 text-[11px] leading-relaxed">
+          Qualified buyers explore machinery listings, review technical specifications, compare models, and submit enquiries or RFQs.
+        </p>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="bg-white/5 border border-white/10 hover:border-joule-yellow/50 rounded-2xl p-4.5 space-y-2.5 backdrop-blur-md transition-all">
+        <div class="w-8 h-8 rounded-xl bg-joule-yellow text-slate-950 font-black text-xs flex items-center justify-center">
+          5
+        </div>
+        <h3 class="font-black text-white text-xs sm:text-sm uppercase tracking-wide">Direct Connection</h3>
+        <p class="text-slate-300 text-[11px] leading-relaxed">
+          We forward buyer leads to the seller. Both parties connect directly to discuss pricing, schedule on-site inspections, and finalize transactions.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Seller Registration CTAs -->
+    <div class="flex flex-wrap items-center justify-center gap-3 pt-3">
+      <a href="register.php?role=seller" class="px-6 py-3 rounded-xl bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber-400/20 transition-all hover:scale-105 border border-amber-300">
+        <i class="fa-solid fa-store"></i>
+        <span>Register as a Seller</span>
+      </a>
+      <a href="register.php?role=seller#plans" class="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 border border-white/20 transition-all hover:scale-105">
+        <i class="fa-solid fa-layer-group text-amber-400"></i>
+        <span>View Paid Seller Plans</span>
+      </a>
+      <button type="button" onclick="openRequirementModal()" class="px-6 py-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-xs uppercase tracking-wider flex items-center gap-2 border border-emerald-400/30 transition-all hover:scale-105 cursor-pointer">
+        <i class="fa-solid fa-file-signature text-emerald-400"></i>
+        <span>Submit Buyer RFQ</span>
+      </button>
+    </div>
+  </div>
+</section>
+
 <!-- 3. TOP CITIES & INDUSTRIAL HUBS WITH SPECIFIC PLACE ICONS (User Requested) -->
 <section id="cities" class="bg-slate-100 py-12 border-b-2 border-slate-200">
   <div class="max-w-7xl mx-auto px-4 space-y-6">
@@ -1342,7 +1500,7 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
           <span>Worldwide Industrial Network • All Countries</span>
         </div>
         <h2 class="text-2xl sm:text-3xl font-black text-slate-950">
-          Global Machinery Network & Manufacturing Hubs
+          Global Machinery Marketplace – Manufacturing Countries &amp; Regional Sourcing Hubs
         </h2>
         <p class="text-xs text-slate-600 mt-0.5">
           Select your manufacturing country or regional hub to explore verified surplus machinery ready for physical inspection or international export.
@@ -1461,7 +1619,7 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
             Global Machinery RFQ Broadcast
           </span>
           <h2 class="text-2xl sm:text-3xl font-black text-white leading-snug">
-            Need Multiple Quotes or Cannot Find Your Exact Model?
+            Submit RFQ – Global Industrial Machinery Sourcing Desk
           </h2>
           <p class="text-xs sm:text-sm text-blue-100 leading-relaxed">
             Submit your machinery requirements below. We broadcast your request to verified manufacturing plants, importers and dealers across 50+ countries. Get direct factory price offers with competitive international pricing.
@@ -1510,7 +1668,7 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
         <span>Common Questions</span>
       </div>
       <h2 class="text-2xl sm:text-3xl font-black text-slate-950">
-        Frequently Asked Questions
+        Frequently Asked Questions – Buying &amp; Selling Industrial Equipment
       </h2>
       <p class="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto">
         Everything you need to know about buying and selling used and new industrial machinery through our verified B2B portal.

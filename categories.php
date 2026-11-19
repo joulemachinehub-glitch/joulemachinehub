@@ -8,9 +8,9 @@ $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https:
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $canonicalUrl = $protocol . $host . '/category';
 
-$pageTitle = "Industrial Machinery Categories | Second Hand / Used / Old / Imported & New Machines | Joule Machine Hub";
-$pageDesc = "Explore all verified industrial machinery categories on Joule Machine Hub. Browse power presses, cold formers, CNC centers, lathes, injection molding, access lifts, and specialized industrial equipment worldwide with zero buyer commission.";
-$pageKeywords = "industrial machinery categories, used machinery directory, second hand industrial machines, buy used cnc, power presses, cold formers, injection molding machines for sale, plant equipment categories";
+$pageTitle = "Used & New Industrial Machinery Categories | Joule Machine Hub";
+$pageDesc = "Browse all verified industrial machinery categories on Joule Machine Hub. Find used CNC machines, power presses, cold formers, lathes, and packaging equipment from verified sellers.";
+$pageKeywords = "used industrial machinery for sale, new industrial machinery, b2b machinery marketplace, industrial equipment for sale, used manufacturing equipment, industrial machinery categories";
 $ogTitle = $pageTitle;
 $ogDesc = $pageDesc;
 $ogImage = $protocol . $host . '/assets/images/haas-vmc-1.jpg';

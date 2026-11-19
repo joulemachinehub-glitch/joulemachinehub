@@ -2,6 +2,7 @@ User-agent: *
 Allow: /
 Allow: /product/
 Allow: /category/
+Allow: /manufacturer/
 Allow: /blog/
 Allow: /blog
 Allow: /country/

@@ -3768,6 +3768,18 @@ $categoryMap = [
     ],
 ];
 
+// Merge high-intent SEO metadata, 300-500 words technical guide & FAQs
+if (file_exists(__DIR__ . '/category_seo.php')) {
+    $catSeoData = require __DIR__ . '/category_seo.php';
+    foreach ($catSeoData as $cSlug => $cSeo) {
+        if (isset($categoryMap[$cSlug])) {
+            foreach ($cSeo as $seoKey => $seoVal) {
+                $categoryMap[$cSlug][$seoKey] = $seoVal;
+            }
+        }
+    }
+}
+
 foreach ($categoryMap as &$c) {
     if (!empty($c['image'])) {
         $c['image'] = '/' . ltrim($c['image'], '/');

@@ -998,4 +998,19 @@ require_once __DIR__ . '/includes/header.php';
 
 </main>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof gtag === 'function') {
+    gtag('event', 'product_view', {
+      item_id: <?php echo json_encode((string)($machine['id'] ?? $machine['slug'])); ?>,
+      item_name: <?php echo json_encode($tpl['h1']); ?>,
+      item_brand: <?php echo json_encode($tpl['short_brand']); ?>,
+      item_category: <?php echo json_encode($machine['category']); ?>,
+      price: <?php echo json_encode($productPrice); ?>,
+      currency: 'INR'
+    });
+  }
+});
+</script>
+
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

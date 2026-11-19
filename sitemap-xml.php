@@ -81,6 +81,12 @@ if (!empty($cityHubs)) {
     }
 }
 
+// 4b. Manufacturer Hubs
+$priorityManufacturers = ['komatsu', 'amada', 'dingli', 'haitian'];
+foreach ($priorityManufacturers as $mfg) {
+    sitemapUrl($baseUrl . '/manufacturer/' . $mfg, '0.8', 'weekly');
+}
+
 // 5. Machine Listings (Dynamic)
 foreach ($machines as $m) {
     $mUrl = $baseUrl . '/' . ltrim(getMachineUrl($m), '/');

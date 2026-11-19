@@ -1,5 +1,20 @@
 // Joule Machine Hub - Core Client Logic for Direct Calling & Modals
 
+// GA4 & GTM Event Dispatcher Helper
+function dispatchGa4Event(eventName, params) {
+  params = params || {};
+  try {
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', eventName, params);
+    }
+    if (window.dataLayer && Array.isArray(window.dataLayer)) {
+      window.dataLayer.push(Object.assign({ event: eventName }, params));
+    }
+  } catch (e) {
+    // Graceful fallback
+  }
+}
+
 let currentSimTimer = null;
 let currentSimSeconds = 0;
 
@@ -110,6 +125,12 @@ function submitInquiry(e) {
   const formData = new FormData(form);
   const machineTitle = formData.get('machine_title') || '';
 
+  // GA4 Event Dispatch
+  dispatchGa4Event('machine_enquiry_submit', {
+    machine_title: machineTitle,
+    phone: formData.get('phone') || ''
+  });
+
   fetch('/api/submit-lead.php', {
     method: 'POST',
     body: formData
@@ -150,6 +171,13 @@ function submitPostMachine(e) {
   const formData = new FormData(form);
   const machineName = formData.get('machine_name') || '';
 
+  // GA4 Event Dispatch
+  dispatchGa4Event('sell', {
+    machine_name: machineName,
+    brand: formData.get('brand') || '',
+    category: formData.get('category') || ''
+  });
+
   fetch('/api/submit-lead.php', {
     method: 'POST',
     body: formData
@@ -189,6 +217,13 @@ function submitRequirement(e) {
 
   const formData = new FormData(form);
   const reqMachine = formData.get('required_machine') || '';
+
+  // GA4 Event Dispatch
+  dispatchGa4Event('rfq_submit', {
+    required_machine: reqMachine,
+    budget: formData.get('target_budget') || '',
+    city: formData.get('city') || ''
+  });
 
   fetch('/api/submit-lead.php', {
     method: 'POST',

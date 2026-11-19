@@ -19,7 +19,7 @@ if (!$article) {
 $pageTitle = $article['meta_title'] ?? ($article['title'] . " | Joule Machine Hub");
 $pageDesc = $article['meta_desc'] ?? $article['excerpt'];
 $canonicalUrl = "https://joulemachinehub.com/blog/" . $article['slug'];
-$pageRobots = "noindex, nofollow";
+$pageRobots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
 $ogType = "article";
 $ogTitle = $pageTitle;
 $ogDesc = $pageDesc;

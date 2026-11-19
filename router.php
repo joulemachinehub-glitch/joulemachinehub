@@ -59,6 +59,13 @@ if (preg_match('#^/blog/([a-zA-Z0-9-]+)/?$#', $uri, $matches)) {
     return true;
 }
 
+// Route /manufacturer/slug to manufacturer.php
+if (preg_match('#^/manufacturer/([a-zA-Z0-9-]+)/?$#', $uri, $matches)) {
+    $_GET['manufacturer'] = $matches[1];
+    require __DIR__ . '/manufacturer.php';
+    return true;
+}
+
 // 4. Route /country/slug to country.php
 if (preg_match('#^/country/([a-zA-Z0-9-]+)/?$#', $uri, $matches)) {
     $_GET['country'] = $matches[1];

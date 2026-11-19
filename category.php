@@ -80,6 +80,34 @@ foreach (array_slice($catMachines, 0, 10) as $pos => $m) {
     ];
 }
 
+// Category FAQs & Structured Data
+$categoryFaqs = !empty($categoryInfo['faqs']) ? $categoryInfo['faqs'] : [
+    [
+        'q' => "What types of used and new $categoryName are available on Joule Machine Hub?",
+        'a' => "We list verified used and new $categoryName from leading international manufacturers worldwide through our structured B2B mediator desk."
+    ],
+    [
+        'q' => "How are machine inspections scheduled for $categoryName?",
+        'a' => "Physical on-site equipment walkthroughs and technical dry runs are scheduled through our mediator desk following formal commercial agreement and transaction milestones."
+    ],
+    [
+        'q' => "How are export shipping and logistics handled for $categoryName?",
+        'a' => "Full industrial crane rigging, sea-worthy vapor-barrier packing, and multimodal ocean container freight forwarding can be arranged to any major seaport worldwide with full export clearance documentation."
+    ]
+];
+
+$faqEntities = [];
+foreach ($categoryFaqs as $cf) {
+    $faqEntities[] = [
+        '@type' => 'Question',
+        'name' => $cf['q'],
+        'acceptedAnswer' => [
+            '@type' => 'Answer',
+            'text' => $cf['a']
+        ]
+    ];
+}
+
 // JSON-LD Schema (CollectionPage + BreadcrumbList + ItemList + FAQPage)
 $jsonLd = [
     '@context' => 'https://schema.org',
@@ -126,32 +154,7 @@ $jsonLd = [
         ],
         [
             '@type' => 'FAQPage',
-            'mainEntity' => [
-                [
-                    '@type' => 'Question',
-                    'name' => "What types of used and new $categoryName are available on Joule Machine Hub?",
-                    'acceptedAnswer' => [
-                        '@type' => 'Answer',
-                        'text' => "We list verified used and new $categoryName from leading international manufacturers worldwide through our structured B2B mediator desk."
-                    ]
-                ],
-                [
-                    '@type' => 'Question',
-                    'name' => "How are machine inspections scheduled for $categoryName?",
-                    'acceptedAnswer' => [
-                        '@type' => 'Answer',
-                        'text' => "Physical on-site equipment walkthroughs and technical dry runs are scheduled through our mediator desk following formal commercial agreement and transaction milestones."
-                    ]
-                ],
-                [
-                    '@type' => 'Question',
-                    'name' => "How are export shipping and logistics handled for $categoryName?",
-                    'acceptedAnswer' => [
-                        '@type' => 'Answer',
-                        'text' => "Full industrial crane rigging, sea-worthy vapor-barrier packing, and multimodal ocean container freight forwarding can be arranged to any major seaport worldwide with full export clearance documentation."
-                    ]
-                ]
-            ]
+            'mainEntity' => $faqEntities
         ]
     ]
 ];
@@ -188,7 +191,7 @@ require_once __DIR__ . '/includes/header.php';
       </div>
 
       <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight">
-        Second Hand / Used / Old / Imported &amp; New <span class="text-joule-yellow"><?php echo htmlspecialchars($categoryName); ?></span>
+        <?php echo htmlspecialchars($categoryInfo['h1'] ?? ("Second Hand / Used / Old / Imported & New " . $categoryName)); ?>
       </h1>
 
       <p class="text-blue-100 text-xs sm:text-sm sm:leading-relaxed font-medium">
@@ -502,6 +505,143 @@ require_once __DIR__ . '/includes/header.php';
     </div>
   </div>
 
+  <!-- 300-500 Words Category Technical Buying Guide -->
+  <?php if (!empty($categoryInfo['content_guide'])): $cg = $categoryInfo['content_guide']; ?>
+    <section class="bg-white rounded-2xl border-2 border-slate-200 p-6 sm:p-8 space-y-6 shadow-xs">
+      <div class="border-b border-slate-100 pb-4">
+        <div class="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-joule-brightblue bg-blue-100/80 border border-blue-200 px-3 py-1 rounded-full mb-2">
+          <i class="fa-solid fa-book-open"></i>
+          <span>Technical Sourcing Guide</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-slate-950">
+          Sourcing &amp; Evaluating <?php echo htmlspecialchars($categoryInfo['h1'] ?? $categoryName); ?>
+        </h2>
+        <p class="text-xs text-slate-500 mt-1">
+          Essential engineering considerations, technical parameters, and shop floor verification standards.
+        </p>
+      </div>
+
+      <!-- Introduction -->
+      <?php if (!empty($cg['intro'])): ?>
+        <div class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+          <?php echo $cg['intro']; ?>
+        </div>
+      <?php endif; ?>
+
+      <!-- 3 Key Pillars: Specs Focus, Inspection Checklist, Applications -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 pt-2">
+        
+        <?php if (!empty($cg['specs_focus'])): ?>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4.5 space-y-2">
+            <h3 class="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-microchip text-joule-brightblue"></i>
+              <span>Key Technical Specifications</span>
+            </h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              <?php echo $cg['specs_focus']; ?>
+            </p>
+          </div>
+        <?php endif; ?>
+
+        <?php if (!empty($cg['inspection_checklist'])): ?>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4.5 space-y-2">
+            <h3 class="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-clipboard-check text-emerald-600"></i>
+              <span>Shop Floor Inspection Checklist</span>
+            </h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              <?php echo $cg['inspection_checklist']; ?>
+            </p>
+          </div>
+        <?php endif; ?>
+
+        <?php if (!empty($cg['applications'])): ?>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4.5 space-y-2">
+            <h3 class="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-industry text-amber-600"></i>
+              <span>Manufacturing Applications</span>
+            </h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              <?php echo $cg['applications']; ?>
+            </p>
+          </div>
+        <?php endif; ?>
+
+      </div>
+
+      <!-- Secondary Keywords Natural Anchor Strip -->
+      <?php if (!empty($categoryInfo['secondary_keywords'])): ?>
+        <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+          <span class="font-bold text-slate-700 text-[11px] uppercase tracking-wider">Related Sourcing Searches:</span>
+          <?php foreach ($categoryInfo['secondary_keywords'] as $sk): ?>
+            <span class="bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg text-[11px] text-slate-700 font-semibold">
+              <?php echo htmlspecialchars($sk); ?>
+            </span>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+    </section>
+  <?php endif; ?>
+
+  <!-- Category FAQs Accordion -->
+  <?php if (!empty($categoryFaqs)): ?>
+    <section class="bg-white rounded-2xl border-2 border-slate-200 p-6 sm:p-8 space-y-6 shadow-xs">
+      <div class="border-b border-slate-100 pb-4">
+        <div class="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-joule-brightblue bg-blue-100/80 border border-blue-200 px-3 py-1 rounded-full mb-2">
+          <i class="fa-solid fa-circle-question"></i>
+          <span>Frequently Asked Questions</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-slate-950">
+          FAQs – Buying Used &amp; New <?php echo htmlspecialchars($categoryName); ?>
+        </h2>
+        <p class="text-xs text-slate-500 mt-1">
+          Common buyer questions regarding machine inspections, specifications, and direct seller communication.
+        </p>
+      </div>
+
+      <div class="space-y-3">
+        <?php foreach ($categoryFaqs as $fIndex => $fItem): ?>
+          <div class="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+            <button 
+              type="button" 
+              onclick="toggleCategoryFaq(<?php echo $fIndex; ?>)" 
+              class="w-full p-4 text-left flex items-center justify-between gap-4 font-black text-slate-900 text-xs sm:text-sm cursor-pointer hover:bg-slate-100/60 transition-colors"
+            >
+              <span class="flex items-center gap-3">
+                <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs shrink-0 font-bold"><?php echo $fIndex + 1; ?></span>
+                <span><?php echo htmlspecialchars($fItem['q']); ?></span>
+              </span>
+              <span id="cat-faq-icon-<?php echo $fIndex; ?>" class="w-6 h-6 rounded-lg bg-white text-slate-500 flex items-center justify-center text-xs shrink-0 transition-transform duration-200 <?php echo $fIndex === 0 ? 'rotate-180' : ''; ?>">
+                <i class="fa-solid fa-chevron-down"></i>
+              </span>
+            </button>
+            <div id="cat-faq-ans-<?php echo $fIndex; ?>" class="<?php echo $fIndex === 0 ? '' : 'hidden'; ?> px-4 pb-4 pt-1 text-xs text-slate-600 leading-relaxed border-t border-slate-200/60 bg-white">
+              <p class="mt-2"><?php echo htmlspecialchars($fItem['a']); ?></p>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+
+      <!-- Category RFQ & Seller Contact Banner -->
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+        <div>
+          <div class="font-black text-slate-900 text-sm">Need a specific <?php echo htmlspecialchars($categoryName); ?> model?</div>
+          <div class="text-slate-600 text-[11px] mt-0.5">Submit your target machine specifications and budget. Our mediator desk connects you with sellers globally.</div>
+        </div>
+        <div class="flex items-center gap-2.5 shrink-0">
+          <button type="button" onclick="openRequirementModal()" class="px-4 py-2.5 bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs flex items-center gap-1.5 shadow-sm border border-amber-300 cursor-pointer">
+            <i class="fa-solid fa-file-signature"></i>
+            <span>Submit RFQ</span>
+          </button>
+          <a href="register.php?role=seller" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-store text-amber-400"></i>
+            <span>Sell in this Category</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  <?php endif; ?>
+
 </main>
 
 <script>
@@ -524,6 +664,28 @@ function sortCategoryMachines(criteria) {
   
   cards.forEach(card => grid.appendChild(card));
 }
+
+function toggleCategoryFaq(idx) {
+  const ans = document.getElementById('cat-faq-ans-' + idx);
+  const icon = document.getElementById('cat-faq-icon-' + idx);
+  if (!ans) return;
+  const isHidden = ans.classList.contains('hidden');
+  if (isHidden) {
+    ans.classList.remove('hidden');
+    if (icon) icon.classList.add('rotate-180');
+  } else {
+    ans.classList.add('hidden');
+    if (icon) icon.classList.remove('rotate-180');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof gtag === 'function') {
+    gtag('event', 'category_view', {
+      item_category: <?php echo json_encode($categoryName); ?>
+    });
+  }
+});
 </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
