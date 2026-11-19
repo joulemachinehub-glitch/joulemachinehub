@@ -198,6 +198,28 @@ $currActiveSymbol = $currSymbols[$activeCurr] ?? '₹';
         box-sizing: border-box !important;
       }
     }
+
+    /* Equipment Spotlight Card Typography Guarantee */
+    .blog-reader-body .jmh-spotlight-card {
+      color: #ffffff !important;
+    }
+    .blog-reader-body .jmh-spotlight-card h3,
+    .blog-reader-body .jmh-spotlight-card .spotlight-title {
+      color: #ffffff !important;
+      font-size: 1.35rem !important;
+      line-height: 1.35 !important;
+      margin-top: 0 !important;
+      margin-bottom: 0.5rem !important;
+      border-bottom: none !important;
+      padding-bottom: 0 !important;
+    }
+    .blog-reader-body .jmh-spotlight-card p,
+    .blog-reader-body .jmh-spotlight-card .spotlight-desc {
+      color: #e2e8f0 !important;
+      margin-bottom: 0.75rem !important;
+      font-size: 0.875rem !important;
+      line-height: 1.6 !important;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen overflow-x-hidden max-w-full w-full pb-20 lg:pb-0">

@@ -108,8 +108,8 @@ if ($spotlightMachine) {
         foreach ($spotlightMachine['specs'] as $sKey => $sVal) {
             if (in_array(strtolower($sKey), ['model', 'brand', 'manufacturer', 'year of manufacture'])) continue;
             $specsSnippet .= '<div class="bg-white/10 rounded-xl p-2.5 border border-white/10 text-left">';
-            $specsSnippet .= '<span class="text-[10px] text-amber-300 block uppercase font-bold tracking-wider">' . htmlspecialchars((string)$sKey) . '</span>';
-            $specsSnippet .= '<span class="text-xs font-black text-white truncate block mt-0.5">' . htmlspecialchars((string)$sVal) . '</span>';
+            $specsSnippet .= '<span class="spotlight-spec-title text-[10px] block uppercase font-bold tracking-wider" style="color: #fde047 !important;">' . htmlspecialchars((string)$sKey) . '</span>';
+            $specsSnippet .= '<span class="spotlight-spec-val text-xs font-black truncate block mt-0.5" style="color: #ffffff !important;">' . htmlspecialchars((string)$sVal) . '</span>';
             $specsSnippet .= '</div>';
             $cnt++;
             if ($cnt >= 2) break;
@@ -117,7 +117,7 @@ if ($spotlightMachine) {
     }
     
     $spotlightCard = '
-    <div class="my-10 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#051833] via-[#092243] to-[#041224] p-5 sm:p-8 text-white border-2 border-amber-400 shadow-2xl relative overflow-hidden not-prose">
+    <div class="jmh-spotlight-card my-10 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#051833] via-[#092243] to-[#041224] p-5 sm:p-8 text-white border-2 border-amber-400 shadow-2xl relative overflow-hidden not-prose">
       <div class="flex items-center justify-between pb-4 border-b border-white/15 gap-2 flex-wrap">
         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 text-[11px] font-black uppercase tracking-wider shadow-sm">
           <i class="fa-solid fa-bolt text-xs"></i> Verified Equipment Spotlight
@@ -138,17 +138,17 @@ if ($spotlightMachine) {
         </div>
 
         <div class="md:col-span-7 space-y-3 text-left">
-          <div class="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
-            <span>' . $spotlightBrand . '</span>
+          <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
+            <span style="color: #facc15 !important;">' . $spotlightBrand . '</span>
             <span class="text-white/40">&bull;</span>
-            <span class="text-slate-300">Year ' . $spotlightYear . '</span>
+            <span style="color: #cbd5e1 !important;">Year ' . $spotlightYear . '</span>
             <span class="text-white/40">&bull;</span>
-            <span class="text-slate-300">' . $spotlightCat . '</span>
+            <span style="color: #cbd5e1 !important;">' . $spotlightCat . '</span>
           </div>
-          <h3 class="text-lg sm:text-xl md:text-2xl font-black text-white leading-snug">
+          <h3 class="spotlight-title text-lg sm:text-xl md:text-2xl font-black leading-snug" style="color: #ffffff !important; margin: 0 0 0.5rem 0 !important; font-size: 1.35rem !important; line-height: 1.35 !important; border-bottom: none !important; padding-bottom: 0 !important;">
             ' . $spotlightTitle . '
           </h3>
-          <p class="text-xs sm:text-sm text-slate-200 leading-relaxed line-clamp-2">
+          <p class="spotlight-desc text-xs sm:text-sm leading-relaxed line-clamp-2" style="color: #e2e8f0 !important; margin-bottom: 0.75rem !important; font-size: 0.875rem !important; line-height: 1.6 !important;">
             ' . $spotlightDesc . '
           </p>
 
