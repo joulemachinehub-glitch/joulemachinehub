@@ -67,6 +67,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_FILES['zipfile']['tmp_name
             }
         }
 
+        // Clean legacy articles_additional.php if present
+        if (file_exists(__DIR__ . '/data/articles_additional.php')) {
+            @unlink(__DIR__ . '/data/articles_additional.php');
+            $output[] = "Deleted legacy data/articles_additional.php";
+        }
+
         $output[] = "Successfully unpacked $extractedCount files directly into public_html with normalized forward slashes";
     } else {
         $output[] = "ERROR: Failed to open uploaded ZIP archive";

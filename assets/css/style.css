@@ -553,6 +553,50 @@ a, button, input, select, textarea, label {
 }
 
 
+/* 2 Buttons in a Row for Mobile CTA Alignment */
+.jmh-mobile-grid-2 {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0.625rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.jmh-mobile-grid-2 > .span-full {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+}
+
+.jmh-mobile-grid-2 > .col-1 {
+  grid-column: span 1 !important;
+  width: 100% !important;
+}
+
+.jmh-mobile-grid-2 > * {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  min-height: 48px !important;
+  box-sizing: border-box !important;
+}
+
+@media (min-width: 640px) {
+  .jmh-mobile-grid-2 {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 0.75rem !important;
+    width: auto !important;
+  }
+  .jmh-mobile-grid-2 > .span-full,
+  .jmh-mobile-grid-2 > .col-1 {
+    grid-column: auto !important;
+    width: auto !important;
+  }
+}
+
 @media (min-width: 1024px) {
   #pagesDropdownWrap:hover #pagesDropdownMenu {
     display: block !important;
