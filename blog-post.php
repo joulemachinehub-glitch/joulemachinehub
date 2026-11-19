@@ -27,23 +27,39 @@ $ogImage = $article['featured_image'];
 
 $relatedArticles = getRelatedArticles($article['slug'], 3);
 
-// Find related machines from inventory matching this article's focus
-$relatedMachines = [];
-$catFilter = $article['related_categories'] ?? [];
+// Smart Category Prioritization: Find relevant machines matching this article's focus
+$primaryCategory = $article['related_categories'][0] ?? '';
+$matchedMachines = [];
+
+// 1. Primary category matches first
 foreach ($machines as $m) {
-    if (in_array($m['category'], $catFilter)) {
-        $relatedMachines[] = $m;
-        if (count($relatedMachines) >= 4) break;
+    if (!empty($primaryCategory) && $m['category'] === $primaryCategory) {
+        $matchedMachines[] = $m;
     }
 }
-if (count($relatedMachines) < 4) {
+
+// 2. Secondary categories
+$catFilter = $article['related_categories'] ?? [];
+foreach ($machines as $m) {
+    if (in_array($m['category'], $catFilter, true) && !in_array($m, $matchedMachines, true)) {
+        $matchedMachines[] = $m;
+    }
+}
+
+// 3. Fallback to featured machines if fewer than 4
+if (count($matchedMachines) < 4) {
     foreach ($machines as $m) {
-        if (!in_array($m, $relatedMachines, true)) {
-            $relatedMachines[] = $m;
-            if (count($relatedMachines) >= 4) break;
+        if (!in_array($m, $matchedMachines, true)) {
+            $matchedMachines[] = $m;
+            if (count($matchedMachines) >= 4) break;
         }
     }
 }
+
+// Top featured spotlight machine for in-article highlight
+$spotlightMachine = $matchedMachines[0] ?? null;
+// Related machines for the bottom showcase and sidebar (up to 4)
+$showcaseMachines = array_slice($matchedMachines, 0, 4);
 
 // Dynamically extract Table of Contents from H2 tags and add id anchors
 $toc = [];
@@ -71,6 +87,99 @@ $processedContent = preg_replace(
     $processedContent
 );
 $processedContent = str_replace('</table>', '</table></div>', $processedContent);
+
+// Inject In-Article Featured Product Spotlight after the first section
+if ($spotlightMachine) {
+    $spotlightImg = '/' . ltrim($spotlightMachine['images'][0] ?? '', '/');
+    $spotlightUrl = '/' . ltrim(getMachineUrl($spotlightMachine), '/');
+    $spotlightTitle = htmlspecialchars($spotlightMachine['title']);
+    $spotlightBrand = htmlspecialchars($spotlightMachine['brand']);
+    $spotlightCat = htmlspecialchars($spotlightMachine['category']);
+    $spotlightDesc = htmlspecialchars($spotlightMachine['short_desc']);
+    $spotlightLoc = htmlspecialchars($spotlightMachine['city'] . ', ' . $spotlightMachine['country']);
+    $spotlightFlag = $spotlightMachine['flag'];
+    $spotlightYear = htmlspecialchars((string)$spotlightMachine['year']);
+    $spotlightPrice = htmlspecialchars($spotlightMachine['price_display'] ?: 'Price on Request');
+    
+    // Pick 2 key specs
+    $specsSnippet = '';
+    if (!empty($spotlightMachine['specs'])) {
+        $cnt = 0;
+        foreach ($spotlightMachine['specs'] as $sKey => $sVal) {
+            if (in_array(strtolower($sKey), ['model', 'brand', 'manufacturer', 'year of manufacture'])) continue;
+            $specsSnippet .= '<div class="bg-white/10 rounded-lg p-2 border border-white/10">';
+            $specsSnippet .= '<span class="text-[10px] text-amber-300 block uppercase font-bold">' . htmlspecialchars((string)$sKey) . '</span>';
+            $specsSnippet .= '<span class="text-xs font-bold text-white truncate block">' . htmlspecialchars((string)$sVal) . '</span>';
+            $specsSnippet .= '</div>';
+            $cnt++;
+            if ($cnt >= 2) break;
+        }
+    }
+    
+    $spotlightCard = '
+    <div class="my-8 rounded-2xl bg-gradient-to-br from-[#051833] via-[#092243] to-[#041224] p-5 sm:p-7 text-white border-2 border-amber-400/70 shadow-2xl relative overflow-hidden not-prose">
+      <div class="flex items-center justify-between pb-3.5 border-b border-white/15 gap-2 flex-wrap">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 text-[11px] font-black uppercase tracking-wider shadow-sm">
+          <i class="fa-solid fa-bolt text-xs"></i> Verified Equipment Spotlight
+        </span>
+        <span class="inline-flex items-center gap-1.5 text-emerald-400 text-xs font-bold bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-500/30">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
+          Ready for Plant Inspection
+        </span>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+        <div class="md:col-span-5 relative rounded-xl overflow-hidden bg-slate-950 border border-white/20 aspect-[4/3] group shadow-inner">
+          <img src="' . $spotlightImg . '" alt="' . $spotlightTitle . '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+          <div class="absolute bottom-2 left-2 bg-slate-950/85 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/20 flex items-center gap-1 pointer-events-none">
+            <span>' . $spotlightFlag . '</span>
+            <span>' . $spotlightLoc . '</span>
+          </div>
+        </div>
+
+        <div class="md:col-span-7 space-y-2.5 text-left">
+          <div class="flex items-center gap-2 text-[11px] font-bold text-amber-400 uppercase tracking-wider">
+            <span>' . $spotlightBrand . '</span>
+            <span class="text-white/40">&bull;</span>
+            <span class="text-slate-300">Year ' . $spotlightYear . '</span>
+            <span class="text-white/40">&bull;</span>
+            <span class="text-slate-300">' . $spotlightCat . '</span>
+          </div>
+          <h3 class="text-base sm:text-lg md:text-xl font-black text-white leading-snug">
+            ' . $spotlightTitle . '
+          </h3>
+          <p class="text-xs text-slate-200 leading-relaxed line-clamp-2">
+            ' . $spotlightDesc . '
+          </p>
+
+          ' . (!empty($specsSnippet) ? '<div class="grid grid-cols-2 gap-2 pt-1">' . $specsSnippet . '</div>' : '') . '
+
+          <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            <a href="' . $spotlightUrl . '" class="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-transform hover:scale-[1.02] shadow-lg shadow-amber-400/20 text-center">
+              <span>View Machine Details</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </a>
+            <button type="button" onclick="openRequirementModal()" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 border border-white/20 transition-colors cursor-pointer">
+              <i class="fa-solid fa-file-signature text-amber-400 text-xs"></i>
+              <span>Request Quote</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>';
+
+    // Insert after the first </p> following the first </h2>
+    $h2Pos = strpos($processedContent, '</h2>');
+    if ($h2Pos !== false) {
+        $pPos = strpos($processedContent, '</p>', $h2Pos);
+        if ($pPos !== false) {
+            $insertIdx = $pPos + 4;
+            $processedContent = substr($processedContent, 0, $insertIdx) . $spotlightCard . substr($processedContent, $insertIdx);
+        } else {
+            $processedContent = substr($processedContent, 0, $h2Pos) . $spotlightCard . substr($processedContent, $h2Pos);
+        }
+    }
+}
 
 // Schemas
 $schemaBreadcrumb = [
@@ -164,103 +273,114 @@ require_once __DIR__ . '/includes/header.php';
 <?php endif; ?>
 
 <!-- BREADCRUMBS -->
-<nav class="bg-white border-b border-slate-200 py-2.5 px-3.5 sm:px-4 text-[11px] sm:text-xs font-semibold text-slate-500" aria-label="Breadcrumb">
+<nav class="bg-white border-b border-slate-200 py-3 px-3.5 sm:px-6 text-[11px] sm:text-xs font-semibold text-slate-500 shadow-xs" aria-label="Breadcrumb">
   <div class="max-w-7xl mx-auto flex items-center gap-1.5 sm:gap-2 flex-wrap">
-    <a href="/" class="hover:text-joule-brightblue flex items-center gap-1 transition-colors">
-      <i class="fa-solid fa-house text-slate-400 text-[10px]"></i>
+    <a href="/" class="hover:text-joule-brightblue flex items-center gap-1.5 transition-colors">
+      <i class="fa-solid fa-house text-slate-400 text-xs"></i>
       <span>Home</span>
     </a>
-    <i class="fa-solid fa-chevron-right text-[8px] text-slate-300"></i>
+    <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i>
     <a href="/blog" class="hover:text-joule-brightblue transition-colors">
-      <span>Used Machines Blog &amp; Guides</span>
+      <span>Machinery Blog &amp; Guides</span>
     </a>
-    <i class="fa-solid fa-chevron-right text-[8px] text-slate-300"></i>
-    <span class="text-slate-900 font-bold truncate max-w-[200px] sm:max-w-md">
+    <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i>
+    <span class="text-amber-600 font-bold">
+      <?php echo htmlspecialchars($article['category']); ?>
+    </span>
+    <i class="fa-solid fa-chevron-right text-[9px] text-slate-300 hidden sm:inline"></i>
+    <span class="text-slate-900 font-bold truncate max-w-[200px] sm:max-w-md hidden sm:inline">
       <?php echo htmlspecialchars($article['short_title'] ?? $article['title']); ?>
     </span>
   </div>
 </nav>
 
 <!-- ARTICLE HERO / HEADER -->
-<header class="bg-gradient-to-b from-[#0a192f] via-joule-navy to-[#0c1f3d] text-white py-6 sm:py-12 md:py-16 px-3.5 sm:px-4">
-  <div class="max-w-4xl mx-auto space-y-4 sm:space-y-5">
+<header class="relative bg-gradient-to-b from-[#051326] via-[#092243] to-[#041224] text-white pt-8 pb-12 sm:pt-12 sm:pb-16 px-4 overflow-hidden border-b border-slate-800">
+  <!-- Blueprint Ambient Texture Overlay -->
+  <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 24px 24px;"></div>
+  <div class="absolute -top-32 -right-32 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+  <div class="max-w-4xl mx-auto relative z-10 space-y-4 sm:space-y-6 text-left">
     
     <!-- Badges Row -->
     <div class="flex items-center gap-2 text-[11px] sm:text-xs font-bold text-slate-300 flex-wrap">
-      <span class="bg-joule-yellow text-slate-950 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-md font-black uppercase tracking-wider text-[10px] sm:text-[11px] shadow-xs">
+      <span class="bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 px-3 py-1 rounded-full font-black uppercase tracking-wider text-[11px] shadow-sm">
         <?php echo htmlspecialchars($article['category']); ?>
       </span>
       <span class="text-slate-500">&bull;</span>
-      <span class="inline-flex items-center gap-1 text-slate-200">
-        <i class="fa-regular fa-clock text-joule-yellow"></i>
+      <span class="inline-flex items-center gap-1.5 text-slate-200">
+        <i class="fa-regular fa-clock text-amber-400"></i>
         <span><?php echo htmlspecialchars($article['read_time']); ?></span>
       </span>
       <span class="text-slate-500">&bull;</span>
-      <span class="inline-flex items-center gap-1 text-slate-300">
+      <span class="inline-flex items-center gap-1.5 text-slate-300">
         <i class="fa-regular fa-calendar text-slate-400"></i>
         <span><?php echo htmlspecialchars($article['published_date']); ?></span>
       </span>
       <span class="hidden sm:inline text-slate-500">&bull;</span>
-      <span class="hidden sm:inline-flex items-center gap-1 text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px]">
+      <span class="inline-flex items-center gap-1.5 text-emerald-400 bg-emerald-950/70 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px]">
         <i class="fa-solid fa-shield-check"></i>
         <span>Verified Engineering Desk</span>
       </span>
     </div>
 
     <!-- Main Title -->
-    <h1 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight sm:leading-snug">
+    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight sm:leading-snug drop-shadow-sm">
       <?php echo htmlspecialchars($article['title']); ?>
     </h1>
 
     <!-- Excerpt / Subheading -->
-    <p class="text-slate-200 text-xs sm:text-sm md:text-base leading-relaxed max-w-3xl font-normal">
+    <p class="text-slate-200 text-sm sm:text-base md:text-lg leading-relaxed max-w-3xl font-normal">
       <?php echo htmlspecialchars($article['excerpt']); ?>
     </p>
 
-    <!-- Author Badge & Quick Share Bar -->
-    <div class="pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+    <!-- Author & Social Share Bar -->
+    <div class="pt-5 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-joule-blue text-white font-black text-xs sm:text-sm flex items-center justify-center shadow-md border border-white/20 shrink-0">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 font-black text-sm flex items-center justify-center shadow-lg border border-amber-300 shrink-0">
           JMH
         </div>
         <div>
-          <div class="text-xs sm:text-sm font-black text-white"><?php echo htmlspecialchars($article['author']); ?></div>
-          <div class="text-[10px] sm:text-[11px] text-slate-300 font-medium"><?php echo htmlspecialchars($article['author_role']); ?></div>
+          <div class="text-xs sm:text-sm font-black text-white flex items-center gap-1.5">
+            <span><?php echo htmlspecialchars($article['author']); ?></span>
+            <i class="fa-solid fa-circle-check text-emerald-400 text-xs" title="Verified Author"></i>
+          </div>
+          <div class="text-[11px] text-slate-300 font-medium"><?php echo htmlspecialchars($article['author_role']); ?></div>
         </div>
       </div>
 
       <!-- Quick Social Share Buttons -->
-      <div class="flex items-center gap-1.5 flex-wrap">
-        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">Share:</span>
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">Share Guide:</span>
         <a 
           href="https://api.whatsapp.com/send?text=<?php echo $shareTitle; ?>%20<?php echo $shareUrl; ?>" 
           target="_blank" 
           rel="noopener noreferrer" 
-          class="flex-1 sm:flex-none h-8 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-1.5 text-xs transition-colors shadow-sm"
+          class="h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-1.5 text-xs font-bold transition-transform hover:scale-105 shadow-sm"
           title="Share on WhatsApp"
         >
-          <i class="fa-brands fa-whatsapp"></i>
-          <span class="sm:hidden text-[11px] font-bold">WhatsApp</span>
+          <i class="fa-brands fa-whatsapp text-sm"></i>
+          <span>WhatsApp</span>
         </a>
         <a 
           href="https://www.linkedin.com/sharing/share-offsite/?url=<?php echo $shareUrl; ?>" 
           target="_blank" 
           rel="noopener noreferrer" 
-          class="flex-1 sm:flex-none h-8 px-3 rounded-lg bg-[#0077b5] hover:bg-blue-600 text-white flex items-center justify-center gap-1.5 text-xs transition-colors shadow-sm"
+          class="h-9 px-3.5 rounded-xl bg-[#0077b5] hover:bg-blue-600 text-white flex items-center justify-center gap-1.5 text-xs font-bold transition-transform hover:scale-105 shadow-sm"
           title="Share on LinkedIn"
         >
-          <i class="fa-brands fa-linkedin-in"></i>
-          <span class="sm:hidden text-[11px] font-bold">LinkedIn</span>
+          <i class="fa-brands fa-linkedin-in text-sm"></i>
+          <span>LinkedIn</span>
         </a>
         <button 
           type="button" 
           onclick="copyGuideLink('<?php echo $canonicalUrl; ?>')" 
           id="copyLinkBtnTop"
-          class="flex-1 sm:flex-none px-3 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold flex items-center justify-center gap-1 transition-colors border border-white/15"
+          class="h-9 px-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors border border-white/20 cursor-pointer"
           title="Copy Link to Clipboard"
         >
           <i class="fa-regular fa-copy text-xs"></i>
-          <span class="copyText">Copy</span>
+          <span class="copyText">Copy Link</span>
         </button>
       </div>
     </div>
@@ -269,47 +389,46 @@ require_once __DIR__ . '/includes/header.php';
 </header>
 
 <!-- ARTICLE MAIN BODY CONTAINER -->
-<main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-10 overflow-hidden w-full max-w-full">
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start w-full max-w-full">
+<main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 overflow-hidden w-full max-w-full">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start w-full max-w-full">
     
     <!-- LEFT COLUMN: Article Body (8 cols) -->
     <div class="lg:col-span-8 space-y-6 sm:space-y-8 min-w-0 w-full">
       
-      <!-- Featured Image Banner -->
-      <div class="relative w-full bg-slate-950 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200 shadow-md blog-post-hero-img-container h-52 sm:h-72 md:h-96" style="height: 220px; max-height: 380px;">
+      <!-- Featured Image Banner (16:9 Responsive Aspect Ratio, Never Squished) -->
+      <div class="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-lg bg-slate-950 aspect-[16/9] sm:aspect-[21/9] max-h-[440px]">
         <img 
           src="<?php echo htmlspecialchars($article['featured_image']); ?>" 
           alt="<?php echo htmlspecialchars($article['title']); ?>" 
           class="w-full h-full object-cover"
-          style="height: 100%; width: 100%; object-fit: cover; display: block;"
           loading="eager"
         >
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-black/20 pointer-events-none"></div>
-        <div class="absolute bottom-2.5 left-2.5 sm:bottom-3 sm:left-3 bg-slate-950/85 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-bold px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-white/20 flex items-center gap-1.5">
-          <i class="fa-solid fa-camera text-joule-yellow text-[10px]"></i>
-          <span>Verified Industrial Inspection</span>
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20 pointer-events-none"></div>
+        <div class="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 bg-slate-950/85 backdrop-blur-md text-white text-[11px] sm:text-xs font-bold px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-2 shadow-lg">
+          <i class="fa-solid fa-camera text-amber-400 text-xs"></i>
+          <span>Authentic Plant Floor Inspection Photo</span>
         </div>
       </div>
 
       <!-- MOBILE COLLAPSIBLE TABLE OF CONTENTS (Visible on Mobile & Tablet < 1024px) -->
       <?php if (!empty($toc)): ?>
-      <div class="lg:hidden bg-blue-50/70 border border-blue-200 rounded-xl p-3 sm:p-4">
+      <div class="lg:hidden bg-blue-50/70 border-2 border-blue-200/80 rounded-2xl p-4 shadow-xs">
         <details class="group">
           <summary class="flex items-center justify-between cursor-pointer list-none font-black text-slate-900 text-xs sm:text-sm">
             <span class="flex items-center gap-2">
-              <i class="fa-solid fa-list-ol text-joule-blue"></i>
-              <span>In This Guide (Table of Contents)</span>
+              <i class="fa-solid fa-list-ol text-joule-brightblue"></i>
+              <span>In This Technical Guide (Table of Contents)</span>
             </span>
-            <span class="text-[11px] text-joule-blue font-bold group-open:hidden">Show &darr;</span>
-            <span class="text-[11px] text-joule-blue font-bold hidden group-open:inline">Hide &uarr;</span>
+            <span class="text-xs text-joule-brightblue font-bold group-open:hidden">Show &darr;</span>
+            <span class="text-xs text-joule-brightblue font-bold hidden group-open:inline">Hide &uarr;</span>
           </summary>
-          <div class="pt-3 mt-2.5 border-t border-blue-200/60 space-y-1 text-xs">
+          <div class="pt-3 mt-3 border-t border-blue-200/60 space-y-1 text-xs">
             <?php foreach ($toc as $idx => $tItem): ?>
               <a 
                 href="#<?php echo htmlspecialchars($tItem['id']); ?>" 
-                class="flex items-start gap-2 text-slate-700 hover:text-joule-blue font-medium py-1 hover:translate-x-1 transition-all"
+                class="flex items-start gap-2 text-slate-700 hover:text-joule-brightblue font-semibold py-1.5 hover:translate-x-1 transition-all"
               >
-                <span class="w-4 h-4 rounded-full bg-blue-100 text-joule-blue font-bold text-[9px] flex items-center justify-center shrink-0 mt-0.5">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-joule-blue font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
                   <?php echo ($idx + 1); ?>
                 </span>
                 <span class="leading-tight"><?php echo htmlspecialchars($tItem['title']); ?></span>
@@ -321,25 +440,25 @@ require_once __DIR__ . '/includes/header.php';
       <?php endif; ?>
 
       <!-- Article Rich Content -->
-      <article class="bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 p-4 sm:p-7 md:p-9 shadow-xs blog-reader-body">
+      <article class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-8 md:p-10 shadow-sm blog-reader-body">
         <div class="article-inner-content">
           <?php echo $processedContent; ?>
         </div>
 
         <!-- In-Article Direct Sourcing Banner -->
-        <div class="my-6 sm:my-8 p-4 sm:p-6 bg-gradient-to-r from-slate-900 to-joule-navy text-white rounded-xl border border-blue-900 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div class="space-y-1 text-left">
-            <div class="inline-flex items-center gap-1 text-joule-yellow text-[10px] sm:text-[11px] font-black uppercase tracking-wider">
-              <i class="fa-solid fa-bolt"></i>
+        <div class="my-8 p-5 sm:p-7 bg-gradient-to-r from-slate-900 via-joule-navy to-slate-900 text-white rounded-2xl border-2 border-amber-400/50 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 not-prose">
+          <div class="space-y-1.5 text-left">
+            <div class="inline-flex items-center gap-1.5 text-amber-300 text-[11px] font-black uppercase tracking-wider">
+              <i class="fa-solid fa-bolt text-amber-400"></i>
               <span>Equipment Sourcing Desk</span>
             </div>
-            <h4 class="text-sm sm:text-base md:text-lg font-black text-white">Looking for Verified Used Industrial Machinery?</h4>
-            <p class="text-xs text-slate-300">Submit your technical requirement. Our B2B machinery desk connects you directly with matching available inventory.</p>
+            <h4 class="text-base sm:text-lg md:text-xl font-black text-white">Looking for Verified Industrial Machinery?</h4>
+            <p class="text-xs text-slate-300 leading-relaxed max-w-xl">Submit your technical requirement. Our B2B machinery desk connects you directly with matching available inventory.</p>
           </div>
           <button 
             type="button" 
             onclick="openRequirementModal()" 
-            class="w-full sm:w-auto bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black py-2.5 px-5 rounded-xl text-xs whitespace-nowrap shadow-md transition-all cursor-pointer border border-amber-300 text-center"
+            class="w-full sm:w-auto bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black py-3 px-6 rounded-xl text-xs uppercase tracking-wider whitespace-nowrap shadow-lg shadow-amber-400/20 transition-all hover:scale-105 cursor-pointer border border-amber-300 text-center"
           >
             Post Machine RFQ
           </button>
@@ -351,7 +470,7 @@ require_once __DIR__ . '/includes/header.php';
           <?php foreach ($article['tags'] as $tag): ?>
             <a 
               href="/blog?q=<?php echo urlencode($tag); ?>" 
-              class="text-xs bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-joule-blue px-3 py-1.5 rounded-lg font-semibold transition-colors border border-slate-200/80"
+              class="text-xs bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-joule-brightblue px-3 py-1.5 rounded-lg font-bold transition-colors border border-slate-200/80"
             >
               #<?php echo htmlspecialchars($tag); ?>
             </a>
@@ -361,12 +480,12 @@ require_once __DIR__ . '/includes/header.php';
         <!-- Bottom Share Bar -->
         <div class="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between flex-wrap gap-3">
           <div class="text-xs font-black text-slate-700">Found this technical checklist valuable? Share with your plant engineering team:</div>
-          <div class="flex items-center gap-1.5">
+          <div class="flex items-center gap-2">
             <a 
               href="https://api.whatsapp.com/send?text=<?php echo $shareTitle; ?>%20<?php echo $shareUrl; ?>" 
               target="_blank" 
               rel="noopener noreferrer" 
-              class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs"
+              class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs"
             >
               <i class="fa-brands fa-whatsapp text-sm"></i>
               <span>WhatsApp</span>
@@ -375,15 +494,15 @@ require_once __DIR__ . '/includes/header.php';
               href="https://www.linkedin.com/sharing/share-offsite/?url=<?php echo $shareUrl; ?>" 
               target="_blank" 
               rel="noopener noreferrer" 
-              class="px-3 py-1.5 rounded-lg bg-[#0077b5] hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs"
+              class="px-3.5 py-2 rounded-xl bg-[#0077b5] hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs"
             >
-              <i class="fa-brands fa-linkedin text-sm"></i>
+              <i class="fa-brands fa-linkedin-in text-sm"></i>
               <span>LinkedIn</span>
             </a>
             <button 
               type="button" 
               onclick="copyGuideLink('<?php echo $canonicalUrl; ?>')" 
-              class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors border border-slate-300"
+              class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors border border-slate-300 cursor-pointer"
             >
               <i class="fa-regular fa-copy text-xs"></i>
               <span class="copyText">Copy Link</span>
@@ -392,12 +511,135 @@ require_once __DIR__ . '/includes/header.php';
         </div>
       </article>
 
+      <!-- ========================================================
+           DEDICATED PRODUCTS SECTION: VERIFIED MACHINERY FOR SALE
+           High-conversion product showcase highlighted right below the article
+           ======================================================== -->
+      <?php if (!empty($showcaseMachines)): ?>
+      <section class="mt-8 space-y-5">
+        <!-- Section Header with golden industrial flair -->
+        <div class="bg-gradient-to-r from-[#041224] via-[#092243] to-[#041224] text-white rounded-2xl p-5 sm:p-7 shadow-xl border-2 border-amber-400/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="space-y-1.5">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-[11px] font-black uppercase tracking-wider border border-amber-400/30">
+              <i class="fa-solid fa-industry text-amber-400"></i>
+              <span>Verified Live Inventory</span>
+            </div>
+            <h3 class="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight leading-tight">
+              Verified Machinery Available for Sale
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+              Explore in-stock industrial equipment matching this engineering guide. Connect directly with verified plant sellers with zero commission.
+            </p>
+          </div>
+          <a href="/category" class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs uppercase tracking-wider shrink-0 transition-transform hover:scale-105 shadow-lg shadow-amber-400/20 border border-amber-300">
+            <span>Browse All Machines</span>
+            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </a>
+        </div>
+
+        <!-- 2x2 Product Grid (1 column on phone, 2 on tablet/desktop) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          <?php foreach ($showcaseMachines as $m): 
+            $mImg = '/' . ltrim($m['images'][0] ?? '', '/');
+            $mUrl = '/' . ltrim(getMachineUrl($m), '/');
+          ?>
+            <div class="bg-white rounded-2xl border-2 border-slate-200 hover:border-amber-400 p-4 sm:p-5 transition-all hover:shadow-xl group flex flex-col justify-between">
+              <div>
+                <!-- Image container with badges -->
+                <div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-slate-950 mb-3.5">
+                  <a href="<?php echo $mUrl; ?>" class="block w-full h-full">
+                    <img src="<?php echo htmlspecialchars($mImg); ?>" alt="<?php echo htmlspecialchars($m['title']); ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
+                  </a>
+                  <!-- Verified Pill -->
+                  <div class="absolute top-2 left-2 flex items-center gap-1.5 flex-wrap pointer-events-none">
+                    <span class="bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
+                      <i class="fa-solid fa-shield-check"></i> Verified
+                    </span>
+                    <span class="bg-slate-950/80 backdrop-blur-xs text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-400/30">
+                      <?php echo htmlspecialchars($m['condition']); ?>
+                    </span>
+                  </div>
+                  <!-- Location Pill -->
+                  <div class="absolute bottom-2 right-2 bg-slate-950/85 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/20 flex items-center gap-1 pointer-events-none">
+                    <span><?php echo $m['flag']; ?></span>
+                    <span><?php echo htmlspecialchars($m['city'] . ', ' . $m['country']); ?></span>
+                  </div>
+                </div>
+
+                <!-- Brand & Year -->
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1">
+                  <span class="text-amber-600 uppercase tracking-wider font-black"><?php echo htmlspecialchars($m['brand']); ?></span>
+                  <span>Year <?php echo htmlspecialchars((string)$m['year']); ?></span>
+                </div>
+
+                <!-- Title -->
+                <h4 class="text-sm sm:text-base font-black text-slate-900 group-hover:text-joule-brightblue transition-colors line-clamp-2 leading-snug mb-2">
+                  <a href="<?php echo $mUrl; ?>">
+                    <?php echo htmlspecialchars($m['title']); ?>
+                  </a>
+                </h4>
+
+                <!-- Specs row -->
+                <?php if (!empty($m['specs'])): ?>
+                <div class="grid grid-cols-2 gap-1.5 py-2 border-y border-slate-100 text-[11px] mb-3">
+                  <?php 
+                  $specCnt = 0;
+                  foreach ($m['specs'] as $sk => $sv) {
+                    if (in_array(strtolower($sk), ['model', 'brand', 'manufacturer', 'year of manufacture'])) continue;
+                    echo '<div class="truncate"><span class="text-slate-400 font-semibold">' . htmlspecialchars((string)$sk) . ':</span> <strong class="text-slate-700">' . htmlspecialchars((string)$sv) . '</strong></div>';
+                    $specCnt++;
+                    if ($specCnt >= 2) break;
+                  }
+                  ?>
+                </div>
+                <?php endif; ?>
+
+                <!-- Price -->
+                <div class="mb-3">
+                  <span class="text-[10px] text-slate-400 uppercase font-bold block">Asking Price:</span>
+                  <span class="text-sm font-black text-joule-brightblue"><?php echo htmlspecialchars($m['price_display'] ?: 'Price on Request'); ?></span>
+                </div>
+              </div>
+
+              <!-- Action Buttons: 2 IN A ROW ON MOBILE VIEW! -->
+              <div class="jmh-mobile-grid-2 pt-2 border-t border-slate-100">
+                <a href="<?php echo $mUrl; ?>" class="col-1 px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-joule-blue text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors text-center shadow-sm">
+                  <span>View Details</span>
+                  <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+                <button type="button" onclick="openRequirementModal()" class="col-1 px-3 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all text-center border border-amber-300 shadow-sm cursor-pointer">
+                  <i class="fa-solid fa-file-signature text-xs"></i>
+                  <span>Enquire Now</span>
+                </button>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        </div>
+
+        <!-- Custom Sourcing Bar -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-blue-50/70 border border-blue-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-100 text-joule-brightblue flex items-center justify-center text-lg shrink-0">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <div>
+              <div class="text-xs sm:text-sm font-black text-slate-900">Looking for a specific model or technical specification?</div>
+              <div class="text-[11px] text-slate-600">Post your technical machinery requirement. Our B2B desk will source and verify it for you.</div>
+            </div>
+          </div>
+          <button type="button" onclick="openRequirementModal()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-joule-blue text-white font-bold text-xs uppercase tracking-wider transition-colors shrink-0 cursor-pointer">
+            Post Machine Requirement &rarr;
+          </button>
+        </div>
+      </section>
+      <?php endif; ?>
+
       <!-- FREQUENTLY ASKED QUESTIONS ACCORDION -->
       <?php if (!empty($article['faqs'])): ?>
       <section class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-4">
-        <div class="flex items-center gap-2">
-          <div class="w-9 h-9 rounded-xl bg-blue-50 text-joule-blue flex items-center justify-center font-bold text-base shadow-xs">
-            <i class="fa-solid fa-circle-question"></i>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 text-joule-brightblue flex items-center justify-center font-bold text-base shadow-xs shrink-0">
+            <i class="fa-solid fa-circle-question text-lg"></i>
           </div>
           <div>
             <h3 class="text-base sm:text-lg font-black text-slate-900">Frequently Asked Questions: Used Machinery Inspection &amp; Buying</h3>
@@ -410,7 +652,7 @@ require_once __DIR__ . '/includes/header.php';
             <details class="group bg-slate-50 hover:bg-slate-100/70 rounded-xl border border-slate-200 open:bg-blue-50/40 open:border-blue-300 transition-colors">
               <summary class="flex items-center justify-between p-4 cursor-pointer font-bold text-xs sm:text-sm text-slate-900 select-none">
                 <span class="flex items-center gap-2.5">
-                  <span class="w-5 h-5 rounded-full bg-blue-100 text-joule-blue text-[10px] font-black flex items-center justify-center shrink-0">
+                  <span class="w-5 h-5 rounded-full bg-blue-100 text-joule-brightblue text-[10px] font-black flex items-center justify-center shrink-0">
                     Q<?php echo ($fIdx + 1); ?>
                   </span>
                   <span><?php echo htmlspecialchars($faq['q']); ?></span>
@@ -444,7 +686,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
       </section>
 
-      <!-- RELATED ARTICLES IN SAME OR ADJACENT TOPIC -->
+      <!-- RECOMMENDED GUIDES IN SAME OR ADJACENT TOPIC -->
       <?php if (!empty($relatedArticles)): ?>
       <section class="space-y-4 pt-2">
         <div class="flex items-center justify-between">
@@ -462,7 +704,7 @@ require_once __DIR__ . '/includes/header.php';
           <?php foreach ($relatedArticles as $ra): ?>
             <a 
               href="/blog/<?php echo htmlspecialchars($ra['slug']); ?>" 
-              class="bg-white rounded-xl border border-slate-200 hover:border-joule-blue p-3.5 flex flex-col justify-between transition-all hover:shadow-md group"
+              class="bg-white rounded-xl border border-slate-200 hover:border-amber-400 p-3.5 flex flex-col justify-between transition-all hover:shadow-md group"
             >
               <div>
                 <div class="h-28 sm:h-32 w-full bg-slate-900 rounded-lg overflow-hidden mb-2.5 relative">
@@ -471,13 +713,13 @@ require_once __DIR__ . '/includes/header.php';
                     <?php echo htmlspecialchars($ra['category']); ?>
                   </span>
                 </div>
-                <h4 class="text-xs font-black text-slate-900 group-hover:text-joule-blue transition-colors line-clamp-2 leading-snug">
+                <h4 class="text-xs font-black text-slate-900 group-hover:text-joule-brightblue transition-colors line-clamp-2 leading-snug">
                   <?php echo htmlspecialchars($ra['short_title'] ?? $ra['title']); ?>
                 </h4>
               </div>
               <div class="pt-2 text-[10px] text-slate-400 font-semibold flex items-center justify-between border-t border-slate-100 mt-2">
                 <span><?php echo htmlspecialchars($ra['read_time']); ?></span>
-                <span class="text-joule-blue font-bold group-hover:translate-x-0.5 transition-transform">Read &rarr;</span>
+                <span class="text-joule-brightblue font-bold group-hover:translate-x-0.5 transition-transform">Read &rarr;</span>
               </div>
             </a>
           <?php endforeach; ?>
@@ -494,14 +736,14 @@ require_once __DIR__ . '/includes/header.php';
       <?php if (!empty($toc)): ?>
       <div class="hidden lg:block bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
         <h4 class="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2.5">
-          <i class="fa-solid fa-list-check text-joule-blue"></i>
+          <i class="fa-solid fa-list-check text-joule-brightblue"></i>
           <span>In This Engineering Guide</span>
         </h4>
         <nav class="space-y-1.5 text-xs max-h-72 overflow-y-auto pr-1">
           <?php foreach ($toc as $idx => $tItem): ?>
             <a 
               href="#<?php echo htmlspecialchars($tItem['id']); ?>" 
-              class="flex items-start gap-2 py-1 px-1.5 rounded-lg text-slate-600 hover:text-joule-blue hover:bg-blue-50/70 font-semibold transition-colors"
+              class="flex items-start gap-2 py-1.5 px-2 rounded-lg text-slate-600 hover:text-joule-brightblue hover:bg-blue-50/70 font-semibold transition-colors"
             >
               <span class="text-[10px] font-black text-slate-400 mt-0.5 shrink-0"><?php echo ($idx + 1); ?>.</span>
               <span class="leading-tight"><?php echo htmlspecialchars($tItem['title']); ?></span>
@@ -512,8 +754,8 @@ require_once __DIR__ . '/includes/header.php';
       <?php endif; ?>
 
       <!-- Direct Equipment Sourcing RFQ Box -->
-      <div class="bg-gradient-to-br from-joule-navy to-blue-950 text-white rounded-2xl p-5 sm:p-6 border border-blue-800 shadow-md space-y-3.5">
-        <div class="inline-flex items-center gap-1.5 bg-joule-yellow text-slate-950 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md">
+      <div class="bg-gradient-to-br from-joule-navy to-blue-950 text-white rounded-2xl p-5 sm:p-6 border-2 border-amber-400/50 shadow-lg space-y-3.5">
+        <div class="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md shadow-xs">
           <i class="fa-solid fa-bolt"></i>
           <span>B2B Machinery Sourcing</span>
         </div>
@@ -526,46 +768,61 @@ require_once __DIR__ . '/includes/header.php';
         <button 
           type="button" 
           onclick="openRequirementModal()" 
-          class="w-full bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-300"
+          class="w-full bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-300"
         >
           <i class="fa-solid fa-paper-plane"></i>
           <span>Post an Equipment RFQ</span>
         </button>
       </div>
 
-      <!-- Relevant Machinery for Sale Carousel / Cards -->
-      <?php if (!empty($relatedMachines)): ?>
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3.5">
+      <!-- SIDEBAR LIVE MACHINERY INVENTORY WIDGET -->
+      <?php if (!empty($showcaseMachines)): ?>
+      <div class="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-xs space-y-3.5">
         <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
-          <h4 class="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-industry text-joule-brightblue"></i>
-            <span>Verified Machinery for Sale</span>
-          </h4>
-          <a href="/category" class="text-[10px] font-bold text-joule-blue hover:underline">View All</a>
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <h4 class="text-xs font-black text-slate-900 uppercase tracking-wider">
+              Live Machinery Inventory
+            </h4>
+          </div>
+          <a href="/category" class="text-[10px] font-black text-joule-brightblue hover:underline">View All &rarr;</a>
         </div>
 
         <div class="space-y-3">
-          <?php foreach ($relatedMachines as $rm): ?>
+          <?php foreach ($showcaseMachines as $rm): 
+            $rmImg = '/' . ltrim($rm['images'][0] ?? '', '/');
+            $rmUrl = '/' . ltrim(getMachineUrl($rm), '/');
+          ?>
             <a 
-              href="<?php echo htmlspecialchars(getMachineUrl($rm)); ?>" 
-              class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200 group"
+              href="<?php echo $rmUrl; ?>" 
+              class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200 group"
             >
-              <div class="w-16 h-14 rounded-lg bg-slate-900 overflow-hidden shrink-0 relative">
-                <img src="<?php echo htmlspecialchars('/' . ltrim($rm['images'][0] ?? '', '/')); ?>" alt="<?php echo htmlspecialchars($rm['title']); ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy">
+              <div class="w-20 h-16 rounded-xl bg-slate-900 overflow-hidden shrink-0 relative shadow-inner">
+                <img src="<?php echo htmlspecialchars($rmImg); ?>" alt="<?php echo htmlspecialchars($rm['title']); ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy">
+                <span class="absolute bottom-1 right-1 text-[9px]"><?php echo $rm['flag']; ?></span>
               </div>
               <div class="min-w-0 flex-1">
-                <div class="text-[10px] font-bold text-joule-blue uppercase tracking-tight"><?php echo htmlspecialchars($rm['brand']); ?></div>
-                <div class="text-xs font-black text-slate-900 truncate group-hover:text-joule-blue transition-colors">
+                <div class="text-[10px] font-black text-amber-600 uppercase tracking-tight"><?php echo htmlspecialchars($rm['brand']); ?></div>
+                <div class="text-xs font-black text-slate-900 truncate group-hover:text-joule-brightblue transition-colors">
                   <?php echo htmlspecialchars($rm['title']); ?>
                 </div>
-                <div class="text-[10px] text-slate-500 font-semibold flex items-center gap-1 mt-0.5">
-                  <i class="fa-solid fa-location-dot text-slate-400 text-[9px]"></i>
-                  <span><?php echo htmlspecialchars($rm['city'] . ', ' . $rm['country']); ?></span>
+                <div class="text-[10px] text-slate-500 font-semibold flex items-center justify-between mt-1">
+                  <span><?php echo htmlspecialchars($rm['city']); ?></span>
+                  <span class="text-emerald-700 font-bold">Inspect Ready &rarr;</span>
                 </div>
               </div>
             </a>
           <?php endforeach; ?>
         </div>
+
+        <button 
+          type="button" 
+          onclick="openRequirementModal()" 
+          class="w-full py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors border border-slate-300 cursor-pointer"
+        >
+          <i class="fa-solid fa-file-signature text-amber-500 text-xs"></i>
+          <span>Submit Custom Sourcing RFQ</span>
+        </button>
       </div>
       <?php endif; ?>
 
@@ -573,26 +830,26 @@ require_once __DIR__ . '/includes/header.php';
       <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
         <h4 class="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
           <i class="fa-solid fa-boxes-stacked text-amber-500"></i>
-          <span>Popular Categories</span>
+          <span>Popular Machinery Categories</span>
         </h4>
         <div class="grid grid-cols-1 gap-1 text-xs">
-          <a href="/category/used-presses-stamping" class="py-1.5 px-2.5 rounded-lg hover:bg-slate-50 font-bold text-slate-700 hover:text-joule-blue flex items-center justify-between transition-colors">
+          <a href="/category/used-presses-stamping" class="py-2 px-2.5 rounded-lg hover:bg-slate-50 font-bold text-slate-700 hover:text-joule-brightblue flex items-center justify-between transition-colors">
             <span>Power Presses &amp; Stamping</span>
             <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
           </a>
-          <a href="/category/used-cold-formers-headers" class="py-1.5 px-2.5 rounded-lg hover:bg-slate-50 font-bold text-slate-700 hover:text-joule-blue flex items-center justify-between transition-colors">
+          <a href="/category/used-cold-formers-headers" class="py-2 px-2.5 rounded-lg hover:bg-slate-50 font-bold text-slate-700 hover:text-joule-brightblue flex items-center justify-between transition-colors">
             <span>Cold Formers &amp; Headers</span>
             <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
           </a>
-          <a href="/category/used-lathes-turning" class="py-1.5 px-2.5 rounded-lg hover:bg-slate-50 font-bold text-slate-700 hover:text-joule-blue flex items-center justify-between transition-colors">
+          <a href="/category/used-lathes-turning" class="py-2 px-2.5 rounded-lg hover:bg-slate-50 font-bold text-slate-700 hover:text-joule-brightblue flex items-center justify-between transition-colors">
             <span>Lathes &amp; Turning Centers</span>
             <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
           </a>
-          <a href="/category/used-cnc-machining-centers" class="py-1.5 px-2.5 rounded-lg hover:bg-slate-50 font-bold text-slate-700 hover:text-joule-blue flex items-center justify-between transition-colors">
+          <a href="/category/used-cnc-machining-centers" class="py-2 px-2.5 rounded-lg hover:bg-slate-50 font-bold text-slate-700 hover:text-joule-brightblue flex items-center justify-between transition-colors">
             <span>CNC Machining Centers</span>
             <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
           </a>
-          <a href="/category" class="py-2 px-2.5 rounded-lg bg-blue-50 text-joule-blue font-black flex items-center justify-between mt-1 hover:bg-blue-100 transition-colors">
+          <a href="/category" class="py-2.5 px-3 rounded-xl bg-blue-50 text-joule-brightblue font-black flex items-center justify-between mt-2 hover:bg-blue-100 transition-colors">
             <span>Explore All 13 Categories</span>
             <i class="fa-solid fa-arrow-right text-xs"></i>
           </a>
