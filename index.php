@@ -209,19 +209,19 @@ require_once __DIR__ . '/includes/header.php';
         <strong>Joule Machine Hub</strong> is a premier <strong>global machinery marketplace</strong> connecting qualified buyers with verified machine sellers worldwide. Find <strong>used industrial machinery for sale</strong>, verified <strong>new industrial machinery</strong>, and surplus <strong>used manufacturing equipment</strong> directly from factory floors and certified equipment sellers.
       </p>
 
-      <!-- Clear Hero CTAs -->
-      <div class="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 pt-1">
-        <a href="#catalog" onclick="scrollToCatalog();" class="px-5 py-2.5 rounded-xl bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber-400/20 transition-all hover:scale-105 border border-amber-300">
+      <!-- Clear Hero CTAs (2 buttons in a row on mobile, flex row on desktop) -->
+      <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 sm:gap-3 pt-1 max-w-lg sm:max-w-none mx-auto jmh-mobile-grid-2">
+        <a href="#catalog" onclick="scrollToCatalog();" class="col-span-2 sm:col-span-1 span-full w-full sm:w-auto px-5 py-2.5 rounded-xl bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center text-center gap-2 shadow-lg shadow-amber-400/20 transition-all hover:scale-105 border border-amber-300 min-h-[44px]">
           <i class="fa-solid fa-boxes-stacked"></i>
           <span>Browse Machinery</span>
         </a>
-        <button type="button" onclick="openRequirementModal()" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 border border-emerald-300 cursor-pointer">
+        <button type="button" onclick="openRequirementModal()" class="col-span-1 col-1 w-full sm:w-auto px-2 sm:px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[11px] sm:text-sm uppercase tracking-tight sm:tracking-wider flex items-center justify-center text-center gap-1.5 sm:gap-2 shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 border border-emerald-300 cursor-pointer min-h-[44px]">
           <i class="fa-solid fa-file-signature"></i>
           <span>Submit RFQ</span>
         </button>
-        <a href="register.php?role=seller" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 border border-white/20 transition-all hover:scale-105">
+        <a href="register.php?role=seller" class="col-span-1 col-1 w-full sm:w-auto px-2 sm:px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black text-[11px] sm:text-sm uppercase tracking-tight sm:tracking-wider flex items-center justify-center text-center gap-1.5 sm:gap-2 border border-white/20 transition-all hover:scale-105 min-h-[44px]">
           <i class="fa-solid fa-store text-amber-400"></i>
-          <span>List Your Machinery</span>
+          <span>List Machinery</span>
         </a>
       </div>
     </div>
@@ -1471,17 +1471,17 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
 
     </div>
 
-    <!-- Seller Registration CTAs -->
-    <div class="flex flex-wrap items-center justify-center gap-3 pt-3">
-      <a href="register.php?role=seller" class="px-6 py-3 rounded-xl bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber-400/20 transition-all hover:scale-105 border border-amber-300">
+    <!-- Seller Registration CTAs (2 buttons in a row on mobile, flex on desktop) -->
+    <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 sm:gap-3 pt-3 max-w-lg sm:max-w-none mx-auto jmh-mobile-grid-2">
+      <a href="register.php?role=seller" class="col-span-1 col-1 w-full sm:w-auto px-2 sm:px-6 py-3 rounded-xl bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider flex items-center justify-center text-center gap-1.5 sm:gap-2 shadow-lg shadow-amber-400/20 transition-all hover:scale-105 border border-amber-300 min-h-[44px]">
         <i class="fa-solid fa-store"></i>
-        <span>Register as a Seller</span>
+        <span>Register as Seller</span>
       </a>
-      <a href="register.php?role=seller#plans" class="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 border border-white/20 transition-all hover:scale-105">
+      <a href="register.php?role=seller#plans" class="col-span-1 col-1 w-full sm:w-auto px-2 sm:px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider flex items-center justify-center text-center gap-1.5 sm:gap-2 border border-white/20 transition-all hover:scale-105 min-h-[44px]">
         <i class="fa-solid fa-layer-group text-amber-400"></i>
-        <span>View Paid Seller Plans</span>
+        <span>View Paid Plans</span>
       </a>
-      <button type="button" onclick="openRequirementModal()" class="px-6 py-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-xs uppercase tracking-wider flex items-center gap-2 border border-emerald-400/30 transition-all hover:scale-105 cursor-pointer">
+      <button type="button" onclick="openRequirementModal()" class="col-span-2 sm:col-span-1 span-full w-full sm:w-auto px-4 sm:px-6 py-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-xs uppercase tracking-wider flex items-center justify-center text-center gap-2 border border-emerald-400/30 transition-all hover:scale-105 cursor-pointer min-h-[44px]">
         <i class="fa-solid fa-file-signature text-emerald-400"></i>
         <span>Submit Buyer RFQ</span>
       </button>
@@ -1840,13 +1840,13 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
       <p class="text-xs text-slate-600 max-w-md mx-auto">
         Connect with our B2B mediator portal to submit your machinery requirements or post an RFQ.
       </p>
-      <div class="flex items-center justify-center gap-3 pt-1">
-        <button type="button" onclick="openRequirementModal()" class="bg-joule-blue text-joule-yellow hover:bg-blue-900 font-black text-xs px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm transition-colors cursor-pointer">
+      <div class="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-2 sm:gap-3 pt-1 max-w-sm sm:max-w-none mx-auto jmh-mobile-grid-2">
+        <button type="button" onclick="openRequirementModal()" class="col-span-1 col-1 w-full sm:w-auto bg-joule-blue text-joule-yellow hover:bg-blue-900 font-black text-xs px-2 sm:px-4 py-2.5 rounded-xl flex items-center justify-center text-center gap-1.5 shadow-sm transition-colors cursor-pointer min-h-[40px]">
           <i class="fa-solid fa-file-signature"></i>
-          <span>Instant Machine Enquiry</span>
+          <span>Instant RFQ</span>
         </button>
-        <button type="button" onclick="openRequirementModal()" class="bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 font-bold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer">
-          Submit Query
+        <button type="button" onclick="openRequirementModal()" class="col-span-1 col-1 w-full sm:w-auto bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 font-bold text-xs px-2 sm:px-4 py-2.5 rounded-xl flex items-center justify-center text-center gap-1.5 transition-colors cursor-pointer min-h-[40px]">
+          <span>Submit Query</span>
         </button>
       </div>
     </div>

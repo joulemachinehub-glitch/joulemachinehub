@@ -394,21 +394,21 @@ require_once __DIR__ . '/includes/header.php';
         </p>
       </div>
 
-      <div class="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3 justify-end">
+      <div class="lg:col-span-4 grid grid-cols-2 lg:flex lg:flex-col gap-2 sm:gap-3 justify-end jmh-mobile-grid-2">
         <button 
           type="button" 
           onclick="openRequirementModal()" 
-          class="bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black py-3 px-6 rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-300 text-center"
+          class="col-span-1 col-1 w-full bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black py-3 px-2 sm:px-6 rounded-xl text-[11px] sm:text-xs shadow-md transition-all flex items-center justify-center text-center gap-1.5 cursor-pointer border border-amber-300 min-h-[46px]"
         >
-          <i class="fa-solid fa-paper-plane"></i>
-          <span>Post an Equipment RFQ</span>
+          <i class="fa-solid fa-paper-plane text-xs shrink-0"></i>
+          <span>Post RFQ</span>
         </button>
         <a 
           href="/category" 
-          class="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold py-3 px-6 rounded-xl text-xs sm:text-sm text-center transition-all flex items-center justify-center gap-2"
+          class="col-span-1 col-1 w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold py-3 px-2 sm:px-6 rounded-xl text-[11px] sm:text-xs text-center transition-all flex items-center justify-center gap-1.5 min-h-[46px]"
         >
-          <i class="fa-solid fa-boxes-stacked"></i>
-          <span>Browse 13 Used Machine Hubs</span>
+          <i class="fa-solid fa-boxes-stacked text-amber-400 text-xs shrink-0"></i>
+          <span>Browse Hubs</span>
         </a>
       </div>
     </div>

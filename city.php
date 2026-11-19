@@ -557,23 +557,23 @@ require_once __DIR__ . '/includes/header.php';
             </div>
           </div>
 
-          <!-- CTAs -->
-          <div class="space-y-2 pt-2 border-t border-slate-100">
+          <!-- CTAs (2 buttons in a row on mobile) -->
+          <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 jmh-mobile-grid-2">
             <button 
               type="button" 
               onclick="openInquiryModal('<?php echo $machine['id']; ?>')"
-              class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-black py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all text-xs cursor-pointer"
+              class="col-span-1 col-1 w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-black py-2.5 px-2 rounded-xl flex items-center justify-center gap-1.5 shadow-sm transition-all text-xs cursor-pointer text-center min-h-[42px]"
             >
-              <i class="fa-solid fa-file-signature"></i>
-              <span>Enquire Now (Fill Form)</span>
+              <i class="fa-solid fa-file-signature text-xs shrink-0"></i>
+              <span class="truncate">Enquire Now</span>
             </button>
 
             <a 
               href="<?php echo htmlspecialchars(getMachineUrl($machine)); ?>" 
-              class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors"
+              class="col-span-1 col-1 w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 px-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-colors text-center min-h-[42px]"
             >
-              <span>View Complete Technical Specs</span>
-              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+              <span class="truncate">Full Specs</span>
+              <i class="fa-solid fa-arrow-right text-[10px] shrink-0"></i>
             </a>
           </div>
 

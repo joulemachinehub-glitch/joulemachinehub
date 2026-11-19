@@ -171,6 +171,34 @@ $currActiveSymbol = $currSymbols[$activeCurr] ?? '₹';
   <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
   <link rel="stylesheet" href="/assets/css/style.css?v=<?php echo $assetVer; ?>">
+
+  <!-- Universal 2-in-a-row Mobile Alignment Guarantee -->
+  <style>
+    @media (max-width: 639.98px) {
+      .jmh-mobile-grid-2 {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      .jmh-mobile-grid-2 > .span-full,
+      .jmh-mobile-grid-2 > .col-span-2 {
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
+      }
+      .jmh-mobile-grid-2 > .col-1,
+      .jmh-mobile-grid-2 > .col-span-1 {
+        grid-column: span 1 !important;
+        width: 100% !important;
+      }
+      .jmh-mobile-grid-2 > * {
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+      }
+    }
+  </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen overflow-x-hidden max-w-full w-full pb-20 lg:pb-0">
 

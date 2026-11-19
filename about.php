@@ -109,16 +109,16 @@ require_once __DIR__ . '/includes/header.php';
           </p>
 
           <!-- Action Links (2 buttons in a row on mobile, flex on desktop) -->
-          <div class="pt-3 jmh-mobile-grid-2 max-w-xl sm:max-w-none">
-            <a href="#how-it-works" class="span-full px-4 sm:px-5 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center text-center gap-2 shadow-lg shadow-amber-400/20 transition-all hover:scale-[1.02] min-h-[46px]">
+          <div class="pt-3 grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3 max-w-xl sm:max-w-none jmh-mobile-grid-2">
+            <a href="#how-it-works" class="col-span-2 span-full w-full sm:w-auto px-4 sm:px-5 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center text-center gap-2 shadow-lg shadow-amber-400/20 transition-all hover:scale-[1.02] min-h-[46px]">
               <i class="fa-solid fa-diagram-project text-xs sm:text-sm shrink-0"></i>
               <span>See How It Works (5 Steps)</span>
             </a>
-            <a href="register.php?role=seller" class="col-1 px-2 sm:px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-[11px] sm:text-xs uppercase tracking-normal sm:tracking-wider border border-white/20 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 min-h-[46px] hover:scale-105">
+            <a href="register.php?role=seller" class="col-span-1 col-1 w-full sm:w-auto px-2 sm:px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider border border-white/20 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 min-h-[46px] hover:scale-105">
               <i class="fa-solid fa-store text-amber-400 text-xs shrink-0"></i>
               <span class="leading-tight">Become a Verified Seller</span>
             </a>
-            <a href="index.php#catalog" class="col-1 px-2 sm:px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-[11px] sm:text-xs uppercase tracking-normal sm:tracking-wider border border-white/20 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 min-h-[46px] hover:scale-105">
+            <a href="index.php#catalog" class="col-span-1 col-1 w-full sm:w-auto px-2 sm:px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider border border-white/20 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 min-h-[46px] hover:scale-105">
               <i class="fa-solid fa-boxes-stacked text-amber-400 text-xs shrink-0"></i>
               <span class="leading-tight">Explore Machinery</span>
             </a>
@@ -480,20 +480,20 @@ require_once __DIR__ . '/includes/header.php';
 
 
       <!-- Quick Action CTAs below the Infographic (2 buttons in a row on mobile, flex row on desktop) -->
-      <div class="mt-8 jmh-mobile-grid-2 max-w-xl sm:max-w-none mx-auto">
-        <a href="register.php?role=seller" class="col-1 px-2.5 sm:px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-[11px] sm:text-xs uppercase tracking-normal sm:tracking-wider flex items-center justify-center text-center gap-1.5 sm:gap-2 shadow-lg shadow-amber-400/20 transition-all hover:scale-105 min-h-[46px]">
+      <div class="mt-8 grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 sm:gap-3 max-w-xl sm:max-w-none mx-auto jmh-mobile-grid-2">
+        <a href="register.php?role=seller" class="col-span-1 col-1 w-full sm:w-auto px-2.5 sm:px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider flex items-center justify-center text-center gap-1.5 sm:gap-2 shadow-lg shadow-amber-400/20 transition-all hover:scale-105 min-h-[46px]">
           <i class="fa-solid fa-store text-xs shrink-0"></i>
           <span class="leading-tight">Register as Seller</span>
         </a>
-        <a href="index.php#catalog" class="col-1 px-2.5 sm:px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-[11px] sm:text-xs uppercase tracking-normal sm:tracking-wider border border-white/20 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 hover:scale-105 min-h-[46px]">
+        <a href="index.php#catalog" class="col-span-1 col-1 w-full sm:w-auto px-2.5 sm:px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider border border-white/20 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 hover:scale-105 min-h-[46px]">
           <i class="fa-solid fa-boxes-stacked text-amber-400 text-xs shrink-0"></i>
           <span class="leading-tight">Explore Machinery</span>
         </a>
-        <button type="button" onclick="openRequirementModal()" class="col-1 px-2.5 sm:px-6 py-3 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 font-bold text-[11px] sm:text-xs uppercase tracking-normal sm:tracking-wider border border-emerald-400/30 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 cursor-pointer hover:scale-105 min-h-[46px]">
+        <button type="button" onclick="openRequirementModal()" class="col-span-1 col-1 w-full sm:w-auto px-2.5 sm:px-6 py-3 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 font-bold text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider border border-emerald-400/30 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 cursor-pointer hover:scale-105 min-h-[46px]">
           <i class="fa-solid fa-file-signature text-emerald-400 text-xs shrink-0"></i>
           <span class="leading-tight">Post Machinery RFQ</span>
         </button>
-        <a href="#who-we-serve" class="col-1 px-2.5 sm:px-6 py-3 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 font-bold text-[11px] sm:text-xs uppercase tracking-normal sm:tracking-wider border border-blue-400/30 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 hover:scale-105 min-h-[46px]">
+        <a href="#who-we-serve" class="col-span-1 col-1 w-full sm:w-auto px-2.5 sm:px-6 py-3 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 font-bold text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider border border-blue-400/30 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 hover:scale-105 min-h-[46px]">
           <i class="fa-solid fa-users text-amber-400 text-xs shrink-0"></i>
           <span class="leading-tight">Who We Serve</span>
         </a>
@@ -916,18 +916,18 @@ require_once __DIR__ . '/includes/header.php';
         List your machinery, reach potential buyers and connect directly through Joule Machine Hub.
       </p>
 
-      <div class="pt-4 jmh-mobile-grid-2 max-w-xl sm:max-w-none mx-auto">
-        <a href="index.php#catalog" class="span-full px-4 sm:px-7 py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-400/25 transition-all hover:scale-105 flex items-center justify-center text-center gap-2 min-h-[46px]">
+      <div class="pt-4 grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 sm:gap-4 max-w-xl sm:max-w-none mx-auto jmh-mobile-grid-2">
+        <a href="index.php#catalog" class="col-span-2 span-full w-full sm:w-auto px-4 sm:px-7 py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-400/25 transition-all hover:scale-105 flex items-center justify-center text-center gap-2 min-h-[46px]">
           <i class="fa-solid fa-boxes-stacked text-xs sm:text-sm shrink-0"></i>
           <span>Explore Machinery</span>
         </a>
 
-        <a href="register.php?role=seller" class="col-1 px-2.5 sm:px-7 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] sm:text-xs uppercase tracking-normal sm:tracking-wider border border-white/20 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 min-h-[46px]">
+        <a href="register.php?role=seller" class="col-span-1 col-1 w-full sm:w-auto px-2 sm:px-7 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider border border-white/20 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 min-h-[46px]">
           <i class="fa-solid fa-store text-amber-400 text-xs shrink-0"></i>
           <span class="leading-tight">Register as Seller</span>
         </a>
 
-        <button type="button" onclick="openRequirementModal()" class="col-1 px-2.5 sm:px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[11px] sm:text-xs uppercase tracking-normal sm:tracking-wider transition-all shadow-md flex items-center justify-center text-center gap-1.5 sm:gap-2 cursor-pointer min-h-[46px]">
+        <button type="button" onclick="openRequirementModal()" class="col-span-1 col-1 w-full sm:w-auto px-2 sm:px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider transition-all shadow-md flex items-center justify-center text-center gap-1.5 sm:gap-2 cursor-pointer min-h-[46px]">
           <i class="fa-solid fa-file-signature text-xs shrink-0"></i>
           <span class="leading-tight">Post Machinery RFQ</span>
         </button>
