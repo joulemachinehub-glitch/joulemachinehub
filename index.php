@@ -557,10 +557,11 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
 
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
     
-        <!-- LEFT FILTER SIDEBAR (Fixed/Sticky on Desktop - Screen-fitting High-Density Layout) -->
-    <aside id="filterSidebar" class="hidden lg:block lg:col-span-1 bg-white rounded-2xl border border-slate-200/90 p-3.5 space-y-3.5 shadow-xs lg:sticky lg:top-20 lg:self-start sidebar-sticky-scroll">
+    <!-- LEFT FILTER SIDEBAR (Fixed/Sticky on Desktop - Screen-fitting High-Density Layout) -->
+    <div class="hidden lg:block lg:col-span-1">
+      <aside id="filterSidebar" class="bg-white rounded-2xl border border-slate-200/90 p-3.5 space-y-3.5 shadow-xs sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto sidebar-sticky-scroll">
       
       <!-- 1. Sidebar Header & In-Sidebar Search & Active Filters -->
       <div>
@@ -813,7 +814,8 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
         </button>
       </div>
 
-    </aside>
+      </aside>
+    </div>
 
     <!-- RIGHT PRODUCTS GRID (All 10 Machines) -->
     <div class="lg:col-span-3">

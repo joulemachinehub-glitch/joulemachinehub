@@ -84,7 +84,6 @@ html, body {
   position: -webkit-sticky !important;
   position: sticky !important;
   top: 5rem !important;
-  align-self: flex-start !important;
   z-index: 20;
 }
 
@@ -94,9 +93,9 @@ html, body {
     position: -webkit-sticky !important;
     position: sticky !important;
     top: 5rem !important;
-    align-self: flex-start !important;
-    max-height: calc(100vh - 6rem);
-    overflow-y: auto;
+    max-height: calc(100vh - 5.5rem) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
   }
 }
 

@@ -220,9 +220,13 @@ $currActiveSymbol = $currSymbols[$activeCurr] ?? '₹';
       font-size: 0.875rem !important;
       line-height: 1.6 !important;
     }
+    /* Ensure smooth position: sticky across all modern browsers without scroll-container disruption */
+    html, body {
+      overflow-x: clip !important;
+    }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen overflow-x-hidden max-w-full w-full pb-20 lg:pb-0">
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen overflow-x-clip max-w-full w-full pb-20 lg:pb-0">
 
   <!-- MAIN NAVIGATION: Clean White Theme with Navy & Gold Brand Accents -->
   <header class="bg-white text-slate-800 sticky top-0 z-40 shadow-xs border-b border-slate-200 w-full">
