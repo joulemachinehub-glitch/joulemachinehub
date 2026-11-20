@@ -1,6 +1,7 @@
 <?php
 // Authentication & Session Management for Joule Machine Hub with MySQL DB Integration
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/mailer.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -314,4 +315,287 @@ function logoutUser() {
     if (session_status() === PHP_SESSION_ACTIVE) {
         session_destroy();
     }
+}
+
+/**
+ * Pending OTP persistent store helper
+ */
+function getPendingOtpsFile(): string {
+    return __DIR__ . '/../data/pending_otps.json';
+}
+
+function loadPendingOtps(): array {
+    $file = getPendingOtpsFile();
+    if (!file_exists($file)) return [];
+    $data = @file_get_contents($file);
+    return json_decode($data, true) ?: [];
+}
+
+function savePendingOtps(array $otps): void {
+    $file = getPendingOtpsFile();
+    $dir = dirname($file);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0777, true);
+    }
+    @file_put_contents($file, json_encode($otps, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+}
+
+/**
+ * Generate 6-digit email OTP for seller registration quality verification
+ */
+function generateSellerRegistrationOtp(array $regData): array {
+    $cleanEmail = strtolower(trim($regData['email'] ?? ''));
+    if (!filter_var($cleanEmail, FILTER_VALIDATE_EMAIL)) {
+        return ['success' => false, 'message' => 'Invalid email address provided for verification.'];
+    }
+
+    // Check if email already registered and verified
+    $users = getUsers();
+    foreach ($users as $u) {
+        if (strtolower($u['email'] ?? '') === $cleanEmail && !empty($u['is_verified'])) {
+            return ['success' => false, 'message' => 'An active, verified account with this email already exists. Please log in.'];
+        }
+    }
+
+    $otp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+    $expiresAt = time() + (15 * 60); // 15 minutes validity
+    $recipientName = trim($regData['name'] ?? 'Machinery Partner');
+
+    $otpPayload = [
+        'email'        => $cleanEmail,
+        'name'         => $recipientName,
+        'company'      => trim($regData['company'] ?? ''),
+        'otp'          => $otp,
+        'expires_at'   => $expiresAt,
+        'created_at'   => time(),
+        'last_sent_at' => time(),
+        'attempts'     => 0,
+        'reg_data'     => $regData
+    ];
+
+    // Store in Session
+    $_SESSION['pending_seller_otp'] = $otpPayload;
+    $_SESSION['pending_otp_email'] = $cleanEmail;
+
+    // Store in JSON for persistence across tab refresh/browsers
+    $otps = loadPendingOtps();
+    $otps[$cleanEmail] = $otpPayload;
+    savePendingOtps($otps);
+
+    // Send the Verification Email
+    $mailRes = JmhMailer::sendOtpMail($cleanEmail, $recipientName, $otp);
+
+    return [
+        'success'    => true,
+        'email'      => $cleanEmail,
+        'name'       => $recipientName,
+        'expires_at' => $expiresAt,
+        'mail_sent'  => $mailRes['sent'] ?? false
+    ];
+}
+
+/**
+ * Resend OTP verification code with 60-second rate-limiting
+ */
+function resendSellerRegistrationOtp(): array {
+    $pending = getPendingSellerRegistration();
+    if (!$pending) {
+        return ['success' => false, 'message' => 'No active pending registration found. Please register again.'];
+    }
+
+    $lastSent = intval($pending['last_sent_at'] ?? 0);
+    $elapsed = time() - $lastSent;
+    if ($elapsed < 60) {
+        $remaining = 60 - $elapsed;
+        return [
+            'success'   => false, 
+            'throttled' => true,
+            'remaining' => $remaining,
+            'message'   => "Please wait {$remaining} seconds before requesting another code."
+        ];
+    }
+
+    $cleanEmail = $pending['email'];
+    $recipientName = $pending['name'];
+    $newOtp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+    $expiresAt = time() + (15 * 60);
+
+    $pending['otp'] = $newOtp;
+    $pending['expires_at'] = $expiresAt;
+    $pending['last_sent_at'] = time();
+    $pending['attempts'] = 0; // reset attempts on fresh OTP
+
+    $_SESSION['pending_seller_otp'] = $pending;
+    $_SESSION['pending_otp_email'] = $cleanEmail;
+
+    $otps = loadPendingOtps();
+    $otps[$cleanEmail] = $pending;
+    savePendingOtps($otps);
+
+    $mailRes = JmhMailer::sendOtpMail($cleanEmail, $recipientName, $newOtp);
+
+    return [
+        'success'    => true,
+        'message'    => 'A new 6-digit verification code has been dispatched to your email.',
+        'expires_at' => $expiresAt,
+        'mail_sent'  => $mailRes['sent'] ?? false
+    ];
+}
+
+/**
+ * Retrieve current pending seller registration from session or JSON
+ */
+function getPendingSellerRegistration(): ?array {
+    if (!empty($_SESSION['pending_seller_otp'])) {
+        return $_SESSION['pending_seller_otp'];
+    }
+
+    // Try email param from session or cookie
+    $email = $_SESSION['pending_otp_email'] ?? $_COOKIE['jmh_pending_email'] ?? '';
+    if (!empty($email)) {
+        $clean = strtolower(trim($email));
+        $otps = loadPendingOtps();
+        if (isset($otps[$clean])) {
+            $_SESSION['pending_seller_otp'] = $otps[$clean];
+            return $otps[$clean];
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Cancel/clear pending registration
+ */
+function cancelPendingSellerRegistration(): void {
+    if (!empty($_SESSION['pending_seller_otp']['email'])) {
+        $clean = $_SESSION['pending_seller_otp']['email'];
+        $otps = loadPendingOtps();
+        unset($otps[$clean]);
+        savePendingOtps($otps);
+    }
+    unset($_SESSION['pending_seller_otp'], $_SESSION['pending_otp_email']);
+}
+
+/**
+ * Verify entered 6-digit OTP and complete seller account activation
+ */
+function verifySellerRegistrationOtp(string $enteredOtp): array {
+    $pending = getPendingSellerRegistration();
+    if (!$pending) {
+        return [
+            'success' => false,
+            'message' => 'No active registration session found. Please fill out the registration form again.'
+        ];
+    }
+
+    $cleanEntered = preg_replace('/[^0-9]/', '', trim($enteredOtp));
+    if (strlen($cleanEntered) !== 6) {
+        return [
+            'success' => false,
+            'message' => 'Please enter a valid 6-digit numeric verification code.'
+        ];
+    }
+
+    // Check expiration
+    if (time() > intval($pending['expires_at'] ?? 0)) {
+        return [
+            'success' => false,
+            'expired' => true,
+            'message' => 'This verification code has expired. Please click "Resend Code" to receive a new one.'
+        ];
+    }
+
+    // Check attempts limit (max 5)
+    $attempts = intval($pending['attempts'] ?? 0);
+    if ($attempts >= 5) {
+        return [
+            'success' => false,
+            'locked'  => true,
+            'message' => 'Maximum verification attempts exceeded. Please click "Resend Code" for a new code.'
+        ];
+    }
+
+    // Compare code
+    if ($cleanEntered !== (string)$pending['otp']) {
+        $attempts++;
+        $pending['attempts'] = $attempts;
+        $_SESSION['pending_seller_otp'] = $pending;
+        $otps = loadPendingOtps();
+        $otps[$pending['email']] = $pending;
+        savePendingOtps($otps);
+
+        $left = max(0, 5 - $attempts);
+        return [
+            'success' => false,
+            'message' => "Incorrect verification code. Please check your inbox and try again ({$left} attempts remaining)."
+        ];
+    }
+
+    // OTP IS VALID! COMPLETE REGISTRATION
+    $d = $pending['reg_data'];
+    $name = $d['name'] ?? '';
+    $company = $d['company'] ?? '';
+    $email = $d['email'] ?? '';
+    $phone = $d['phone'] ?? '';
+    $role = 'seller';
+    $country = $d['country'] ?? 'India';
+    $state = $d['state'] ?? '';
+    $city = $d['city'] ?? '';
+    $password = $d['password'] ?? '';
+    $gst = $d['gst'] ?? '';
+    $finalCity = $city ?: ($state ?: $country);
+
+    $regRes = registerUser($name, $company, $email, $phone, $role, $finalCity, $password, $gst, $country, $state);
+
+    if (!$regRes['success']) {
+        return $regRes;
+    }
+
+    $user = $regRes['user'];
+    $user['is_verified'] = true;
+    $user['email_verified_at'] = date('Y-m-d H:i:s');
+    $_SESSION['user'] = $user;
+
+    // Update verified status in users.json
+    $users = getUsers();
+    foreach ($users as &$u) {
+        if (strtolower($u['email'] ?? '') === strtolower($email)) {
+            $u['is_verified'] = true;
+            $u['email_verified_at'] = date('Y-m-d H:i:s');
+            break;
+        }
+    }
+    saveUsers($users);
+
+    // Update in MySQL DB if connected
+    $pdo = getDbConnection();
+    if ($pdo) {
+        try {
+            $stmt = $pdo->prepare("UPDATE `users` SET `is_verified` = 1, `email_verified_at` = NOW() WHERE LOWER(`email`) = ?");
+            $stmt->execute([strtolower($email)]);
+        } catch (Throwable $e) {}
+    }
+
+    // Clear pending OTP state
+    cancelPendingSellerRegistration();
+
+    // Notify admins of new verified quality seller
+    try {
+        JmhMailer::sendLeadNotification([
+            'Seller Name' => $name,
+            'Company Name' => $company,
+            'Seller Email' => $email,
+            'Phone / WhatsApp' => $phone,
+            'Location' => "{$finalCity}, {$country}",
+            'Verification Status' => '100% Email OTP Verified',
+            'Registered Date' => date('Y-m-d H:i:s T')
+        ], "New Verified Seller Registered: {$company}", "A new verified machinery seller has completed email OTP verification.");
+    } catch (Throwable $e) {}
+
+    return [
+        'success' => true,
+        'user'    => $user,
+        'message' => 'Seller email successfully verified! Welcome to your Joule Machine Hub Dashboard.'
+    ];
 }

@@ -4,6 +4,8 @@ require_once __DIR__ . '/header.php';
 
 $error = '';
 $success = '';
+$publishedSlug = '';
+$publishedRef = '';
 
 // Check listing quota
 $canUpload = $userStats['can_upload'];
@@ -49,7 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Handle File Uploads (Images, Video, Nameplate, PDF)
         $result = handleSellerMachineUpload($uploadData, $_FILES, $currentUser);
         if ($result['success']) {
-            $success = "Your machine listing has been submitted successfully. Our team will review your details and notify you once your listing is approved.";
+            $publishedSlug = $result['product']['slug'] ?? '';
+            $publishedRef = $result['product']['product_ref'] ?? '';
+            $success = "Your machine has been successfully added to Joule Machine Hub and is now live across the public website!";
             // Refresh stats
             $userStats = getUserListingStats($userId);
             $canUpload = $userStats['can_upload'];
@@ -81,21 +85,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <?php if (!empty($success)): ?>
-  <div class="p-5 rounded-2xl bg-emerald-50 border-2 border-emerald-300 text-emerald-900 shadow-sm flex items-start gap-3.5 animate-in fade-in">
-    <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-lg shrink-0 shadow-md">
+  <div class="p-6 rounded-2xl bg-emerald-50 border-2 border-emerald-400 text-emerald-950 shadow-md flex items-start gap-4 animate-in fade-in">
+    <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-xl shrink-0 shadow-md">
       <i class="fa-solid fa-circle-check"></i>
     </div>
-    <div>
-      <h3 class="font-bold text-sm text-emerald-950">Submission Received!</h3>
-      <p class="text-xs text-emerald-800 mt-0.5 leading-relaxed">
-        <?php echo htmlspecialchars($success); ?>
+    <div class="space-y-2">
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-600 text-white tracking-wider">Live on Marketplace</span>
+        <span class="text-xs text-emerald-800 font-bold">Listing Ref: #<?php echo htmlspecialchars($publishedRef); ?></span>
+      </div>
+      <h3 class="font-black text-base text-emerald-950">Machine Published Directly to Website!</h3>
+      <p class="text-xs text-emerald-800 leading-relaxed max-w-xl">
+        <?php echo htmlspecialchars($success); ?> Buyers worldwide can now view full technical specifications, inspect photos, and submit RFQ inquiries.
       </p>
-      <div class="flex items-center gap-3 mt-3">
-        <a href="my-machines.php" class="text-xs font-bold text-emerald-900 bg-emerald-200/60 hover:bg-emerald-200 px-3 py-1.5 rounded-lg transition-colors">
-          View in My Machines &rarr;
+      <div class="flex items-center gap-3 pt-2 flex-wrap">
+        <?php if (!empty($publishedSlug)): ?>
+          <a href="/product/<?php echo htmlspecialchars($publishedSlug); ?>" target="_blank" class="text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 px-4 py-2 rounded-xl shadow-md transition-all inline-flex items-center gap-1.5 border border-amber-300">
+            <span>View Live Machine on Website</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+          </a>
+        <?php endif; ?>
+        <a href="my-machines.php" class="text-xs font-bold text-emerald-950 bg-white hover:bg-emerald-100 px-3.5 py-2 rounded-xl transition-colors border border-emerald-300 inline-flex items-center gap-1.5">
+          <i class="fa-solid fa-boxes-stacked text-xs"></i>
+          <span>View in My Machines</span>
         </a>
-        <a href="add-machine.php" class="text-xs font-bold text-emerald-700 hover:text-emerald-900">
-          Upload Another Machine
+        <a href="add-machine.php" class="text-xs font-bold text-emerald-800 hover:text-emerald-950 px-2 py-2">
+          + Upload Another Machine
         </a>
       </div>
     </div>

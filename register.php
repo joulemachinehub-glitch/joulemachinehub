@@ -46,13 +46,25 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $error = 'You must agree to the Terms & Conditions and Privacy Policy to create an account.';
     } else {
         $finalCity = $city ?: ($state ?: $country);
-        $result = registerUser($name, $company, $email, $phone, $role, $finalCity, $password, '', $country, $state);
-        if ($result['success']) {
-            $_SESSION['registered_just_now'] = true;
-            header('Location: dashboard/index.php?registered=1');
+        $regPayload = [
+            'name'     => $name,
+            'company'  => $company,
+            'email'    => $email,
+            'phone'    => $phone,
+            'role'     => 'seller',
+            'country'  => $country,
+            'state'    => $state,
+            'city'     => $finalCity,
+            'password' => $password,
+            'gst'      => $_POST['gst'] ?? ''
+        ];
+        
+        $otpResult = generateSellerRegistrationOtp($regPayload);
+        if ($otpResult['success']) {
+            header('Location: verify-otp.php');
             exit;
         } else {
-            $error = $result['message'];
+            $error = $otpResult['message'];
         }
     }
 }
@@ -80,6 +92,17 @@ require_once __DIR__ . '/includes/header.php';
     <!-- Registration Form Body -->
     <div class="p-6 sm:p-8 space-y-6">
       
+      <!-- Seller Quality Gate Notice -->
+      <div class="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-200 text-slate-800 text-xs flex items-start gap-3">
+        <div class="w-7 h-7 rounded-lg bg-joule-blue text-yellow-400 flex items-center justify-center text-xs shrink-0 mt-0.5">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="leading-relaxed">
+          <span class="font-extrabold text-joule-blue block">Quality Seller Verification:</span>
+          To protect buyers and ensure authentic equipment listings, a 6-digit verification code will be sent to your email to activate your seller dashboard.
+        </div>
+      </div>
+
       <?php if (!empty($error)): ?>
         <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-3">
           <i class="fa-solid fa-circle-exclamation text-base shrink-0"></i>

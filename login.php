@@ -55,6 +55,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 header('Location: dashboard/index.php');
             }
             exit;
+        } elseif (!empty($result['requires_otp'])) {
+            header('Location: verify-otp.php');
+            exit;
         } else {
             $error = $result['message'];
         }

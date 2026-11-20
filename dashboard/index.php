@@ -39,6 +39,23 @@ document.addEventListener('DOMContentLoaded', function() {
 <?php endif; ?>
 
 <!-- TOP WELCOME & MEMBERSHIP STATUS BANNER -->
+<?php if (!empty($_GET['verified'])): ?>
+  <div class="mb-6 p-4 sm:p-5 rounded-2xl bg-emerald-50 border-2 border-emerald-400 text-emerald-950 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in">
+    <div class="flex items-center gap-3.5">
+      <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg shrink-0 shadow-sm">
+        <i class="fa-solid fa-shield-check"></i>
+      </div>
+      <div>
+        <h4 class="font-black text-sm text-emerald-950">Email Verified &amp; Seller Account Activated!</h4>
+        <p class="text-xs text-emerald-800 mt-0.5">Your business email has been confirmed via 6-digit OTP. You are ready to list machinery on the public website catalog.</p>
+      </div>
+    </div>
+    <a href="add-machine.php" class="bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs px-4 py-2.5 rounded-xl uppercase tracking-wider shrink-0 shadow-sm transition-transform hover:scale-105 border border-amber-300 text-center">
+      + Add First Machine
+    </a>
+  </div>
+<?php endif; ?>
+
 <div class="bg-gradient-to-r from-joule-blue to-blue-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border-b-4 border-joule-yellow">
   <!-- Accent icon -->
   <div class="absolute -right-6 -bottom-6 text-white/5 text-8xl pointer-events-none">
@@ -51,15 +68,18 @@ document.addEventListener('DOMContentLoaded', function() {
         <span class="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-yellow-400 text-slate-950">
           <?php echo htmlspecialchars($userSub['plan_name']); ?>
         </span>
+        <span class="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-500 text-white inline-flex items-center gap-1">
+          <i class="fa-solid fa-circle-check text-[9px]"></i> Verified Seller
+        </span>
         <span class="text-xs text-blue-200">
           User ID: <strong><?php echo htmlspecialchars($userId); ?></strong>
         </span>
       </div>
       <h1 class="text-2xl sm:text-3xl font-black text-white">
-        Hello, <?php echo htmlspecialchars($currentUser['name'] ?? 'Partner'); ?>!
+        Hello, <?php echo htmlspecialchars($currentUser['name'] ?? 'Partner'); ?><?php if (!empty($currentUser['company'])): ?> <span class="text-yellow-400 text-lg sm:text-2xl font-bold">(<?php echo htmlspecialchars($currentUser['company']); ?>)</span><?php endif; ?>!
       </h1>
       <p class="text-xs sm:text-sm text-blue-100 max-w-xl">
-        Manage your industrial machinery inventory, monitor incoming buyer RFQs, and track your listing performance across global plant buyers.
+        Manage your industrial machinery inventory, monitor incoming buyer RFQs, and publish quality equipment directly to verified global buyers.
       </p>
     </div>
 

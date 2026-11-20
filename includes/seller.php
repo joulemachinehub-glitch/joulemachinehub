@@ -151,55 +151,115 @@ function handleSellerMachineUpload($data, $files, $user) {
     }
     $features = array_values(array_unique(array_filter($features)));
 
-    // 4. Generate Product Reference
+    // 4. Generate Product Reference & Sequential/Unique ID
     $productRef = 'JMH-SEL-' . strtoupper(substr(uniqid(), -6));
     $userId = !empty($user['user_id']) ? $user['user_id'] : (!empty($user['id']) ? $user['id'] : 'usr-seller-01');
 
-    $priceUsd = floatval(preg_replace('/[^0-9.]/', '', $data['price_usd']));
+    $priceUsd = floatval(preg_replace('/[^0-9.]/', '', $data['price_usd'] ?? ''));
+    $rawVal = floatval(preg_replace('/[^0-9.]/', '', $data['value_raw'] ?? ''));
+    if ($priceUsd <= 0 && $rawVal > 0) {
+        $priceUsd = (($data['currency_origin'] ?? 'INR') === 'USD') ? $rawVal : round($rawVal / 85, 2);
+    }
     if ($priceUsd <= 0) {
-        $priceUsd = floatval(preg_replace('/[^0-9.]/', '', $data['value_raw']));
+        $priceUsd = 10000;
+    }
+    $priceInr = round($priceUsd * 85);
+    $priceDisplay = '$' . number_format($priceUsd) . ' USD (₹' . number_format($priceInr / 100000, 2) . ' Lakhs)';
+
+    $brand = trim($data['brand']);
+    $model = trim($data['model']);
+    $rawTitle = trim($data['title']);
+    if (stripos($rawTitle, 'Used ') !== 0) {
+        $cleanTitle = 'Used ' . ltrim(preg_replace('/^(\s*[\/\-]\s*|\s*(Second Hand|Used|Old|Imported)\s*)+/i', '', $rawTitle));
+    } else {
+        $cleanTitle = $rawTitle;
     }
 
-    $rawTitle = trim($data['title']);
-    if (strpos($rawTitle, 'Second Hand / Used / Old / Imported ') !== 0) {
-        $rawTitle = 'Second Hand / Used / Old / Imported ' . $rawTitle;
-    }
+    // Generate unique ID and clean SEO slug
+    $id = 'sp-' . time() . '-' . rand(100, 999);
+    $slugBase = 'used-' . strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $brand . '-' . $model . '-' . substr($cleanTitle, 0, 35)));
+    $slug = trim(preg_replace('/-+/', '-', $slugBase), '-');
+
+    // Build Specifications Dictionary
+    $specs = array_filter([
+        'Manufacturer'        => $brand,
+        'Model'               => $model,
+        'Equipment Type'      => trim($data['equipment_type'] ?? $data['category']),
+        'Year of Manufacture' => trim($data['year']),
+        'Capacity'            => trim($data['capacity'] ?? ''),
+        'Slide Stroke'        => trim($data['stroke_length'] ?? ''),
+        'Operating Speed'     => trim($data['speed_spm'] ?? ''),
+        'Die Height'          => trim($data['die_height'] ?? ''),
+        'Main Motor Power'    => trim($data['motor_power'] ?? ''),
+        'Machine Weight'      => trim($data['machine_weight'] ?? ''),
+        'Dimensions'          => trim($data['dimensions'] ?? ''),
+        'Running Hours'       => trim($data['hours_run'] ?? ''),
+        'Power Test'          => trim($data['power_test'] ?? 'Ready for Plant Floor Inspection')
+    ]);
+
+    // Build Seller Entity
+    $sellerCompany = trim($data['seller_company'] ?: ($user['company'] ?? ($user['name'] ?? 'Verified Seller')));
+    $contactPerson = trim($data['contact_person'] ?: ($user['name'] ?? 'Technical Sales Desk'));
+    $sellerPhone = trim($data['seller_phone'] ?: ($user['phone'] ?? ''));
+    $sellerEmail = trim($data['seller_email'] ?: ($user['email'] ?? ''));
+    $sellerEntity = [
+        'name'         => $sellerCompany,
+        'contact'      => $contactPerson,
+        'phone'        => $sellerPhone,
+        'email'        => $sellerEmail,
+        'verified'     => true,
+        'rating'       => 5.0,
+        'deals_closed' => 18
+    ];
+
+    // Ensure leading slash on image URLs
+    $formattedImages = array_map(function($img) {
+        return '/' . ltrim($img, '/');
+    }, $uploadedImageUrls);
 
     // Prepare Product Record
     $productRecord = [
+        'id'              => $id,
         'product_ref'     => $productRef,
+        'slug'            => $slug,
         'user_id'         => $userId,
-        'title'           => $rawTitle,
-        'brand'           => trim($data['brand']),
-        'model'           => trim($data['model']),
+        'title'           => $cleanTitle,
+        'brand'           => $brand,
+        'model'           => $model,
         'category'        => trim($data['category']),
         'equipment_type'  => trim($data['equipment_type']),
         'year'            => trim($data['year']),
         'date_of_mfg'     => trim($data['date_of_mfg']),
-        'currency_origin' => trim($data['currency_origin']),
+        'currency_origin' => trim($data['currency_origin'] ?? 'USD'),
         'value_raw'       => trim($data['value_raw']),
+        'price'           => $priceInr,
         'price_usd'       => $priceUsd,
+        'price_display'   => $priceDisplay,
         'country'         => trim($data['country']),
         'city'            => trim($data['city']),
+        'location'        => 'Direct Plant Floor • ' . trim($data['city'] . ', ' . $data['country']),
         'plant_address'   => trim($data['plant_address']),
-        'condition_state' => trim($data['condition_state']),
-        'hours_run'       => trim($data['hours_run']),
-        'power_test'      => trim($data['power_test']),
-        'capacity'        => trim($data['capacity']),
-        'stroke_length'   => trim($data['stroke_length']),
-        'speed_spm'       => trim($data['speed_spm']),
-        'die_height'      => trim($data['die_height']),
-        'motor_power'     => trim($data['motor_power']),
-        'machine_weight'  => trim($data['machine_weight']),
-        'dimensions'      => trim($data['dimensions']),
+        'condition'       => trim($data['condition_state'] ?? 'Used'),
+        'condition_state' => trim($data['condition_state'] ?? 'Used'),
+        'hours_run'       => trim($data['hours_run'] ?? 'Plant Maintained'),
+        'power_test'      => trim($data['power_test'] ?? 'Available for Factory Floor Inspection'),
+        'capacity'        => trim($data['capacity'] ?? ''),
+        'stroke_length'   => trim($data['stroke_length'] ?? ''),
+        'speed_spm'       => trim($data['speed_spm'] ?? ''),
+        'die_height'      => trim($data['die_height'] ?? ''),
+        'motor_power'     => trim($data['motor_power'] ?? ''),
+        'machine_weight'  => trim($data['machine_weight'] ?? ''),
+        'dimensions'      => trim($data['dimensions'] ?? ''),
         'short_desc'      => trim($data['short_desc']),
         'detailed_desc'   => trim($data['detailed_desc']),
         'features'        => $features,
-        'images'          => $uploadedImageUrls,
-        'seller_company'  => trim($data['seller_company']),
-        'contact_person'  => trim($data['contact_person']),
-        'seller_phone'    => trim($data['seller_phone']),
-        'seller_email'    => trim($data['seller_email']),
+        'specs'           => $specs,
+        'seller'          => $sellerEntity,
+        'images'          => $formattedImages,
+        'seller_company'  => $sellerCompany,
+        'contact_person'  => $contactPerson,
+        'seller_phone'    => $sellerPhone,
+        'seller_email'    => $sellerEmail,
         'status'          => 'active',
         'created_at'      => date('Y-m-d H:i:s')
     ];

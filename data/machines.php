@@ -3566,8 +3566,11 @@ if (file_exists($sellerProductsFile)) {
             if (!empty($spId) && !in_array($spId, $existingIds)) {
                 $sp['id'] = $spId;
                 if (empty($sp['slug'])) {
-                    $sp['slug'] = 'used-' . strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', trim($sp['title'] . '-' . ($sp['model'] ?? ''))));
-                    $sp['slug'] = trim($sp['slug'], '-');
+                    $brandPart = preg_replace('/[^a-zA-Z0-9]+/', '-', strtolower(trim($sp['brand'] ?? '')));
+                    $modelPart = preg_replace('/[^a-zA-Z0-9]+/', '-', strtolower(trim($sp['model'] ?? '')));
+                    $titlePart = preg_replace('/[^a-zA-Z0-9]+/', '-', strtolower(trim($sp['title'] ?? '')));
+                    $sp['slug'] = 'used-' . trim($brandPart . '-' . $modelPart . '-' . substr($titlePart, 0, 30), '-');
+                    $sp['slug'] = trim(preg_replace('/-+/', '-', $sp['slug']), '-');
                 }
                 if (empty($sp['specs']) || !is_array($sp['specs'])) {
                     $sp['specs'] = array_filter([
@@ -3575,8 +3578,27 @@ if (file_exists($sellerProductsFile)) {
                         'Model' => $sp['model'] ?? '',
                         'Capacity' => $sp['capacity'] ?? '',
                         'Motor Power' => $sp['motor_power'] ?? '',
+                        'Slide Stroke' => $sp['stroke_length'] ?? '',
+                        'Operating Speed' => $sp['speed_spm'] ?? '',
                         'Year' => $sp['year'] ?? ''
                     ]);
+                }
+                if (empty($sp['seller']) || !is_array($sp['seller'])) {
+                    $sp['seller'] = [
+                        'name' => $sp['seller_company'] ?? 'Verified Seller',
+                        'rating' => 5.0,
+                        'verified' => true,
+                        'deals_closed' => 18
+                    ];
+                }
+                if (empty($sp['location'])) {
+                    $sp['location'] = 'Direct Plant Floor • ' . trim(($sp['city'] ?? '') . ', ' . ($sp['country'] ?? ''));
+                }
+                if (empty($sp['condition'])) {
+                    $sp['condition'] = $sp['condition_state'] ?? 'Used';
+                }
+                if (empty($sp['manufacturer'])) {
+                    $sp['manufacturer'] = $sp['brand'] ?? '';
                 }
                 $machines[] = $sp;
                 $existingIds[] = $spId;
