@@ -549,18 +549,6 @@ require_once __DIR__ . '/includes/header.php';
               <span class="text-slate-300">•</span>
               <span>Direct B2B Marketplace Inquiry</span>
             </div>
-            <!-- Verified Engineering Rating Link (5 Star, 1480 Reviews) -->
-            <a href="#reviews" class="inline-flex items-center gap-2 pt-1 text-xs text-slate-700 hover:text-joule-brightblue transition-colors group">
-              <div class="flex text-amber-400 text-xs gap-0.5">
-                <i class="fa-solid fa-star"></i>
-                <i class="fa-solid fa-star"></i>
-                <i class="fa-solid fa-star"></i>
-                <i class="fa-solid fa-star"></i>
-                <i class="fa-solid fa-star"></i>
-              </div>
-              <span class="font-black text-slate-900">5.0 / 5.0</span>
-              <span class="text-slate-500 font-medium underline decoration-slate-300 group-hover:decoration-joule-brightblue">(1,480 verified reviews)</span>
-            </a>
           </div>
 
           <div class="text-[11px] text-slate-600 mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between">
@@ -954,99 +942,6 @@ require_once __DIR__ . '/includes/header.php';
       <?php endforeach; ?>
     </div>
   </div>
-
-  <!-- SECTION: Buyer Reviews & Technical Verification Ratings (Google Review Schema & SERP Rich Snippets) -->
-  <section id="reviews" class="bg-white rounded-2xl border-2 border-slate-200 p-5 sm:p-7 shadow-xs space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-4">
-      <div class="space-y-1">
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 text-xs font-bold border border-amber-200">
-          <i class="fa-solid fa-star text-amber-500"></i>
-          <span>Verified Engineering Ratings &amp; Inspection Reviews</span>
-        </div>
-        <h2 class="text-xl sm:text-2xl font-black text-slate-950">
-          Buyer Reviews &amp; Technical Inspection Ratings
-        </h2>
-        <p class="text-xs sm:text-sm text-slate-500 max-w-2xl">
-          Verified technical feedback from factory engineers, stamping leads, and maintenance directors for this <?php echo htmlspecialchars($tpl['short_brand'] . ' ' . $machine['model']); ?>.
-        </p>
-      </div>
-
-      <!-- Rating Summary Scorecard (5 Star, 1480 Reviews) -->
-      <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-4 shrink-0">
-        <div class="text-center">
-          <div class="text-3xl font-black text-slate-950 leading-none">5.0</div>
-          <div class="text-[10px] uppercase font-bold text-slate-400 mt-1">out of 5.0</div>
-        </div>
-        <div class="border-l border-slate-200 pl-4 space-y-1">
-          <div class="flex text-amber-400 text-xs gap-0.5">
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-          </div>
-          <div class="text-xs font-bold text-slate-700">1,480 Verified Reviews</div>
-          <div class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-            <i class="fa-solid fa-circle-check text-[10px]"></i> 100% Plant Verified
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Review Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <?php foreach ($productReviews as $rev): ?>
-        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-2xs hover:border-slate-300 transition-colors">
-          <div class="space-y-2.5">
-            <div class="flex items-center justify-between">
-              <div class="flex text-amber-400 text-xs">
-                <?php for ($i = 0; $i < (int)$rev['rating']; $i++): ?>
-                  <i class="fa-solid fa-star"></i>
-                <?php endfor; ?>
-              </div>
-              <span class="text-[11px] font-semibold text-slate-400"><?php echo htmlspecialchars($rev['date_formatted']); ?></span>
-            </div>
-            <h3 class="text-xs font-black text-slate-900 leading-snug">
-              <?php echo htmlspecialchars($rev['title']); ?>
-            </h3>
-            <p class="text-xs text-slate-600 leading-relaxed font-normal">
-              &ldquo;<?php echo htmlspecialchars($rev['body']); ?>&rdquo;
-            </p>
-          </div>
-          
-          <div class="pt-3 border-t border-slate-200 flex items-center justify-between text-xs">
-            <div>
-              <div class="font-bold text-slate-900"><?php echo htmlspecialchars($rev['author_name']); ?></div>
-              <div class="text-[10px] text-slate-500 font-medium"><?php echo htmlspecialchars($rev['author_role']); ?></div>
-            </div>
-            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0">
-              <i class="fa-solid fa-certificate text-[9px]"></i> Verified
-            </span>
-          </div>
-        </div>
-      <?php endforeach; ?>
-    </div>
-
-    <!-- User Feedback Prompt Bar -->
-    <div class="bg-gradient-to-r from-blue-50 to-slate-50 border border-blue-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-blue-100 text-joule-brightblue flex items-center justify-center text-sm shrink-0">
-          <i class="fa-solid fa-pen-to-square"></i>
-        </div>
-        <div>
-          <div class="font-bold text-slate-900">Have you inspected this machine or dealt with the listing seller?</div>
-          <div class="text-[11px] text-slate-500">Share your technical inspection observations or submit feedback through our procurement desk.</div>
-        </div>
-      </div>
-      <button 
-        type="button" 
-        onclick="openRequirementModal()" 
-        class="shrink-0 px-4 py-2.5 rounded-xl bg-joule-blue hover:bg-blue-900 text-joule-yellow font-bold text-xs cursor-pointer transition-colors shadow-2xs border border-blue-950"
-      >
-        <i class="fa-solid fa-message mr-1"></i> Submit Feedback
-      </button>
-    </div>
-  </section>
 
   <!-- SECTION 8: Disclaimer (EXACT WORDING FROM USER) -->
   <div class="bg-slate-50 rounded-2xl border-2 border-slate-200 p-5 sm:p-6 shadow-xs space-y-2.5">

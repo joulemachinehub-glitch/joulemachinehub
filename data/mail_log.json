@@ -1,5 +1,41 @@
 [
     {
+        "subject": "[Joule Machine Hub] New Verified Seller Registered: Padmashri Industrial Machinery Works",
+        "timestamp": "2026-11-20 09:13:19 UTC",
+        "results": {
+            "balamuruganp0405@gmail.com": {
+                "sent": false,
+                "method": "mail",
+                "error": null,
+                "timestamp": "2026-11-20 09:13:11"
+            },
+            "jouleassetvaluers@gmail.com": {
+                "sent": false,
+                "method": "mail",
+                "error": null,
+                "timestamp": "2026-11-20 09:13:15"
+            },
+            "joulemachinehub@gmail.com": {
+                "sent": false,
+                "method": "mail",
+                "error": null,
+                "timestamp": "2026-11-20 09:13:19"
+            }
+        }
+    },
+    {
+        "subject": "[Joule Machine Hub] Your Verification Code: 891145",
+        "timestamp": "2026-11-20 09:13:07 UTC",
+        "results": {
+            "test_seller_1795165983@verifiedtesting.com": {
+                "sent": false,
+                "method": "mail",
+                "error": null,
+                "timestamp": "2026-11-20 09:13:07"
+            }
+        }
+    },
+    {
         "subject": "🔥 [JMH Lead] Machine Inquiry for Zhejiang Dingli JCPT1412HD Scissor Lift from Balamurugan Test Buyer",
         "timestamp": "2026-11-01 14:58:06 UTC",
         "results": {
