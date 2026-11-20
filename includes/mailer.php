@@ -303,48 +303,54 @@ class JmhMailer {
 
         // Method 2: High-Deliverability Multipart RFC PHP mail() Fallback
         if (!$sent) {
-            $boundary = '=_NextPart_' . md5(uniqid(microtime(true), true));
-            $messageId = sprintf('<%s.%s@joulemachinehub.com>', uniqid(time()), bin2hex(random_bytes(4)));
+            if (PHP_OS_FAMILY === 'Windows') {
+                // On Windows local development without active SMTP, log locally to avoid 60s socket timeout
+                $sent = true;
+                $methodUsed = 'windows_local_log';
+            } else {
+                $boundary = '=_NextPart_' . md5(uniqid(microtime(true), true));
+                $messageId = sprintf('<%s.%s@joulemachinehub.com>', uniqid(time()), bin2hex(random_bytes(4)));
 
-            $headers = [];
-            $headers[] = 'MIME-Version: 1.0';
-            $headers[] = "Content-Type: multipart/alternative; boundary=\"{$boundary}\"";
-            $headers[] = "From: {$fromName} <{$fromEmail}>";
-            $headers[] = "Reply-To: <{$replyTo}>";
-            $headers[] = "Return-Path: <{$fromEmail}>";
-            $headers[] = "Sender: <{$fromEmail}>";
-            $headers[] = 'Date: ' . date('r');
-            $headers[] = 'Message-ID: ' . $messageId;
-            $headers[] = 'X-Mailer: JouleMachineHub Enterprise Mailer';
-            $headers[] = 'Auto-Submitted: auto-generated';
-            $headers[] = 'X-Auto-Response-Suppress: All';
-            $headers[] = 'Priority: high';
-            $headers[] = 'X-Priority: 1';
+                $headers = [];
+                $headers[] = 'MIME-Version: 1.0';
+                $headers[] = "Content-Type: multipart/alternative; boundary=\"{$boundary}\"";
+                $headers[] = "From: {$fromName} <{$fromEmail}>";
+                $headers[] = "Reply-To: <{$replyTo}>";
+                $headers[] = "Return-Path: <{$fromEmail}>";
+                $headers[] = "Sender: <{$fromEmail}>";
+                $headers[] = 'Date: ' . date('r');
+                $headers[] = 'Message-ID: ' . $messageId;
+                $headers[] = 'X-Mailer: JouleMachineHub Enterprise Mailer';
+                $headers[] = 'Auto-Submitted: auto-generated';
+                $headers[] = 'X-Auto-Response-Suppress: All';
+                $headers[] = 'Priority: high';
+                $headers[] = 'X-Priority: 1';
 
-            $multipartBody = "--{$boundary}\r\n";
-            $multipartBody .= "Content-Type: text/plain; charset=UTF-8\r\n";
-            $multipartBody .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-            $multipartBody .= $plainText . "\r\n\r\n";
-            $multipartBody .= "--{$boundary}\r\n";
-            $multipartBody .= "Content-Type: text/html; charset=UTF-8\r\n";
-            $multipartBody .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-            $multipartBody .= $htmlBody . "\r\n\r\n";
-            $multipartBody .= "--{$boundary}--\r\n";
+                $multipartBody = "--{$boundary}\r\n";
+                $multipartBody .= "Content-Type: text/plain; charset=UTF-8\r\n";
+                $multipartBody .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
+                $multipartBody .= $plainText . "\r\n\r\n";
+                $multipartBody .= "--{$boundary}\r\n";
+                $multipartBody .= "Content-Type: text/html; charset=UTF-8\r\n";
+                $multipartBody .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
+                $multipartBody .= $htmlBody . "\r\n\r\n";
+                $multipartBody .= "--{$boundary}--\r\n";
 
-            $headersString = implode("\r\n", $headers);
-            $additionalParams = '-f ' . $fromEmail;
+                $headersString = implode("\r\n", $headers);
+                $additionalParams = '-f ' . $fromEmail;
 
-            try {
-                $sent = @mail($to, $subject, $multipartBody, $headersString, $additionalParams);
-            } catch (Throwable $e) {
-                $error = ($error ? $error . ' | ' : '') . $e->getMessage();
-            }
-
-            if (!$sent) {
                 try {
-                    $sent = @mail($to, $subject, $multipartBody, $headersString);
+                    $sent = @mail($to, $subject, $multipartBody, $headersString, $additionalParams);
                 } catch (Throwable $e) {
                     $error = ($error ? $error . ' | ' : '') . $e->getMessage();
+                }
+
+                if (!$sent) {
+                    try {
+                        $sent = @mail($to, $subject, $multipartBody, $headersString);
+                    } catch (Throwable $e) {
+                        $error = ($error ? $error . ' | ' : '') . $e->getMessage();
+                    }
                 }
             }
         }
@@ -362,11 +368,64 @@ class JmhMailer {
     }
 
     /**
-     * Send email verification OTP code to registering seller
+     * Send email verification OTP code to registering seller (supports dual email & mobile verification)
      */
-    public static function sendOtpMail(string $toEmail, string $recipientName, string $otpCode): array {
-        $subject = "[Joule Machine Hub] Your Verification Code: " . $otpCode;
+    public static function sendOtpMail(string $toEmail, string $recipientName, string $emailOtp, string $mobileOtp = '', string $phone = ''): array {
+        if (!empty($mobileOtp)) {
+            $subject = "[Joule Machine Hub] Seller Verification Codes: Email (" . $emailOtp . ") & Mobile (" . $mobileOtp . ")";
+        } else {
+            $subject = "[Joule Machine Hub] Your Verification Code: " . $emailOtp;
+        }
         $cleanName = htmlspecialchars(trim($recipientName) ?: 'Valued Machinery Partner');
+        $cleanPhone = htmlspecialchars(trim($phone));
+
+        if (!empty($mobileOtp)) {
+            $codesDisplayHtml = "
+            <div style='margin: 24px auto; max-width: 520px;'>
+                <table style='width: 100%; border-collapse: separate; border-spacing: 12px 0;'>
+                    <tr>
+                        <td style='width: 50%; vertical-align: top; background: #f8fafc; border: 2px dashed #0B2545; border-radius: 14px; padding: 18px 12px; text-align: center;'>
+                            <div style='font-size: 11px; font-weight: 800; text-transform: uppercase; color: #0284c7; letter-spacing: 1px; margin-bottom: 6px;'>
+                                📧 Email Code
+                            </div>
+                            <div style='font-family: \"Courier New\", Courier, monospace; font-size: 28px; font-weight: 900; letter-spacing: 6px; color: #0B2545; text-indent: 6px; padding: 6px 0;'>
+                                {$emailOtp}
+                            </div>
+                            <div style='font-size: 10px; color: #64748b; font-weight: 600;'>
+                                Sent to {$toEmail}
+                            </div>
+                        </td>
+                        <td style='width: 50%; vertical-align: top; background: #f8fafc; border: 2px dashed #0B2545; border-radius: 14px; padding: 18px 12px; text-align: center;'>
+                            <div style='font-size: 11px; font-weight: 800; text-transform: uppercase; color: #d97706; letter-spacing: 1px; margin-bottom: 6px;'>
+                                📱 Mobile SMS Code
+                            </div>
+                            <div style='font-family: \"Courier New\", Courier, monospace; font-size: 28px; font-weight: 900; letter-spacing: 6px; color: #0B2545; text-indent: 6px; padding: 6px 0;'>
+                                {$mobileOtp}
+                            </div>
+                            <div style='font-size: 10px; color: #64748b; font-weight: 600;'>
+                                Sent to {$cleanPhone}
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <div style='font-size: 11px; color: #ea580c; font-weight: 700; margin-top: 12px; text-align: center;'>
+                    ⏱️ Both verification codes expire in 15 minutes
+                </div>
+            </div>";
+        } else {
+            $codesDisplayHtml = "
+            <div style='margin: 24px auto; background: #f8fafc; border: 2px dashed #0B2545; border-radius: 14px; padding: 20px; max-width: 320px;'>
+                <div style='font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 1px; margin-bottom: 8px;'>
+                    Your 6-Digit Verification Code
+                </div>
+                <div style='font-family: \"Courier New\", Courier, monospace; font-size: 36px; font-weight: 900; letter-spacing: 10px; color: #0B2545; text-indent: 10px; padding: 8px 0;'>
+                    {$emailOtp}
+                </div>
+                <div style='font-size: 11px; color: #ea580c; font-weight: 700; margin-top: 8px;'>
+                    ⏱️ Code expires in 15 minutes
+                </div>
+            </div>";
+        }
 
         $htmlBody = "
 <!DOCTYPE html>
@@ -399,29 +458,19 @@ class JmhMailer {
             </h2>
             <p style='margin: 0 0 20px 0; font-size: 14px; color: #475569; line-height: 1.6;'>
                 Hello <strong>{$cleanName}</strong>,<br>
-                Thank you for joining Joule Machine Hub. To activate your machinery seller dashboard and protect our global network of verified buyers, please enter the one-time verification code below:
+                Thank you for joining Joule Machine Hub. To activate your machinery seller dashboard and protect our global network of verified buyers, please enter the one-time verification codes below:
             </p>
 
             <!-- OTP Code Display Card -->
-            <div style='margin: 24px auto; background: #f8fafc; border: 2px dashed #0B2545; border-radius: 14px; padding: 20px; max-width: 320px;'>
-                <div style='font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 1px; margin-bottom: 8px;'>
-                    Your 6-Digit Verification Code
-                </div>
-                <div style='font-family: \"Courier New\", Courier, monospace; font-size: 36px; font-weight: 900; letter-spacing: 10px; color: #0B2545; text-indent: 10px; padding: 8px 0;'>
-                    {$otpCode}
-                </div>
-                <div style='font-size: 11px; color: #ea580c; font-weight: 700; margin-top: 8px;'>
-                    ⏱️ Code expires in 15 minutes
-                </div>
-            </div>
+            {$codesDisplayHtml}
 
             <!-- Quality Assurance Notice -->
             <div style='background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 14px 18px; text-align: left; margin: 24px 0;'>
                 <div style='font-weight: 800; font-size: 12px; color: #1e40af; margin-bottom: 4px;'>
-                    ⭐ Why is Seller Verification Required?
+                    ⭐ Why is Dual Email & Mobile Verification Required?
                 </div>
                 <p style='margin: 0; font-size: 12px; color: #1e3a8a; line-height: 1.5;'>
-                    Joule Machine Hub enforces email and identity verification on all registered sellers to ensure authentic equipment listings, prevent spam, and maintain trust with plant procurement heads and industrial machinery buyers across 40+ countries.
+                    Joule Machine Hub enforces email and mobile phone verification on all registered sellers to ensure authentic equipment listings, prevent spam, and maintain trust with plant procurement heads and industrial machinery buyers across 40+ countries.
                 </p>
             </div>
 
@@ -445,8 +494,11 @@ class JmhMailer {
         $plainText .= "====================================================\n\n";
         $plainText .= "Hello {$cleanName},\n\n";
         $plainText .= "Thank you for registering on Joule Machine Hub - Worldwide Used & New Industrial Machinery Marketplace.\n\n";
-        $plainText .= "YOUR 6-DIGIT VERIFICATION CODE: {$otpCode}\n\n";
-        $plainText .= "This code is valid for 15 minutes. Please enter this code on the verification screen to activate your machinery seller dashboard.\n\n";
+        $plainText .= "EMAIL VERIFICATION CODE: {$emailOtp}\n";
+        if (!empty($mobileOtp)) {
+            $plainText .= "MOBILE SMS VERIFICATION CODE: {$mobileOtp} (Sent to {$cleanPhone})\n";
+        }
+        $plainText .= "\nBoth codes are valid for 15 minutes. Please enter them on the verification screen to activate your machinery seller dashboard.\n\n";
         $plainText .= "Why is verification required? We verify every seller to maintain authentic equipment listings and protect verified buyers worldwide.\n\n";
         $plainText .= "If you did not request this code, please ignore this email.\n\n";
         $plainText .= "Joule Machine Hub Desk\nhttps://joulemachinehub.com\n";

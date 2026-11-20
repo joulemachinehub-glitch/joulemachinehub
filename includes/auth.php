@@ -2,6 +2,7 @@
 // Authentication & Session Management for Joule Machine Hub with MySQL DB Integration
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/mailer.php';
+require_once __DIR__ . '/sms.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -341,12 +342,18 @@ function savePendingOtps(array $otps): void {
 }
 
 /**
- * Generate 6-digit email OTP for seller registration quality verification
+ * Generate 6-digit email & mobile OTPs for seller registration quality verification
  */
 function generateSellerRegistrationOtp(array $regData): array {
     $cleanEmail = strtolower(trim($regData['email'] ?? ''));
     if (!filter_var($cleanEmail, FILTER_VALIDATE_EMAIL)) {
         return ['success' => false, 'message' => 'Invalid email address provided for verification.'];
+    }
+
+    $rawPhone = trim($regData['phone'] ?? '');
+    $digitsPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+    if (strlen($digitsPhone) < 7) {
+        return ['success' => false, 'message' => 'Please provide a valid mobile number for SMS verification.'];
     }
 
     // Check if email already registered and verified
@@ -355,22 +362,32 @@ function generateSellerRegistrationOtp(array $regData): array {
         if (strtolower($u['email'] ?? '') === $cleanEmail && !empty($u['is_verified'])) {
             return ['success' => false, 'message' => 'An active, verified account with this email already exists. Please log in.'];
         }
+        $uDigits = preg_replace('/[^0-9]/', '', $u['phone'] ?? '');
+        if (!empty($uDigits) && $uDigits === $digitsPhone && !empty($u['is_verified'])) {
+            return ['success' => false, 'message' => 'An active, verified account with this mobile number already exists. Please log in.'];
+        }
     }
 
-    $otp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+    $emailOtp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+    $mobileOtp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
     $expiresAt = time() + (15 * 60); // 15 minutes validity
     $recipientName = trim($regData['name'] ?? 'Machinery Partner');
 
     $otpPayload = [
-        'email'        => $cleanEmail,
-        'name'         => $recipientName,
-        'company'      => trim($regData['company'] ?? ''),
-        'otp'          => $otp,
-        'expires_at'   => $expiresAt,
-        'created_at'   => time(),
-        'last_sent_at' => time(),
-        'attempts'     => 0,
-        'reg_data'     => $regData
+        'email'           => $cleanEmail,
+        'phone'           => $rawPhone,
+        'name'            => $recipientName,
+        'company'         => trim($regData['company'] ?? ''),
+        'email_otp'       => $emailOtp,
+        'mobile_otp'      => $mobileOtp,
+        'otp'             => $emailOtp, // fallback backward compatibility
+        'email_verified'  => false,
+        'mobile_verified' => false,
+        'expires_at'      => $expiresAt,
+        'created_at'      => time(),
+        'last_sent_at'    => time(),
+        'attempts'        => 0,
+        'reg_data'        => $regData
     ];
 
     // Store in Session
@@ -382,22 +399,28 @@ function generateSellerRegistrationOtp(array $regData): array {
     $otps[$cleanEmail] = $otpPayload;
     savePendingOtps($otps);
 
-    // Send the Verification Email
-    $mailRes = JmhMailer::sendOtpMail($cleanEmail, $recipientName, $otp);
+    // 1. Send Verification Email (contains both Email OTP and Mobile SMS OTP)
+    $mailRes = JmhMailer::sendOtpMail($cleanEmail, $recipientName, $emailOtp, $mobileOtp, $rawPhone);
+
+    // 2. Dispatch Mobile SMS OTP
+    $smsRes = JmhSms::sendOtpSms($rawPhone, $mobileOtp, $recipientName);
 
     return [
         'success'    => true,
         'email'      => $cleanEmail,
+        'phone'      => $rawPhone,
         'name'       => $recipientName,
         'expires_at' => $expiresAt,
-        'mail_sent'  => $mailRes['sent'] ?? false
+        'mail_sent'  => $mailRes['sent'] ?? false,
+        'sms_sent'   => $smsRes['success'] ?? false,
+        'mobile_otp' => $mobileOtp // available for dev/simulation mode display
     ];
 }
 
 /**
- * Resend OTP verification code with 60-second rate-limiting
+ * Resend OTP verification codes with 60-second rate-limiting
  */
-function resendSellerRegistrationOtp(): array {
+function resendSellerRegistrationOtp(string $type = 'all'): array {
     $pending = getPendingSellerRegistration();
     if (!$pending) {
         return ['success' => false, 'message' => 'No active pending registration found. Please register again.'];
@@ -411,16 +434,21 @@ function resendSellerRegistrationOtp(): array {
             'success'   => false, 
             'throttled' => true,
             'remaining' => $remaining,
-            'message'   => "Please wait {$remaining} seconds before requesting another code."
+            'message'   => "Please wait {$remaining} seconds before requesting new verification codes."
         ];
     }
 
     $cleanEmail = $pending['email'];
     $recipientName = $pending['name'];
-    $newOtp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+    $phone = $pending['phone'] ?? ($pending['reg_data']['phone'] ?? '');
+
+    $newEmailOtp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+    $newMobileOtp = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
     $expiresAt = time() + (15 * 60);
 
-    $pending['otp'] = $newOtp;
+    $pending['email_otp'] = $newEmailOtp;
+    $pending['mobile_otp'] = $newMobileOtp;
+    $pending['otp'] = $newEmailOtp;
     $pending['expires_at'] = $expiresAt;
     $pending['last_sent_at'] = time();
     $pending['attempts'] = 0; // reset attempts on fresh OTP
@@ -432,13 +460,16 @@ function resendSellerRegistrationOtp(): array {
     $otps[$cleanEmail] = $pending;
     savePendingOtps($otps);
 
-    $mailRes = JmhMailer::sendOtpMail($cleanEmail, $recipientName, $newOtp);
+    $mailRes = JmhMailer::sendOtpMail($cleanEmail, $recipientName, $newEmailOtp, $newMobileOtp, $phone);
+    $smsRes = JmhSms::sendOtpSms($phone, $newMobileOtp, $recipientName);
 
     return [
         'success'    => true,
-        'message'    => 'A new 6-digit verification code has been dispatched to your email.',
+        'message'    => 'New verification codes have been dispatched to your email and mobile phone.',
         'expires_at' => $expiresAt,
-        'mail_sent'  => $mailRes['sent'] ?? false
+        'mail_sent'  => $mailRes['sent'] ?? false,
+        'sms_sent'   => $smsRes['success'] ?? false,
+        'mobile_otp' => $newMobileOtp
     ];
 }
 
@@ -478,9 +509,9 @@ function cancelPendingSellerRegistration(): void {
 }
 
 /**
- * Verify entered 6-digit OTP and complete seller account activation
+ * Verify entered Email & Mobile 6-digit OTPs and complete seller account activation
  */
-function verifySellerRegistrationOtp(string $enteredOtp): array {
+function verifySellerRegistrationOtp(string $enteredEmailOtp, string $enteredMobileOtp = ''): array {
     $pending = getPendingSellerRegistration();
     if (!$pending) {
         return [
@@ -489,20 +520,25 @@ function verifySellerRegistrationOtp(string $enteredOtp): array {
         ];
     }
 
-    $cleanEntered = preg_replace('/[^0-9]/', '', trim($enteredOtp));
-    if (strlen($cleanEntered) !== 6) {
+    $cleanEmailOtp = preg_replace('/[^0-9]/', '', trim($enteredEmailOtp));
+    $cleanMobileOtp = preg_replace('/[^0-9]/', '', trim($enteredMobileOtp));
+
+    if (strlen($cleanEmailOtp) !== 6) {
         return [
             'success' => false,
-            'message' => 'Please enter a valid 6-digit numeric verification code.'
+            'message' => 'Please enter the 6-digit Email verification code.'
         ];
     }
+
+    $expectedEmailOtp = (string)($pending['email_otp'] ?? $pending['otp'] ?? '');
+    $expectedMobileOtp = (string)($pending['mobile_otp'] ?? '');
 
     // Check expiration
     if (time() > intval($pending['expires_at'] ?? 0)) {
         return [
             'success' => false,
             'expired' => true,
-            'message' => 'This verification code has expired. Please click "Resend Code" to receive a new one.'
+            'message' => 'Your verification codes have expired. Please click "Resend Codes" to receive fresh ones.'
         ];
     }
 
@@ -512,12 +548,24 @@ function verifySellerRegistrationOtp(string $enteredOtp): array {
         return [
             'success' => false,
             'locked'  => true,
-            'message' => 'Maximum verification attempts exceeded. Please click "Resend Code" for a new code.'
+            'message' => 'Maximum verification attempts exceeded. Please click "Resend Codes" for new codes.'
         ];
     }
 
-    // Compare code
-    if ($cleanEntered !== (string)$pending['otp']) {
+    // Check mobile OTP if expected
+    if (!empty($expectedMobileOtp)) {
+        if (empty($cleanMobileOtp) || strlen($cleanMobileOtp) !== 6) {
+            return [
+                'success' => false,
+                'message' => 'Please enter the 6-digit Mobile SMS verification code.'
+            ];
+        }
+    }
+
+    $emailValid = ($cleanEmailOtp === $expectedEmailOtp);
+    $mobileValid = empty($expectedMobileOtp) || ($cleanMobileOtp === $expectedMobileOtp);
+
+    if (!$emailValid || !$mobileValid) {
         $attempts++;
         $pending['attempts'] = $attempts;
         $_SESSION['pending_seller_otp'] = $pending;
@@ -526,13 +574,21 @@ function verifySellerRegistrationOtp(string $enteredOtp): array {
         savePendingOtps($otps);
 
         $left = max(0, 5 - $attempts);
+        if (!$emailValid && !$mobileValid) {
+            $msg = "Both Email and Mobile verification codes are incorrect ({$left} attempts remaining).";
+        } elseif (!$emailValid) {
+            $msg = "Email verification code is incorrect. Please check your inbox or spam folder ({$left} attempts remaining).";
+        } else {
+            $msg = "Mobile SMS verification code is incorrect. Please check your SMS or email copy ({$left} attempts remaining).";
+        }
+
         return [
             'success' => false,
-            'message' => "Incorrect verification code. Please check your inbox and try again ({$left} attempts remaining)."
+            'message' => $msg
         ];
     }
 
-    // OTP IS VALID! COMPLETE REGISTRATION
+    // BOTH OTPs ARE VALID! COMPLETE REGISTRATION
     $d = $pending['reg_data'];
     $name = $d['name'] ?? '';
     $company = $d['company'] ?? '';
@@ -555,6 +611,7 @@ function verifySellerRegistrationOtp(string $enteredOtp): array {
     $user = $regRes['user'];
     $user['is_verified'] = true;
     $user['email_verified_at'] = date('Y-m-d H:i:s');
+    $user['phone_verified_at'] = date('Y-m-d H:i:s');
     $_SESSION['user'] = $user;
 
     // Update verified status in users.json
@@ -563,6 +620,7 @@ function verifySellerRegistrationOtp(string $enteredOtp): array {
         if (strtolower($u['email'] ?? '') === strtolower($email)) {
             $u['is_verified'] = true;
             $u['email_verified_at'] = date('Y-m-d H:i:s');
+            $u['phone_verified_at'] = date('Y-m-d H:i:s');
             break;
         }
     }

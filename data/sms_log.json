@@ -1,0 +1,82 @@
+[
+    {
+        "timestamp": "2026-11-20 09:45:25 UTC",
+        "phone": "+919830909123",
+        "recipient": "Anand Sharma 30909",
+        "otp": "529999",
+        "message": "Your Joule Machine Hub mobile verification code is: 529999. Valid for 15 minutes to activate your seller dashboard. Do not share this code.",
+        "provider": "simulation",
+        "sent": true,
+        "error": null
+    },
+    {
+        "timestamp": "2026-11-20 09:45:06 UTC",
+        "phone": "+919833203123",
+        "recipient": "Anand Sharma 33203",
+        "otp": "143458",
+        "message": "Your Joule Machine Hub mobile verification code is: 143458. Valid for 15 minutes to activate your seller dashboard. Do not share this code.",
+        "provider": "simulation",
+        "sent": true,
+        "error": null
+    },
+    {
+        "timestamp": "2026-11-20 09:44:46 UTC",
+        "phone": "+919879652123",
+        "recipient": "Anand Sharma 79652",
+        "otp": "229584",
+        "message": "Your Joule Machine Hub mobile verification code is: 229584. Valid for 15 minutes to activate your seller dashboard. Do not share this code.",
+        "provider": "simulation",
+        "sent": true,
+        "error": null
+    },
+    {
+        "timestamp": "2026-11-20 09:44:15 UTC",
+        "phone": "+919824130123",
+        "recipient": "Anand Sharma 24130",
+        "otp": "158861",
+        "message": "Your Joule Machine Hub mobile verification code is: 158861. Valid for 15 minutes to activate your seller dashboard. Do not share this code.",
+        "provider": "simulation",
+        "sent": true,
+        "error": null
+    },
+    {
+        "timestamp": "2026-11-20 09:43:19 UTC",
+        "phone": "+919847558123",
+        "recipient": "Anand Sharma 47558",
+        "otp": "136401",
+        "message": "Your Joule Machine Hub mobile verification code is: 136401. Valid for 15 minutes to activate your seller dashboard. Do not share this code.",
+        "provider": "simulation",
+        "sent": true,
+        "error": null
+    },
+    {
+        "timestamp": "2026-11-20 09:41:50 UTC",
+        "phone": "+919890605123",
+        "recipient": "Anand Sharma 90605",
+        "otp": "648325",
+        "message": "Your Joule Machine Hub mobile verification code is: 648325. Valid for 15 minutes to activate your seller dashboard. Do not share this code.",
+        "provider": "simulation",
+        "sent": true,
+        "error": null
+    },
+    {
+        "timestamp": "2026-11-20 09:39:17 UTC",
+        "phone": "+919899195123",
+        "recipient": "Anand Sharma 99195",
+        "otp": "714910",
+        "message": "Your Joule Machine Hub mobile verification code is: 714910. Valid for 15 minutes to activate your seller dashboard. Do not share this code.",
+        "provider": "simulation",
+        "sent": true,
+        "error": null
+    },
+    {
+        "timestamp": "2026-11-20 09:38:20 UTC",
+        "phone": "+919853978123",
+        "recipient": "Anand Sharma 53978",
+        "otp": "351378",
+        "message": "Your Joule Machine Hub mobile verification code is: 351378. Valid for 15 minutes to activate your seller dashboard. Do not share this code.",
+        "provider": "simulation",
+        "sent": true,
+        "error": null
+    }
+]

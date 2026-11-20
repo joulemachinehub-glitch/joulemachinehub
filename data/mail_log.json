@@ -1,5 +1,125 @@
 [
     {
+        "subject": "[Joule Machine Hub] New Verified Seller Registered: Precision Apex Machines 30909",
+        "timestamp": "2026-11-20 09:45:38 UTC",
+        "results": {
+            "balamuruganp0405@gmail.com": {
+                "sent": false,
+                "method": "mail",
+                "error": null,
+                "timestamp": "2026-11-20 09:45:30"
+            },
+            "jouleassetvaluers@gmail.com": {
+                "sent": false,
+                "method": "mail",
+                "error": null,
+                "timestamp": "2026-11-20 09:45:34"
+            },
+            "joulemachinehub@gmail.com": {
+                "sent": false,
+                "method": "mail",
+                "error": null,
+                "timestamp": "2026-11-20 09:45:38"
+            }
+        }
+    },
+    {
+        "subject": "[Joule Machine Hub] Seller Verification Codes: Email (930519) & Mobile (529999)",
+        "timestamp": "2026-11-20 09:45:25 UTC",
+        "results": {
+            "machinery_test_30909@domain.com": {
+                "sent": true,
+                "method": "windows_local_log",
+                "error": null,
+                "timestamp": "2026-11-20 09:45:25"
+            }
+        }
+    },
+    {
+        "subject": "[Joule Machine Hub] Seller Verification Codes: Email (630199) & Mobile (143458)",
+        "timestamp": "2026-11-20 09:45:06 UTC",
+        "results": {
+            "machinery_test_33203@domain.com": {
+                "sent": true,
+                "method": "windows_local_log",
+                "error": null,
+                "timestamp": "2026-11-20 09:45:06"
+            }
+        }
+    },
+    {
+        "subject": "[Joule Machine Hub] Seller Verification Codes: Email (286911) & Mobile (229584)",
+        "timestamp": "2026-11-20 09:44:46 UTC",
+        "results": {
+            "machinery_test_79652@domain.com": {
+                "sent": true,
+                "method": "windows_local_log",
+                "error": null,
+                "timestamp": "2026-11-20 09:44:46"
+            }
+        }
+    },
+    {
+        "subject": "[Joule Machine Hub] Seller Verification Codes: Email (160960) & Mobile (158861)",
+        "timestamp": "2026-11-20 09:44:15 UTC",
+        "results": {
+            "machinery_test_24130@domain.com": {
+                "sent": true,
+                "method": "windows_local_log",
+                "error": null,
+                "timestamp": "2026-11-20 09:44:15"
+            }
+        }
+    },
+    {
+        "subject": "[Joule Machine Hub] Seller Verification Codes: Email (414161) & Mobile (136401)",
+        "timestamp": "2026-11-20 09:43:19 UTC",
+        "results": {
+            "machinery_test_47558@domain.com": {
+                "sent": true,
+                "method": "windows_local_log",
+                "error": null,
+                "timestamp": "2026-11-20 09:43:19"
+            }
+        }
+    },
+    {
+        "subject": "[Joule Machine Hub] Seller Verification Codes: Email (578283) & Mobile (648325)",
+        "timestamp": "2026-11-20 09:41:50 UTC",
+        "results": {
+            "machinery_test_90605@domain.com": {
+                "sent": true,
+                "method": "windows_local_log",
+                "error": null,
+                "timestamp": "2026-11-20 09:41:50"
+            }
+        }
+    },
+    {
+        "subject": "[Joule Machine Hub] Seller Verification Codes: Email (876014) & Mobile (714910)",
+        "timestamp": "2026-11-20 09:39:17 UTC",
+        "results": {
+            "machinery_test_99195@domain.com": {
+                "sent": false,
+                "method": "mail",
+                "error": null,
+                "timestamp": "2026-11-20 09:39:17"
+            }
+        }
+    },
+    {
+        "subject": "[Joule Machine Hub] Seller Verification Codes: Email (825928) & Mobile (351378)",
+        "timestamp": "2026-11-20 09:38:20 UTC",
+        "results": {
+            "machinery_test_53978@domain.com": {
+                "sent": false,
+                "method": "mail",
+                "error": null,
+                "timestamp": "2026-11-20 09:38:20"
+            }
+        }
+    },
+    {
         "subject": "[Joule Machine Hub] New Verified Seller Registered: Padmashri Industrial Machinery Works",
         "timestamp": "2026-11-20 09:13:19 UTC",
         "results": {

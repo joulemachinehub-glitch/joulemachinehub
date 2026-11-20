@@ -38,6 +38,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $error = 'Please fill in all required personal and company fields marked with (*).';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid business email address.';
+    } elseif (strlen(preg_replace('/[^0-9]/', '', $phone)) < 7) {
+        $error = 'Please enter a valid mobile phone number for SMS verification.';
     } elseif ($password !== $confirmPassword) {
         $error = 'Passwords do not match. Please verify and re-enter.';
     } elseif (strlen($password) < 6) {
@@ -98,8 +100,8 @@ require_once __DIR__ . '/includes/header.php';
           <i class="fa-solid fa-shield-halved"></i>
         </div>
         <div class="leading-relaxed">
-          <span class="font-extrabold text-joule-blue block">Quality Seller Verification:</span>
-          To protect buyers and ensure authentic equipment listings, a 6-digit verification code will be sent to your email to activate your seller dashboard.
+          <span class="font-extrabold text-joule-blue block">Dual Seller Quality Verification:</span>
+          To protect buyers and ensure authentic equipment listings, 6-digit verification codes will be dispatched to both your <strong>business email</strong> and <strong>mobile number</strong> to activate your seller dashboard.
         </div>
       </div>
 
