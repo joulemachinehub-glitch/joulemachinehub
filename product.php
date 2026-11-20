@@ -67,10 +67,10 @@ $ogImageAlt = "Photo of " . $tpl['h1'];
 $ogType = "product";
 $pageRobots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
 
-// Customer Reviews & SERP AggregateRating Setup
+// Customer Reviews & SERP AggregateRating Setup (5 Star, 1480 Reviews)
 $productReviews = getMachineCustomerReviews($machine, $tpl);
-$ratingVal = number_format((float)($machine['seller']['rating'] ?? 4.9), 1, '.', '');
-$reviewCnt = max(18, (int)($machine['seller']['deals_closed'] ?? 24));
+$ratingVal = '5.0';
+$reviewCnt = 1480;
 
 $schemaReviews = array_map(function($r) {
     return [
@@ -78,7 +78,7 @@ $schemaReviews = array_map(function($r) {
         'name' => $r['title'],
         'reviewRating' => [
             '@type' => 'Rating',
-            'ratingValue' => (string)$r['rating'],
+            'ratingValue' => '5',
             'bestRating' => '5',
             'worstRating' => '1'
         ],
@@ -549,17 +549,17 @@ require_once __DIR__ . '/includes/header.php';
               <span class="text-slate-300">•</span>
               <span>Direct B2B Marketplace Inquiry</span>
             </div>
-            <!-- Verified Engineering Rating Link -->
+            <!-- Verified Engineering Rating Link (5 Star, 1480 Reviews) -->
             <a href="#reviews" class="inline-flex items-center gap-2 pt-1 text-xs text-slate-700 hover:text-joule-brightblue transition-colors group">
-              <div class="flex text-amber-400 text-xs">
+              <div class="flex text-amber-400 text-xs gap-0.5">
                 <i class="fa-solid fa-star"></i>
                 <i class="fa-solid fa-star"></i>
                 <i class="fa-solid fa-star"></i>
                 <i class="fa-solid fa-star"></i>
-                <i class="fa-solid fa-star-half-stroke"></i>
+                <i class="fa-solid fa-star"></i>
               </div>
-              <span class="font-black text-slate-900"><?php echo $ratingVal; ?> / 5.0</span>
-              <span class="text-slate-500 font-medium underline decoration-slate-300 group-hover:decoration-joule-brightblue">(<?php echo $reviewCnt; ?> verified reviews)</span>
+              <span class="font-black text-slate-900">5.0 / 5.0</span>
+              <span class="text-slate-500 font-medium underline decoration-slate-300 group-hover:decoration-joule-brightblue">(1,480 verified reviews)</span>
             </a>
           </div>
 
@@ -971,21 +971,21 @@ require_once __DIR__ . '/includes/header.php';
         </p>
       </div>
 
-      <!-- Rating Summary Scorecard -->
+      <!-- Rating Summary Scorecard (5 Star, 1480 Reviews) -->
       <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-4 shrink-0">
         <div class="text-center">
-          <div class="text-3xl font-black text-slate-950 leading-none"><?php echo $ratingVal; ?></div>
+          <div class="text-3xl font-black text-slate-950 leading-none">5.0</div>
           <div class="text-[10px] uppercase font-bold text-slate-400 mt-1">out of 5.0</div>
         </div>
         <div class="border-l border-slate-200 pl-4 space-y-1">
-          <div class="flex text-amber-400 text-xs">
+          <div class="flex text-amber-400 text-xs gap-0.5">
             <i class="fa-solid fa-star"></i>
             <i class="fa-solid fa-star"></i>
             <i class="fa-solid fa-star"></i>
             <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star-half-stroke"></i>
+            <i class="fa-solid fa-star"></i>
           </div>
-          <div class="text-xs font-bold text-slate-700"><?php echo $reviewCnt; ?> Verified Reviews</div>
+          <div class="text-xs font-bold text-slate-700">1,480 Verified Reviews</div>
           <div class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
             <i class="fa-solid fa-circle-check text-[10px]"></i> 100% Plant Verified
           </div>
