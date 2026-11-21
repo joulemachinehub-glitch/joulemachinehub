@@ -360,9 +360,10 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="text-[10px] font-black uppercase tracking-wider text-joule-brightblue">
                   <?php echo htmlspecialchars($machine['brand']); ?>
                 </div>
-                <span class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-800 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200/90 shadow-2xs shrink-0" title="<?php echo htmlspecialchars($machine['city'] . ', ' . ($machine['country'] ?? 'Worldwide')); ?>">
                   <?php echo getCountryFlagHtml($machine['country'] ?? 'Japan', 'w-4 h-3'); ?>
-                  <span><?php echo htmlspecialchars($machine['country'] ?? 'Worldwide'); ?></span>
+                  <span class="font-black text-slate-900"><?php echo htmlspecialchars($machine['city'] ?? ''); ?></span>
+                  <span class="text-slate-400 text-[10px]">, <?php echo htmlspecialchars($machine['country'] ?? 'Worldwide'); ?></span>
                 </span>
               </div>
 
@@ -398,9 +399,11 @@ require_once __DIR__ . '/includes/header.php';
 
               <!-- Location & Seller Info -->
               <div class="border-t border-slate-100 pt-3 mt-3 text-xs text-slate-600 space-y-1">
-                <div class="flex items-center gap-1.5 truncate">
-                  <i class="fa-solid fa-location-dot text-slate-400 text-xs"></i>
-                  <span class="truncate"><?php echo htmlspecialchars(formatMachineLocation($machine)); ?></span>
+                <div class="flex items-center gap-1.5 truncate text-slate-700">
+                  <i class="fa-solid fa-location-dot text-rose-500 text-xs shrink-0"></i>
+                  <span class="font-bold text-slate-900 shrink-0"><?php echo htmlspecialchars(($machine['city'] ?? '') . ', ' . ($machine['country'] ?? '')); ?></span>
+                  <span class="text-slate-300 shrink-0">•</span>
+                  <span class="truncate text-slate-600 text-[11px]"><?php echo htmlspecialchars(formatMachineLocation($machine)); ?></span>
                 </div>
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-1.5 truncate">

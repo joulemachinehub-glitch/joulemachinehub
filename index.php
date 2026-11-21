@@ -9,7 +9,9 @@ require_once __DIR__ . '/data/machines.php';
 // Dynamic filter categories, countries, and cities from machines
 $categories = array_merge(['All Categories'], array_values(array_unique(array_filter(array_column($machines, 'category')))));
 $countries = array_merge(['All Countries'], array_values(array_unique(array_filter(array_column($machines, 'country')))));
-$cities = array_merge(['All Cities'], array_values(array_unique(array_filter(array_column($machines, 'city')))));
+$cityCounts = array_count_values(array_filter(array_column($machines, 'city')));
+arsort($cityCounts);
+$cities = array_merge(['All Cities'], array_keys($cityCounts));
 
 // Filter parameters
 $catFilter = isset($_GET['category']) ? $_GET['category'] : 'All Categories';
@@ -57,8 +59,29 @@ function buildFilterUrl($overrides = []) {
 }
 }
 
-// Catalog inventory for live client-side filtering
+// Catalog inventory for live client-side filtering (Separated & Grouped cleanly by Country & City)
 $filteredMachines = $machines;
+usort($filteredMachines, function($a, $b) {
+    $cOrder = [
+        'Japan' => 1,
+        'China' => 2,
+        'Germany' => 3,
+        'Taiwan' => 4,
+        'Singapore' => 5,
+        'Switzerland' => 6,
+        'Malaysia' => 7,
+        'South Korea' => 8,
+        'Italy' => 9
+    ];
+    $cA = $cOrder[$a['country'] ?? ''] ?? 99;
+    $cB = $cOrder[$b['country'] ?? ''] ?? 99;
+    if ($cA !== $cB) return $cA - $cB;
+    
+    $cityComp = strcmp($a['city'] ?? '', $b['city'] ?? '');
+    if ($cityComp !== 0) return $cityComp;
+    
+    return ($a['id'] ?? 0) - ($b['id'] ?? 0);
+});
 $pageRobots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
 
 // SEO Metadata Configuration (Clean Primary Keywords, Enriched OpenGraph & Schema)
@@ -667,6 +690,41 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
         </div>
       </div>
 
+      <!-- 2.5 Manufacturing Cities (2-Column Compact Grid) -->
+      <div class="border-t border-slate-100 pt-2.5">
+        <label class="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5 flex items-center justify-between">
+          <span class="flex items-center gap-1">
+            <i class="fa-solid fa-city text-blue-600 text-xs"></i>
+            <span>CITY HUB</span>
+          </span>
+          <span class="text-[9px] font-bold text-slate-400 font-mono"><?php echo (count($cities) - 1); ?> Hubs</span>
+        </label>
+        <div class="grid grid-cols-2 gap-1 text-[11px] max-h-44 overflow-y-auto pr-0.5 no-scrollbar" id="sidebarCitiesGrid">
+          <?php foreach ($cities as $ct): 
+            $ctCount = ($ct === 'All Cities') ? count($machines) : count(array_filter($machines, fn($m) => isset($m['city']) && $m['city'] === $ct));
+            $isCtActive = ($cityFilter === $ct);
+            $ctMachine = array_values(array_filter($machines, fn($m) => isset($m['city']) && $m['city'] === $ct))[0] ?? null;
+            $ctCountry = $ctMachine['country'] ?? 'Japan';
+          ?>
+            <a 
+              href="<?php echo buildFilterUrl(['city' => $ct]); ?>" 
+              onclick="event.preventDefault(); setLiveCity('<?php echo addslashes($ct); ?>');"
+              data-city="<?php echo htmlspecialchars($ct); ?>"
+              class="sidebar-city-btn px-2 py-1 rounded-lg font-semibold transition-all flex items-center justify-between <?php echo $isCtActive ? 'bg-[#071626] text-white font-bold shadow-xs ring-1 ring-[#071626]' : 'bg-slate-50 text-slate-700 hover:bg-slate-100 hover:text-slate-950 border border-slate-200/60'; ?>"
+              title="<?php echo htmlspecialchars($ct); ?>"
+            >
+              <span class="flex items-center gap-1 truncate">
+                <span class="text-xs flex items-center"><?php echo ($ct === 'All Cities') ? '🌐' : getCountryFlagHtml($ctCountry, 'w-3.5 h-2.5'); ?></span>
+                <span class="truncate text-[10px]"><?php echo htmlspecialchars($ct === 'All Cities' ? 'All Cities' : $ct); ?></span>
+              </span>
+              <span class="text-[10px] <?php echo $isCtActive ? 'text-amber-300 font-bold' : 'text-slate-400 font-mono'; ?>">
+                <?php echo $ctCount; ?>
+              </span>
+            </a>
+          <?php endforeach; ?>
+        </div>
+      </div>
+
       <!-- 3. Machinery Category (Compact List) -->
       <div class="border-t border-slate-100 pt-2.5">
         <label class="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5 flex items-center justify-between">
@@ -749,13 +807,14 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
               City Hub
             </label>
             <select 
-              onchange="location.href = this.value;" 
+              id="sidebarCitySelect"
+              onchange="setLiveCity(this.value);" 
               class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[11px] font-bold text-slate-800 focus:outline-none focus:border-joule-brightblue cursor-pointer"
             >
               <?php foreach ($cities as $ct): 
-                $ctCount = ($ct === 'All Cities') ? count($machines) : count(array_filter($machines, fn($m) => $m['city'] === $ct));
+                $ctCount = ($ct === 'All Cities') ? count($machines) : count(array_filter($machines, fn($m) => isset($m['city']) && $m['city'] === $ct));
               ?>
-                <option value="<?php echo buildFilterUrl(['city' => $ct]); ?>" <?php echo $cityFilter === $ct ? 'selected' : ''; ?>>
+                <option value="<?php echo htmlspecialchars($ct); ?>" <?php echo $cityFilter === $ct ? 'selected' : ''; ?>>
                   <?php echo htmlspecialchars($ct); ?> (<?php echo $ctCount; ?>)
                 </option>
               <?php endforeach; ?>
@@ -819,6 +878,43 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
 
     <!-- RIGHT PRODUCTS GRID (All 10 Machines) -->
     <div class="lg:col-span-3">
+
+      <!-- CITY HUB QUICK-FILTER TABS (Instant 1-Click Separation by City) -->
+      <div class="mb-4 bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-xs">
+        <div class="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-md bg-blue-100 text-blue-800 flex items-center justify-center text-[10px]">
+              <i class="fa-solid fa-location-dot"></i>
+            </span>
+            <span class="text-xs font-black uppercase tracking-wider text-slate-900">
+              Browse Machinery by Verified Industrial City:
+            </span>
+          </div>
+          <span class="text-[11px] text-slate-500 font-semibold hidden md:inline">
+            Click any city to view local factory inventory
+          </span>
+        </div>
+        
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs" id="quickCityTabsBar">
+          <?php foreach ($cities as $ct): 
+            $ctCount = ($ct === 'All Cities') ? count($machines) : count(array_filter($machines, fn($m) => isset($m['city']) && $m['city'] === $ct));
+            $isCtActive = ($cityFilter === $ct);
+            $ctMachine = array_values(array_filter($machines, fn($m) => isset($m['city']) && $m['city'] === $ct))[0] ?? null;
+            $ctCountry = $ctMachine['country'] ?? 'Japan';
+          ?>
+            <a 
+              href="<?php echo buildFilterUrl(['city' => $ct]); ?>" 
+              onclick="event.preventDefault(); setLiveCity('<?php echo addslashes($ct); ?>');"
+              data-city="<?php echo htmlspecialchars($ct); ?>"
+              class="quick-city-tab shrink-0 px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 border <?php echo $isCtActive ? 'bg-[#071626] text-white border-[#071626] shadow-xs ring-1 ring-amber-400' : 'bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-slate-950 border-slate-200'; ?>"
+            >
+              <span class="flex items-center"><?php echo ($ct === 'All Cities') ? '🌐' : getCountryFlagHtml($ctCountry, 'w-3.5 h-2.5'); ?></span>
+              <span><?php echo htmlspecialchars($ct); ?></span>
+              <span class="text-[10px] <?php echo $isCtActive ? 'text-amber-300 font-black' : 'text-slate-400 font-mono'; ?>">(<?php echo $ctCount; ?>)</span>
+            </a>
+          <?php endforeach; ?>
+        </div>
+      </div>
       <?php if (empty($filteredMachines)): ?>
         <div class="bg-white rounded-2xl border border-slate-200 p-8 sm:p-12 text-center space-y-4 shadow-xs">
           <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-2xl font-bold">
@@ -842,7 +938,7 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
             $searchBlob = strtolower(($machine['title'] ?? '') . ' ' . ($machine['brand'] ?? '') . ' ' . ($machine['model'] ?? '') . ' ' . ($machine['category'] ?? '') . ' ' . ($machine['city'] ?? '') . ' ' . ($machine['country'] ?? '') . ' ' . $specsStr);
           ?>
             <div 
-              class="bg-white rounded-2xl border border-slate-200 hover:border-joule-brightblue catalog-machine-card machine-card-interactive flex flex-col overflow-hidden group shadow-xs hover:shadow-xl transition-all <?php echo $isExtra ? 'machine-card-extra hidden' : ''; ?>"
+              class="bg-white rounded-2xl border border-slate-200 hover:border-joule-brightblue catalog-machine-card machine-card-interactive flex flex-col justify-between overflow-hidden group shadow-xs hover:shadow-xl transition-all h-full <?php echo $isExtra ? 'machine-card-extra hidden' : ''; ?>"
               data-id="<?php echo $mId; ?>"
               data-category="<?php echo htmlspecialchars($machine['category'] ?? ''); ?>"
               data-country="<?php echo htmlspecialchars($machine['country'] ?? ''); ?>"
@@ -903,13 +999,14 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
                       <span class="text-slate-300">•</span>
                       <a href="<?php echo htmlspecialchars(getCategoryUrl($machine['category'])); ?>" class="hover:underline text-slate-500 font-bold"><?php echo htmlspecialchars($machine['category']); ?></a>
                     </div>
-                    <span class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                    <span class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-800 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200/90 shadow-2xs shrink-0" title="<?php echo htmlspecialchars($machine['city'] . ', ' . ($machine['country'] ?? 'Worldwide')); ?>">
                       <span><?php echo getCountryFlagHtml($machine['country'] ?? 'Japan', 'w-4 h-3'); ?></span>
-                      <span><?php echo htmlspecialchars($machine['country'] ?? 'Worldwide'); ?></span>
+                      <span class="font-black text-slate-900"><?php echo htmlspecialchars($machine['city'] ?? ''); ?></span>
+                      <span class="text-slate-400 text-[10px]">, <?php echo htmlspecialchars($machine['country'] ?? 'Worldwide'); ?></span>
                     </span>
                   </div>
 
-                  <h3 class="text-base sm:text-lg font-black text-slate-950 group-hover:text-joule-brightblue transition-colors line-clamp-2 min-h-[2.5rem] sm:min-h-[3.25rem] leading-snug">
+                  <h3 class="text-base sm:text-lg font-black text-slate-950 group-hover:text-joule-brightblue transition-colors line-clamp-2 min-h-[3rem] sm:min-h-[3.25rem] leading-snug">
                     <a href="<?php echo htmlspecialchars(getMachineUrl($machine)); ?>">
                       <?php echo htmlspecialchars($machine['title']); ?>
                     </a>
@@ -947,9 +1044,11 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
 
                   <!-- Location & Seller Info -->
                   <div class="border-t border-slate-100 pt-3 mt-3 text-xs text-slate-600 space-y-1">
-                    <div class="flex items-center gap-1.5 truncate">
-                      <i class="fa-solid fa-location-dot text-slate-400 text-xs"></i>
-                      <span class="truncate"><?php echo htmlspecialchars(formatMachineLocation($machine)); ?></span>
+                    <div class="flex items-center gap-1.5 truncate text-slate-700">
+                      <i class="fa-solid fa-location-dot text-rose-500 text-xs shrink-0"></i>
+                      <span class="font-bold text-slate-900 shrink-0"><?php echo htmlspecialchars(($machine['city'] ?? '') . ', ' . ($machine['country'] ?? '')); ?></span>
+                      <span class="text-slate-300 shrink-0">•</span>
+                      <span class="truncate text-slate-600 text-[11px]"><?php echo htmlspecialchars(formatMachineLocation($machine)); ?></span>
                     </div>
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-1.5 truncate">
@@ -1926,6 +2025,8 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
 
   window.setLiveCity = function(ct) {
     liveState.city = ct || "All Cities";
+    const ctSelect = document.getElementById("sidebarCitySelect");
+    if (ctSelect && ctSelect.value !== liveState.city) ctSelect.value = liveState.city;
     applyCatalogFilters();
   };
 
@@ -1981,6 +2082,7 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
 
     const y1 = document.getElementById("sidebarYearSelect"); if (y1) y1.value = "all";
     const b1 = document.getElementById("sidebarBudgetSelect"); if (b1) b1.value = "all";
+    const ctSelect = document.getElementById("sidebarCitySelect"); if (ctSelect) ctSelect.value = "All Cities";
 
     const sDesk = document.getElementById("desktopSortSelect"); if (sDesk) sDesk.value = "featured";
     const sMob = document.getElementById("mobileSortSelect"); if (sMob) sMob.value = "featured";
@@ -2302,16 +2404,28 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
       }
     });
 
-    // City buttons
-    document.querySelectorAll(".drawer-city-btn").forEach(btn => {
+    // City buttons & Quick Tabs
+    document.querySelectorAll(".sidebar-city-btn, .drawer-city-btn").forEach(btn => {
       const ct = btn.dataset.city || "";
       const isActive = (ct.toLowerCase() === liveState.city.toLowerCase());
       if (isActive) {
-        btn.classList.add("bg-slate-900", "text-white", "font-black");
-        btn.classList.remove("bg-slate-50", "border-slate-200", "text-slate-700");
+        btn.classList.add("bg-[#071626]", "text-white", "font-bold", "shadow-xs");
+        btn.classList.remove("bg-slate-50", "text-slate-700");
       } else {
-        btn.classList.remove("bg-slate-900", "text-white", "font-black");
-        btn.classList.add("bg-slate-50", "border-slate-200", "text-slate-700");
+        btn.classList.remove("bg-[#071626]", "text-white", "font-bold", "shadow-xs");
+        btn.classList.add("bg-slate-50", "text-slate-700");
+      }
+    });
+
+    document.querySelectorAll(".quick-city-tab").forEach(tab => {
+      const ct = tab.dataset.city || "";
+      const isActive = (ct.toLowerCase() === liveState.city.toLowerCase());
+      if (isActive) {
+        tab.classList.add("bg-[#071626]", "text-white", "border-[#071626]", "shadow-xs", "ring-1", "ring-amber-400");
+        tab.classList.remove("bg-slate-50", "text-slate-700", "border-slate-200");
+      } else {
+        tab.classList.remove("bg-[#071626]", "text-white", "border-[#071626]", "shadow-xs", "ring-1", "ring-amber-400");
+        tab.classList.add("bg-slate-50", "text-slate-700", "border-slate-200");
       }
     });
   }

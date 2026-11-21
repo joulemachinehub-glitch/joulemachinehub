@@ -3897,7 +3897,11 @@ $countryHubs = [
             ['name' => 'Osaka', 'image' => 'assets/images/machines/8/used-jyoto-ns5-10pl-long-parts-former-01.jpg', 'subzone' => 'Kansai Precision Cluster', 'specialty' => 'Long Parts Formers & Power Presses'],
             ['name' => 'Tokyo', 'image' => 'assets/images/machines/6/used-komatsu-e2m200-power-press-01.jpg', 'subzone' => 'Kanto Industrial Hub', 'specialty' => 'Mechanical Power Presses'],
             ['name' => 'Yokohama', 'image' => 'assets/images/machines/3/used-naitoh-pf-550-cold-header-01.jpg', 'subzone' => 'Kanagawa Precision Machine Cluster', 'specialty' => 'Parts Formers & Cold Headers'],
-            ['name' => 'Okayama', 'image' => 'assets/images/machines/20/used-yasda-ybm-640v2-cnc-jig-borer-01.jpg', 'subzone' => 'Chugoku Machine Tool Corridor', 'specialty' => 'High-Precision CNC Jig Borers']
+            ['name' => 'Okayama', 'image' => 'assets/images/machines/20/used-yasda-ybm-640v2-cnc-jig-borer-01.jpg', 'subzone' => 'Chugoku Machine Tool Corridor', 'specialty' => 'High-Precision CNC Jig Borers'],
+            ['name' => 'Kanagawa', 'image' => 'assets/images/machines/24/used-aida-pmx-l2-500-power-press-01.jpg', 'subzone' => 'Keihin Industrial Zone', 'specialty' => 'Heavy Stamping & Power Presses'],
+            ['name' => 'Ishikawa', 'image' => 'assets/images/machines/26/used-komatsu-e2w-200-power-press-01.jpg', 'subzone' => 'Ishikawa Industrial Machine Corridor', 'specialty' => 'Mechanical Stamping Presses'],
+            ['name' => 'Aichi', 'image' => 'assets/images/machines/28/used-asahi-sunac-aq1013-3-cold-header-01.jpg', 'subzone' => 'Aichi Precision Fastener Cluster', 'specialty' => 'Heading Machines & Fastener Formers'],
+            ['name' => 'Kyoto', 'image' => 'assets/images/machines/33/used-sakamura-bp-450s-cold-former-01.jpg', 'subzone' => 'Kansai Fastener Machinery Corridor', 'specialty' => 'High-Speed Bolt Formers & Headers']
         ],
         'image' => 'assets/images/flags/jp.svg',
     ],
@@ -3917,6 +3921,8 @@ $countryHubs = [
         'description' => 'China leads international manufacturing in heavy self-propelled aerial work platforms, optical solar EL testers, and automated cartridge filling machinery from Zhejiang Dingli, Shanghai Optech, and Xiaojin Machinery.',
         'cities' => [
             ['name' => 'Shanghai', 'image' => 'assets/images/machines/1/used-dingli-jcpt1412hd-scissor-lift-01.jpg', 'subzone' => 'East China Equipment & Testing Hub', 'specialty' => 'Electric Scissor Lifts & Optical EL Testers'],
+            ['name' => 'Ningbo', 'image' => 'assets/images/machines/41/used-haitian-ma1200ii-injection-molding-01.jpg', 'subzone' => 'Ningbo Global Plastics Machinery Hub', 'specialty' => 'Servo Plastic Injection Molding Machines'],
+            ['name' => 'Shenzhen', 'image' => 'assets/images/machines/38/used-taide-t-500-cnc-drilling-tapping-center-01.jpg', 'subzone' => 'Shenzhen Advanced Precision Machinery Park', 'specialty' => 'High-Speed CNC Drilling & Tapping Centers'],
             ['name' => 'Shijiazhuang', 'image' => 'assets/images/machines/5/used-xiaojin-zdf-vi-cartridge-filling-machine-01.jpg', 'subzone' => 'Hebei Automation Industrial Park', 'specialty' => 'Cartridge Filling & Packaging Systems']
         ],
         'image' => 'assets/images/flags/cn.svg',
@@ -3993,7 +3999,8 @@ $countryHubs = [
         'specialties' => 'Internal Cylindrical Grinders • Heavy Bore Machining',
         'description' => 'Germany\'s Rhine-Ruhr industrial corridor is celebrated for heavy-duty internal cylindrical grinding machines by historical builder Wotan-Werke GmbH for precision deep bore applications.',
         'cities' => [
-            ['name' => 'Düsseldorf', 'image' => 'assets/images/machines/19/used-wotan-sn208-8g-cylindrical-grinder-01.jpg', 'subzone' => 'North Rhine-Westphalia Machine Tool Belt', 'specialty' => 'Internal Cylindrical Grinding Machines']
+            ['name' => 'Düsseldorf', 'image' => 'assets/images/machines/19/used-wotan-sn208-8g-cylindrical-grinder-01.jpg', 'subzone' => 'North Rhine-Westphalia Machine Tool Belt', 'specialty' => 'Internal Cylindrical Grinding Machines'],
+            ['name' => 'Mulfingen', 'image' => 'assets/images/machines/22/used-ebm-papst-single-spindle-flyer-winding-machine-01.jpg', 'subzone' => 'Baden-Württemberg Industrial Hub', 'specialty' => 'Precision Flyer Winding Machines']
         ],
         'image' => 'assets/images/flags/de.svg',
     ],
@@ -4257,6 +4264,94 @@ $cityHubs = [
         'subzone' => 'Incheon Industrial Fastener Belt',
         'specialty' => 'Cold Formers & Multi-Station Parts Formers',
         'image' => 'assets/images/machines/27/used-jinu-precision-pf615l-cold-parts-former-01.jpg'
+    ],
+    'Kanagawa' => [
+        'name' => 'Kanagawa',
+        'meta_title' => 'Used Stamping Presses in Kanagawa | Joule Machine Hub JP',
+        'meta_desc' => 'Buy verified used Aida PMX-L2-500 and HMX-200 progressive power presses in Kanagawa, Japan. Verified B2B desk inventory.',
+        'country' => 'Japan',
+        'country_code' => 'JP',
+        'country_flag' => '🇯🇵',
+        'subzone' => 'Keihin Industrial Zone',
+        'specialty' => 'Heavy Stamping & Progressive Power Presses',
+        'image' => 'assets/images/machines/24/used-aida-pmx-l2-500-power-press-01.jpg'
+    ],
+    'Ishikawa' => [
+        'name' => 'Ishikawa',
+        'meta_title' => 'Used Komatsu Power Presses in Ishikawa | Joule Machine Hub',
+        'meta_desc' => 'Buy verified used Komatsu E2W 200 and H1F 200 mechanical stamping presses in Ishikawa, Japan. Verified B2B desk inventory.',
+        'country' => 'Japan',
+        'country_code' => 'JP',
+        'country_flag' => '🇯🇵',
+        'subzone' => 'Ishikawa Industrial Machine Corridor',
+        'specialty' => 'Mechanical Power & Stamping Presses',
+        'image' => 'assets/images/machines/26/used-komatsu-e2w-200-power-press-01.jpg'
+    ],
+    'Aichi' => [
+        'name' => 'Aichi',
+        'meta_title' => 'Used Asahi Sunac Heading Machines in Aichi | Joule Machine Hub',
+        'meta_desc' => 'Buy verified used Asahi Sunac AQ1013-3 high-speed cold heading machines in Aichi, Japan. Verified B2B desk inventory.',
+        'country' => 'Japan',
+        'country_code' => 'JP',
+        'country_flag' => '🇯🇵',
+        'subzone' => 'Aichi Precision Fastener Cluster',
+        'specialty' => 'Heading Machines & Cold Fastener Formers',
+        'image' => 'assets/images/machines/28/used-asahi-sunac-aq1013-3-cold-header-01.jpg'
+    ],
+    'Kyoto' => [
+        'name' => 'Kyoto',
+        'meta_title' => 'Used Sakamura Cold Forging Formers in Kyoto | Joule Hub JP',
+        'meta_desc' => 'Buy verified used Sakamura BP-450S high-speed bolt former headers in Kyoto, Japan. Verified B2B desk inventory.',
+        'country' => 'Japan',
+        'country_code' => 'JP',
+        'country_flag' => '🇯🇵',
+        'subzone' => 'Kansai Fastener Machinery Corridor',
+        'specialty' => 'High-Speed Bolt Formers & Cold Headers',
+        'image' => 'assets/images/machines/33/used-sakamura-bp-450s-cold-former-01.jpg'
+    ],
+    'Ningbo' => [
+        'name' => 'Ningbo',
+        'meta_title' => 'Used Haitian Injection Molding Machines in Ningbo | JM Hub',
+        'meta_desc' => 'Buy verified used Haitian MA1200II and MA1600II servo plastic injection molding machines in Ningbo, China. Verified B2B desk inventory.',
+        'country' => 'China',
+        'country_code' => 'CN',
+        'country_flag' => '🇨🇳',
+        'subzone' => 'Ningbo Global Plastics Machinery Hub',
+        'specialty' => 'Servo Plastic Injection Molding Machines',
+        'image' => 'assets/images/machines/41/used-haitian-ma1200ii-injection-molding-01.jpg'
+    ],
+    'Shenzhen' => [
+        'name' => 'Shenzhen',
+        'meta_title' => 'Used CNC Drilling & Tapping Centers in Shenzhen | JM Hub',
+        'meta_desc' => 'Buy verified used Taide T-500 high-speed CNC drilling & tapping machining centers in Shenzhen, China. Verified B2B desk inventory.',
+        'country' => 'China',
+        'country_code' => 'CN',
+        'country_flag' => '🇨🇳',
+        'subzone' => 'Shenzhen Advanced Precision Machinery Park',
+        'specialty' => 'High-Speed CNC Drilling & Tapping Machining Centers',
+        'image' => 'assets/images/machines/38/used-taide-t-500-cnc-drilling-tapping-center-01.jpg'
+    ],
+    'Mulfingen' => [
+        'name' => 'Mulfingen',
+        'meta_title' => 'Used ebm-papst Flyer Winding Machines in Mulfingen | JM Hub',
+        'meta_desc' => 'Buy verified used ebm-papst single spindle flyer winding machines in Mulfingen, Germany. Verified B2B desk inventory.',
+        'country' => 'Germany',
+        'country_code' => 'DE',
+        'country_flag' => '🇩🇪',
+        'subzone' => 'Baden-Württemberg Industrial Hub',
+        'specialty' => 'Single Spindle Flyer Winding Machines',
+        'image' => 'assets/images/machines/22/used-ebm-papst-single-spindle-flyer-winding-machine-01.jpg'
+    ],
+    'Como' => [
+        'name' => 'Como',
+        'meta_title' => 'Used Industrial Digital Textile Printers in Como | JM Hub IT',
+        'meta_desc' => 'Buy verified used MS Printing Solutions MS-JP7 digital textile printing machines in Como, Italy. Verified B2B desk inventory.',
+        'country' => 'Italy',
+        'country_code' => 'IT',
+        'country_flag' => '🇮🇹',
+        'subzone' => 'Lombardy Textile Machinery Innovation Hub',
+        'specialty' => 'Industrial Digital Textile & Fabric Printing Systems',
+        'image' => 'assets/images/machines/31/used-ms-jp7-digital-textile-printing-machine-01.jpg'
     ]
 ];
 
@@ -4401,8 +4496,8 @@ function formatMachinePrice($machine, $currency = null) {
 }
 
 /**
- * Format machine location without country duplication
- * e.g., "Direct Plant Floor • Como Industrial Textile Cluster, Italy"
+ * Format machine location with guaranteed City and Country display
+ * e.g., "Direct Plant Floor • Nagoya, Chukyo Industrial Belt, Japan"
  */
 function formatMachineLocation($machine) {
     $loc = trim($machine['location'] ?? '');
@@ -4418,11 +4513,21 @@ function formatMachineLocation($machine) {
     
     // Clean up any double country in $loc (e.g. "Cluster, Italy, Italy")
     if (!empty($country)) {
-        $loc = preg_replace('/[,\s•]+\s*' . preg_quote($country, '/') . '\s*,\s*' . preg_quote($country, '/') . '$/i', ', ' . $country, $loc);
-        if (preg_match('/[,\s•]\s*' . preg_quote($country, '/') . '\s*$/i', $loc) || stripos($loc, $country) !== false) {
-            return $loc;
+        $loc = preg_replace('/[,\s•]+\s*' . preg_quote($country, '/') . '\s*,\s*' . preg_quote($country, '/') . '$/iu', ', ' . $country, $loc);
+        if (!preg_match('/[,\s•]\s*' . preg_quote($country, '/') . '\s*$/iu', $loc) && stripos($loc, $country) === false) {
+            $loc = $loc . ', ' . $country;
         }
-        return $loc . ', ' . $country;
     }
+    
+    // Ensure the City name is explicitly present in the location string cleanly without regex encoding issues
+    if (!empty($city) && stripos($loc, $city) === false) {
+        if (strpos($loc, '•') !== false) {
+            $parts = explode('•', $loc, 2);
+            $loc = trim($parts[0]) . ' • ' . $city . ', ' . trim($parts[1]);
+        } else {
+            $loc = $city . ' • ' . $loc;
+        }
+    }
+    
     return $loc;
 }

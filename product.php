@@ -985,9 +985,10 @@ require_once __DIR__ . '/includes/header.php';
             <h3 class="font-black text-slate-900 text-xs sm:text-sm line-clamp-2 mt-0.5 group-hover:text-joule-brightblue">
               <?php echo htmlspecialchars($rm['title']); ?>
             </h3>
-            <div class="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
-              <i class="fa-solid fa-location-dot text-[10px]"></i>
-              <span><?php echo htmlspecialchars($rm['city']); ?>, <?php echo htmlspecialchars($rm['country']); ?></span>
+            <div class="text-[11px] text-slate-600 mt-1 flex items-center gap-1.5 truncate">
+              <span class="shrink-0"><?php echo getCountryFlagHtml($rm['country'] ?? 'Japan', 'w-3.5 h-2.5'); ?></span>
+              <span class="font-bold text-slate-800 shrink-0"><?php echo htmlspecialchars($rm['city']); ?></span>
+              <span class="text-slate-400 text-[10px] truncate">, <?php echo htmlspecialchars($rm['country']); ?></span>
             </div>
           </div>
           <div class="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between">
