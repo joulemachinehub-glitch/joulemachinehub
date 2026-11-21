@@ -1,4 +1,12 @@
 <?php
+// Canonical 301 Permanent Redirect: If accessed explicitly via /index.php or /index.html, 301 redirect to root / (GSC Canonical Fix)
+if (isset($_SERVER['REQUEST_URI']) && preg_match('#^/index\.(php|html)(\?.*)?$#i', $_SERVER['REQUEST_URI'], $m)) {
+    $qs = !empty($m[2]) ? $m[2] : '';
+    header("HTTP/1.1 301 Moved Permanently");
+    header("Location: /" . $qs);
+    exit;
+}
+
 header("X-LiteSpeed-Purge: *");
 header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0, s-maxage=0");
 header("Pragma: no-cache");
@@ -55,7 +63,7 @@ function buildFilterUrl($overrides = []) {
     if (!empty($merged['sort']) && $merged['sort'] !== 'featured') $query['sort'] = $merged['sort'];
     
     $qs = http_build_query($query);
-    return 'index.php' . ($qs ? '?' . $qs : '') . '#catalog';
+    return '/' . ($qs ? '?' . $qs : '') . '#catalog';
 }
 }
 
@@ -570,7 +578,7 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
             </a>
           <?php endif; ?>
         </div>
-        <a href="index.php#catalog" class="text-rose-700 font-bold text-[11px] hover:underline shrink-0">
+        <a href="/#catalog" class="text-rose-700 font-bold text-[11px] hover:underline shrink-0">
           Clear All
         </a>
       </div>
@@ -595,14 +603,14 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
             <span class="bg-slate-100 text-slate-600 font-mono text-[10px] px-1.5 py-0.5 rounded-full font-bold"><?php echo count($filteredMachines); ?></span>
           </div>
           <?php if ($hasActiveFilters): ?>
-            <a href="index.php#catalog" class="text-[11px] text-rose-600 hover:text-rose-700 hover:underline font-bold flex items-center gap-1">
+            <a href="/#catalog" class="text-[11px] text-rose-600 hover:text-rose-700 hover:underline font-bold flex items-center gap-1">
               <i class="fa-solid fa-rotate-left text-[10px]"></i> Reset
             </a>
           <?php endif; ?>
         </div>
 
         <!-- Compact Search -->
-        <form method="GET" action="index.php#catalog" class="relative">
+        <form method="GET" action="/#catalog" class="relative">
           <?php if ($catFilter !== 'All Categories'): ?><input type="hidden" name="category" value="<?php echo htmlspecialchars($catFilter); ?>"><?php endif; ?>
           <?php if ($countryFilter !== 'All Countries'): ?><input type="hidden" name="country" value="<?php echo htmlspecialchars($countryFilter); ?>"><?php endif; ?>
           <?php if ($cityFilter !== 'All Cities'): ?><input type="hidden" name="city" value="<?php echo htmlspecialchars($cityFilter); ?>"><?php endif; ?>
@@ -924,7 +932,7 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
           <p class="text-xs text-slate-500 max-w-sm mx-auto">
             Try resetting your search query or view all 10 available machinery listings.
           </p>
-          <a href="index.php#catalog" class="inline-block bg-joule-blue text-joule-yellow font-black text-xs py-2.5 px-6 rounded-xl">
+          <a href="/#catalog" class="inline-block bg-joule-blue text-joule-yellow font-black text-xs py-2.5 px-6 rounded-xl">
             Reset Filters
           </a>
         </div>
@@ -1624,7 +1632,7 @@ $hasActiveFilters = ($catFilter !== 'All Categories' || $countryFilter !== 'All 
         $isActive = ($c === 'All Countries' && empty($countryFilter)) || ($countryFilter === $c);
       ?>
         <a 
-          href="index.php<?php echo $cVal ? ('?country=' . urlencode($cVal)) : ''; ?>#catalog" 
+          href="/<?php echo $cVal ? ('?country=' . urlencode($cVal)) : ''; ?>#catalog" 
           class="shrink-0 text-xs font-bold px-3 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 <?php echo $isActive ? 'bg-joule-blue text-joule-yellow border-joule-blue shadow-sm' : 'bg-slate-50 hover:bg-blue-50 text-slate-800 border-slate-200'; ?>"
         >
           <span><?php echo ($countryFlags[$c] ?? '🌍'); ?></span>

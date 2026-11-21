@@ -33,7 +33,7 @@ $filteredLeads = array_filter($allLeads, function($l) use ($statusFilter) {
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
   <div>
     <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
-      <a href="index.php" class="hover:text-blue-600">Dashboard</a>
+      <a href="/dashboard" class="hover:text-blue-600">Dashboard</a>
       <span>/</span>
       <span class="text-slate-800 font-bold">My Enquiries</span>
     </div>

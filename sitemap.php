@@ -70,7 +70,7 @@ arsort($uniqueBrands);
   <!-- 1. Breadcrumbs & Header -->
   <div class="space-y-3 border-b border-slate-200 pb-6">
     <nav class="flex items-center gap-2 text-xs text-slate-500 font-semibold">
-      <a href="index.php" class="hover:text-joule-brightblue flex items-center gap-1">
+      <a href="/" class="hover:text-joule-brightblue flex items-center gap-1">
         <i class="fa-solid fa-house"></i>
         <span>Home</span>
       </a>
@@ -111,13 +111,13 @@ arsort($uniqueBrands);
       </h3>
       <ul class="space-y-2 text-xs font-semibold text-slate-700">
         <li>
-          <a href="index.php" class="hover:text-joule-brightblue flex items-center justify-between">
+          <a href="/" class="hover:text-joule-brightblue flex items-center justify-between">
             <span>Marketplace Home</span>
             <span class="text-[10px] text-slate-400">Main Portal</span>
           </a>
         </li>
         <li>
-          <a href="index.php#catalog" class="hover:text-joule-brightblue flex items-center justify-between">
+          <a href="/#catalog" class="hover:text-joule-brightblue flex items-center justify-between">
             <span>Browse All Machinery (<?php echo count($machines); ?> Units)</span>
             <span class="text-[10px] bg-blue-100 text-blue-900 font-bold px-1.5 py-0.5 rounded">Catalog</span>
           </a>
@@ -141,7 +141,7 @@ arsort($uniqueBrands);
           </a>
         </li>
         <li>
-          <a href="index.php#faqs" class="hover:text-joule-brightblue flex items-center justify-between">
+          <a href="/#faqs" class="hover:text-joule-brightblue flex items-center justify-between">
             <span>Buyer & Seller FAQ Guide</span>
             <span class="text-[10px] text-slate-400">6 Questions</span>
           </a>

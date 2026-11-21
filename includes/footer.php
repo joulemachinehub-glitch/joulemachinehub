@@ -8,7 +8,7 @@
         <!-- Section 1 (Row 1 Left on Mobile, Col 1 on Desktop): Brand Logo, Bio & Socials -->
         <div class="col-span-1 lg:col-span-4 space-y-3.5">
           <!-- Logo matching Joule Machine Hub brand -->
-          <a href="index.php" class="inline-block group" title="Joule Machine Hub">
+          <a href="/" class="inline-block group" title="Joule Machine Hub">
             <img 
               src="/assets/images/logo-v2.png?v=<?php echo $assetVer ?? time(); ?>" 
               alt="Joule Machine Hub" 
@@ -96,28 +96,28 @@
 
           <ul class="space-y-2 text-xs text-slate-400">
             <li>
-              <a href="city/mumbai" class="hover:text-white transition-colors block">Mumbai</a>
+              <a href="/city/mumbai" class="hover:text-white transition-colors block">Mumbai</a>
             </li>
             <li>
-              <a href="city/delhi" class="hover:text-white transition-colors block">Delhi</a>
+              <a href="/city/delhi" class="hover:text-white transition-colors block">Delhi</a>
             </li>
             <li>
-              <a href="city/bangalore" class="hover:text-white transition-colors block">Bangalore</a>
+              <a href="/city/bangalore" class="hover:text-white transition-colors block">Bangalore</a>
             </li>
             <li>
-              <a href="city/hyderabad" class="hover:text-white transition-colors block">Hyderabad</a>
+              <a href="/city/hyderabad" class="hover:text-white transition-colors block">Hyderabad</a>
             </li>
             <li>
-              <a href="city/ahmedabad" class="hover:text-white transition-colors block">Ahmedabad</a>
+              <a href="/city/ahmedabad" class="hover:text-white transition-colors block">Ahmedabad</a>
             </li>
             <li>
-              <a href="city/chennai" class="hover:text-white transition-colors block">Chennai</a>
+              <a href="/city/chennai" class="hover:text-white transition-colors block">Chennai</a>
             </li>
             <li>
-              <a href="city/pune" class="hover:text-white transition-colors block">Pune</a>
+              <a href="/city/pune" class="hover:text-white transition-colors block">Pune</a>
             </li>
             <li>
-              <a href="city/surat" class="hover:text-white transition-colors block">Surat</a>
+              <a href="/city/surat" class="hover:text-white transition-colors block">Surat</a>
             </li>
           </ul>
         </div>
@@ -145,10 +145,10 @@
               <button type="button" onclick="openRequirementModal()" class="hover:text-white transition-colors cursor-pointer text-left block">Contact Us</button>
             </li>
             <li>
-              <a href="index.php#faqs" class="hover:text-white transition-colors block">Privacy Policy</a>
+              <a href="/#faqs" class="hover:text-white transition-colors block">Privacy Policy</a>
             </li>
             <li>
-              <a href="index.php#faqs" class="hover:text-white transition-colors block">Terms &amp; Conditions</a>
+              <a href="/#faqs" class="hover:text-white transition-colors block">Terms &amp; Conditions</a>
             </li>
           </ul>
         </div>

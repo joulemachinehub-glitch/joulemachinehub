@@ -40,10 +40,10 @@ $articles = [
 
 <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">1. Dedicated Online Industrial Machinery Marketplace Platforms</h2>
 <p class="text-slate-700 leading-relaxed mb-4">
-  The safest and most efficient place to source equipment is through a specialized <strong>industrial machinery marketplace</strong> like <a href="index.php" class="text-joule-brightblue underline font-bold">Joule Machine Hub</a>. Unlike generic consumer classifieds, a dedicated B2B machinery portal focuses exclusively on verified heavy equipment, plant surplus, and factory-installed machines.
+  The safest and most efficient place to source equipment is through a specialized <strong>industrial machinery marketplace</strong> like <a href="/" class="text-joule-brightblue underline font-bold">Joule Machine Hub</a>. Unlike generic consumer classifieds, a dedicated B2B machinery portal focuses exclusively on verified heavy equipment, plant surplus, and factory-installed machines.
 </p>
 <p class="text-slate-700 leading-relaxed mb-4">
-  On Joule Machine Hub, buyers can explore authentic listings for <a href="category/used-presses-stamping" class="text-joule-brightblue underline font-bold">used power press machines</a>, <a href="category/used-cnc-machining-centers" class="text-joule-brightblue underline font-bold">used CNC machining centers</a>, and <a href="category/used-lathes-turning" class="text-joule-brightblue underline font-bold">industrial lathes</a>. Listings feature detailed technical parameters, stamped OEM builder nameplates, and direct connection with sellers for inspection scheduling.
+  On Joule Machine Hub, buyers can explore authentic listings for <a href="/category/used-presses-stamping" class="text-joule-brightblue underline font-bold">used power press machines</a>, <a href="/category/used-cnc-machining-centers" class="text-joule-brightblue underline font-bold">used CNC machining centers</a>, and <a href="/category/used-lathes-turning" class="text-joule-brightblue underline font-bold">industrial lathes</a>. Listings feature detailed technical parameters, stamped OEM builder nameplates, and direct connection with sellers for inspection scheduling.
 </p>
 
 <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">2. Direct Factory Floor &amp; Plant Liquidation Sales</h2>
@@ -59,7 +59,7 @@ $articles = [
   Before finalizing any purchase of <strong>used industrial machinery for sale</strong>, always perform these core technical checks:
 </p>
 <ul class="list-disc pl-5 space-y-2 text-slate-700 mb-6">
-  <li><strong>Check the Stamped OEM Builder Plate:</strong> Verify the original serial number, model designation, true build year, and voltage requirements from builders like <a href="manufacturer/komatsu" class="text-joule-brightblue underline font-bold">Komatsu</a>, <a href="manufacturer/amada" class="text-joule-brightblue underline font-bold">Amada</a>, or <a href="manufacturer/haitian" class="text-joule-brightblue underline font-bold">Haitian</a>.</li>
+  <li><strong>Check the Stamped OEM Builder Plate:</strong> Verify the original serial number, model designation, true build year, and voltage requirements from builders like <a href="/manufacturer/komatsu" class="text-joule-brightblue underline font-bold">Komatsu</a>, <a href="/manufacturer/amada" class="text-joule-brightblue underline font-bold">Amada</a>, or <a href="/manufacturer/haitian" class="text-joule-brightblue underline font-bold">Haitian</a>.</li>
   <li><strong>Inspect Mechanical Alignment:</strong> Check spindle runout, guideway wear, and backlash using precision dial test indicators.</li>
   <li><strong>Review Hydraulic &amp; Pneumatic Circuits:</strong> Verify pump pressures, valve response, and check for hydraulic weeping.</li>
   <li><strong>Audit Safety Interlocks:</strong> Confirm emergency stop circuits, dual-solenoid valves, and operator light curtains function properly.</li>
@@ -70,7 +70,7 @@ $articles = [
   Finding dependable <strong>second hand industrial machinery</strong> requires transparency. Joule Machine Hub acts as a dedicated mediator desk connecting qualified buyers with genuine machine sellers across India and international industrial hubs.
 </p>
 <p class="text-slate-700 leading-relaxed mb-4">
-  Buyers pay zero commission to browse listings or submit enquiries. Once you find a machine of interest—such as a <a href="product/used-komatsu-e2m200-mechanical-power-press" class="text-joule-brightblue underline font-bold">used Komatsu 200-ton power press</a>—you can submit an enquiry to coordinate directly with the seller for price negotiation and physical inspections.
+  Buyers pay zero commission to browse listings or submit enquiries. Once you find a machine of interest—such as a <a href="/product/used-komatsu-e2m200-mechanical-power-press" class="text-joule-brightblue underline font-bold">used Komatsu 200-ton power press</a>—you can submit an enquiry to coordinate directly with the seller for price negotiation and physical inspections.
 </p>
 
 <div class="bg-gradient-to-r from-blue-50 to-slate-50 border-2 border-blue-200 rounded-2xl p-6 my-8 text-center space-y-3">
@@ -82,7 +82,7 @@ $articles = [
     <button type="button" onclick="openRequirementModal()" class="px-5 py-2.5 bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-sm border border-amber-300 cursor-pointer">
       <i class="fa-solid fa-file-signature mr-1"></i> Submit Machinery RFQ
     </button>
-    <a href="index.php#catalog" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors">
+    <a href="/#catalog" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors">
       Browse Machinery Catalog →
     </a>
   </div>
@@ -139,7 +139,7 @@ HTML
 
 <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">1. Specialized B2B Marketplaces for Used CNC Equipment</h2>
 <p class="text-slate-700 leading-relaxed mb-4">
-  The premier destination to browse <strong>used CNC machines for sale</strong> is a dedicated industrial equipment marketplace. On platforms like Joule Machine Hub, you can find verified listings for a <a href="category/used-cnc-machining-centers" class="text-joule-brightblue underline font-bold">used CNC machining centre</a> directly from operating plant floors and equipment dealers.
+  The premier destination to browse <strong>used CNC machines for sale</strong> is a dedicated industrial equipment marketplace. On platforms like Joule Machine Hub, you can find verified listings for a <a href="/category/used-cnc-machining-centers" class="text-joule-brightblue underline font-bold">used CNC machining centre</a> directly from operating plant floors and equipment dealers.
 </p>
 <p class="text-slate-700 leading-relaxed mb-4">
   Each listing provides essential specifications including spindle taper (BT30, BT40, BT50), axis travels (X, Y, Z), controller models (Fanuc, Siemens, Heidenhain, or Yasnac), and live spindle walkthrough videos.
@@ -147,7 +147,7 @@ HTML
 
 <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">2. Plant Floor Upgrades &amp; Toolroom Liquidations</h2>
 <p class="text-slate-700 leading-relaxed mb-4">
-  Another prime source for a <strong>second hand CNC machine for sale</strong> is toolroom liquidation and plant upgrades. High-precision mold and die facilities often decommission ultra-accurate machines—such as the <a href="product/used-yasda-ybm-640v2-cnc-jig-borer" class="text-joule-brightblue underline font-bold">Yasda YBM-640V2 CNC jig borer</a> or rapid tapping centers like the <a href="product/used-taide-t500-cnc-drilling-tapping-machining-center" class="text-joule-brightblue underline font-bold">Taide T-500</a>—to transition to larger envelope machines.
+  Another prime source for a <strong>second hand CNC machine for sale</strong> is toolroom liquidation and plant upgrades. High-precision mold and die facilities often decommission ultra-accurate machines—such as the <a href="/product/used-yasda-ybm-640v2-cnc-jig-borer" class="text-joule-brightblue underline font-bold">Yasda YBM-640V2 CNC jig borer</a> or rapid tapping centers like the <a href="/product/used-taide-t500-cnc-drilling-tapping-machining-center" class="text-joule-brightblue underline font-bold">Taide T-500</a>—to transition to larger envelope machines.
 </p>
 <p class="text-slate-700 leading-relaxed mb-4">
   Purchasing from plant floors often allows buyers to acquire complete tooling packages, angle heads, high-pressure through-spindle coolant pumps, and chip conveyors at bundled pricing.
@@ -178,7 +178,7 @@ HTML
     <button type="button" onclick="openRequirementModal()" class="px-5 py-2.5 bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-sm border border-amber-300 cursor-pointer">
       <i class="fa-solid fa-file-signature mr-1"></i> Post CNC Requirement (RFQ)
     </button>
-    <a href="category/used-cnc-machining-centers" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors">
+    <a href="/category/used-cnc-machining-centers" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors">
       View Used CNC Centers →
     </a>
   </div>
@@ -235,10 +235,10 @@ HTML
 
 <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">1. Verified Online Marketplaces for Used Power Press for Sale</h2>
 <p class="text-slate-700 leading-relaxed mb-4">
-  The most reliable avenue to locate a quality <strong>used power press for sale</strong> is through a dedicated B2B machinery portal. On Joule Machine Hub's <a href="category/used-presses-stamping" class="text-joule-brightblue underline font-bold">presses and stamping category</a>, buyers can browse mechanical stamping presses ranging from 110 tons to 400 tons.
+  The most reliable avenue to locate a quality <strong>used power press for sale</strong> is through a dedicated B2B machinery portal. On Joule Machine Hub's <a href="/category/used-presses-stamping" class="text-joule-brightblue underline font-bold">presses and stamping category</a>, buyers can browse mechanical stamping presses ranging from 110 tons to 400 tons.
 </p>
 <p class="text-slate-700 leading-relaxed mb-4">
-  Featured equipment includes globally celebrated Japanese manufacturers such as <a href="manufacturer/komatsu" class="text-joule-brightblue underline font-bold">Komatsu</a>, <a href="manufacturer/amada" class="text-joule-brightblue underline font-bold">Amada</a>, <a href="product/used-aida-pmx-l2-400-mechanical-stamping-press" class="text-joule-brightblue underline font-bold">Aida</a>, and <a href="product/used-yamada-dobby-fpl-200sw-high-speed-stamping-press" class="text-joule-brightblue underline font-bold">Yamada Dobby</a>. Listings feature high-resolution stamped builder nameplates documenting stroke length, die height, and manufacturing build year.
+  Featured equipment includes globally celebrated Japanese manufacturers such as <a href="/manufacturer/komatsu" class="text-joule-brightblue underline font-bold">Komatsu</a>, <a href="/manufacturer/amada" class="text-joule-brightblue underline font-bold">Amada</a>, <a href="/product/used-aida-pmx-l2-400-mechanical-stamping-press" class="text-joule-brightblue underline font-bold">Aida</a>, and <a href="/product/used-yamada-dobby-fpl-200sw-high-speed-stamping-press" class="text-joule-brightblue underline font-bold">Yamada Dobby</a>. Listings feature high-resolution stamped builder nameplates documenting stroke length, die height, and manufacturing build year.
 </p>
 
 <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">2. Plant Liquidations &amp; Automotive Press Shop Upgrades</h2>
@@ -246,7 +246,7 @@ HTML
   Stamping facilities often purchase a <strong>second hand power press</strong> through factory liquidations and automotive plant re-tooling programs. When tier-1 stamping facilities upgrade press lines, high-tonnage straight-side presses in running condition enter the secondary market.
 </p>
 <p class="text-slate-700 leading-relaxed mb-4">
-  Straight-side double-crank presses—such as the <a href="product/used-komatsu-e2m200-mechanical-power-press" class="text-joule-brightblue underline font-bold">Komatsu E2M200 200-ton press</a> or the <a href="product/used-amada-pdl-300-mechanical-power-press" class="text-joule-brightblue underline font-bold">Amada PDL-300 300-ton press</a>—offer high frame rigidity and low bed deflection, making them exceptional values on the secondary market.
+  Straight-side double-crank presses—such as the <a href="/product/used-komatsu-e2m200-mechanical-power-press" class="text-joule-brightblue underline font-bold">Komatsu E2M200 200-ton press</a> or the <a href="/product/used-amada-pdl-300-mechanical-power-press" class="text-joule-brightblue underline font-bold">Amada PDL-300 300-ton press</a>—offer high frame rigidity and low bed deflection, making them exceptional values on the secondary market.
 </p>
 
 <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">3. Inspecting a Used Mechanical Power Press Before Buying</h2>
@@ -274,7 +274,7 @@ HTML
     <button type="button" onclick="openRequirementModal()" class="px-5 py-2.5 bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-sm border border-amber-300 cursor-pointer">
       <i class="fa-solid fa-file-signature mr-1"></i> Post Press Requirement (RFQ)
     </button>
-    <a href="category/used-presses-stamping" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors">
+    <a href="/category/used-presses-stamping" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors">
       View Power Presses Catalog →
     </a>
   </div>
@@ -331,10 +331,10 @@ HTML
 
 <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">1. Online B2B Machinery Portals for Used Lathe Machines for Sale</h2>
 <p class="text-slate-700 leading-relaxed mb-4">
-  The most direct way to discover <strong>used lathe machines for sale</strong> is through a dedicated B2B machinery marketplace like Joule Machine Hub. Our <a href="category/used-lathes-turning" class="text-joule-brightblue underline font-bold">lathes and turning machinery category</a> features verified listings from international manufacturing plants.
+  The most direct way to discover <strong>used lathe machines for sale</strong> is through a dedicated B2B machinery marketplace like Joule Machine Hub. Our <a href="/category/used-lathes-turning" class="text-joule-brightblue underline font-bold">lathes and turning machinery category</a> features verified listings from international manufacturing plants.
 </p>
 <p class="text-slate-700 leading-relaxed mb-4">
-  A premier example is the Swiss heritage <a href="product/used-tornos-bechler-sas-16-6-multi-spindle-automatic-lathe" class="text-joule-brightblue underline font-bold">Tornos Bechler SAS 16.6 multi-spindle automatic lathe</a>. Equipped with 6 synchronized spindles and bar-feed mechanisms, this platform produces precision turned parts at high volume with tight concentricity.
+  A premier example is the Swiss heritage <a href="/product/used-tornos-bechler-sas-16-6-multi-spindle-automatic-lathe" class="text-joule-brightblue underline font-bold">Tornos Bechler SAS 16.6 multi-spindle automatic lathe</a>. Equipped with 6 synchronized spindles and bar-feed mechanisms, this platform produces precision turned parts at high volume with tight concentricity.
 </p>
 
 <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">2. Factory Toolroom Upgrades &amp; Screw Machine Relocations</h2>
@@ -370,7 +370,7 @@ HTML
     <button type="button" onclick="openRequirementModal()" class="px-5 py-2.5 bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-sm border border-amber-300 cursor-pointer">
       <i class="fa-solid fa-file-signature mr-1"></i> Post Lathe Requirement (RFQ)
     </button>
-    <a href="category/used-lathes-turning" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors">
+    <a href="/category/used-lathes-turning" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors">
       View Lathes Catalog →
     </a>
   </div>
@@ -427,10 +427,10 @@ HTML
 
 <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">1. Online B2B Portals for Used Injection Moulding Machine for Sale</h2>
 <p class="text-slate-700 leading-relaxed mb-4">
-  The most reliable place to find a <strong>used injection moulding machine for sale</strong> is through a specialized B2B marketplace like Joule Machine Hub. In our <a href="category/used-plastic-injection-molding" class="text-joule-brightblue underline font-bold">plastic injection molding machinery category</a>, molders can browse verified machines from 120 tonnes up to 1,000 tonnes clamping force.
+  The most reliable place to find a <strong>used injection moulding machine for sale</strong> is through a specialized B2B marketplace like Joule Machine Hub. In our <a href="/category/used-plastic-injection-molding" class="text-joule-brightblue underline font-bold">plastic injection molding machinery category</a>, molders can browse verified machines from 120 tonnes up to 1,000 tonnes clamping force.
 </p>
 <p class="text-slate-700 leading-relaxed mb-4">
-  Our marketplace features popular platforms like the energy-saving <a href="product/used-haitian-ma1200ii-370-injection-molding-machine" class="text-joule-brightblue underline font-bold">Haitian MA1200II/370 (Mars II Series)</a> and large-tonnage European hydraulic presses like the <a href="product/used-ferromatik-milacron-mm1000-4880-injection-molding-machine" class="text-joule-brightblue underline font-bold">Ferromatik Milacron MM1000-4880</a>. Each unit includes detailed platen dimensions, tie bar spacing, and shot volume specifications.
+  Our marketplace features popular platforms like the energy-saving <a href="/product/used-haitian-ma1200ii-370-injection-molding-machine" class="text-joule-brightblue underline font-bold">Haitian MA1200II/370 (Mars II Series)</a> and large-tonnage European hydraulic presses like the <a href="/product/used-ferromatik-milacron-mm1000-4880-injection-molding-machine" class="text-joule-brightblue underline font-bold">Ferromatik Milacron MM1000-4880</a>. Each unit includes detailed platen dimensions, tie bar spacing, and shot volume specifications.
 </p>
 
 <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">2. Direct Plant Floor Decommissioning &amp; Mold Shop Expansions</h2>
@@ -454,7 +454,7 @@ HTML
 
 <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">4. Why Buy Your Next Molding Machine on Joule Machine Hub?</h2>
 <p class="text-slate-700 leading-relaxed mb-4">
-  Joule Machine Hub provides direct access to verified sellers of <strong>used injection moulding machines</strong>. You can compare technical specifications across top brands like <a href="manufacturer/haitian" class="text-joule-brightblue underline font-bold">Haitian</a>, Ferromatik Milacron, and Engel, submit direct enquiries, and coordinate physical shop floor inspections.
+  Joule Machine Hub provides direct access to verified sellers of <strong>used injection moulding machines</strong>. You can compare technical specifications across top brands like <a href="/manufacturer/haitian" class="text-joule-brightblue underline font-bold">Haitian</a>, Ferromatik Milacron, and Engel, submit direct enquiries, and coordinate physical shop floor inspections.
 </p>
 
 <div class="bg-gradient-to-r from-blue-50 to-slate-50 border-2 border-blue-200 rounded-2xl p-6 my-8 text-center space-y-3">
@@ -466,7 +466,7 @@ HTML
     <button type="button" onclick="openRequirementModal()" class="px-5 py-2.5 bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-sm border border-amber-300 cursor-pointer">
       <i class="fa-solid fa-file-signature mr-1"></i> Post Molding RFQ
     </button>
-    <a href="category/used-plastic-injection-molding" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors">
+    <a href="/category/used-plastic-injection-molding" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors">
       View Injection Molding Machines →
     </a>
   </div>

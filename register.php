@@ -346,7 +346,7 @@ require_once __DIR__ . '/includes/header.php';
               class="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500 mt-0.5 shrink-0"
             >
             <span>
-              I agree to the <a href="index.php#faqs" class="text-blue-600 underline font-bold">Terms &amp; Conditions</a> and <a href="index.php#faqs" class="text-blue-600 underline font-bold">Privacy Policy</a> of Joule Machine Hub.
+              I agree to the <a href="/#faqs" class="text-blue-600 underline font-bold">Terms &amp; Conditions</a> and <a href="/#faqs" class="text-blue-600 underline font-bold">Privacy Policy</a> of Joule Machine Hub.
             </span>
           </label>
         </div>

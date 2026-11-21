@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 <!-- BREADCRUMB -->
 <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
-  <a href="index.php" class="hover:text-blue-600">Dashboard</a>
+  <a href="/dashboard" class="hover:text-blue-600">Dashboard</a>
   <span>/</span>
   <a href="membership.php" class="hover:text-blue-600">Membership</a>
   <span>/</span>

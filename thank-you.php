@@ -106,7 +106,7 @@ require_once __DIR__ . '/includes/header.php';
         <!-- Immediate Action CTAs -->
         <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
           <a 
-            href="index.php" 
+            href="/" 
             class="w-full sm:w-auto bg-joule-blue hover:bg-blue-900 text-joule-yellow font-black py-3.5 px-8 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-950/20 transition-transform hover:scale-105"
           >
             <i class="fa-solid fa-industry"></i>
@@ -114,7 +114,7 @@ require_once __DIR__ . '/includes/header.php';
           </a>
 
           <a 
-            href="index.php#machinery" 
+            href="/#catalog" 
             class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3.5 px-6 rounded-xl text-sm flex items-center justify-center gap-2 border border-slate-300 transition-colors"
           >
             <i class="fa-solid fa-arrow-left text-xs"></i>
@@ -132,7 +132,7 @@ require_once __DIR__ . '/includes/header.php';
           <h3 class="text-lg font-black text-slate-950">Explore Other Verified Industrial Equipment</h3>
           <p class="text-xs text-slate-500">Verified industrial equipment through our mediated B2B desk</p>
         </div>
-        <a href="index.php#machinery" class="text-xs font-black text-joule-brightblue hover:underline">
+        <a href="/#catalog" class="text-xs font-black text-joule-brightblue hover:underline">
           View All 42 Machines →
         </a>
       </div>

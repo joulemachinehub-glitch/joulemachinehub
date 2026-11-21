@@ -3825,6 +3825,38 @@ function getCategoryBySlug($slug) {
     global $categoryMap;
     $s = strtolower(trim($slug));
     if (isset($categoryMap[$s])) return $categoryMap[$s];
+
+    // Canonical slug resolution for legacy slugs and variants (GSC Canonical Fix)
+    $legacySlugs = [
+        'used-wire-strip-forming-machinery' => 'used-wire-strip-forming',
+        'wire-strip-forming-machinery' => 'used-wire-strip-forming',
+        'wire-strip-forming' => 'used-wire-strip-forming',
+        'used-piling-drilling-rigs' => 'used-heavy-piling-drilling',
+        'piling-drilling-rigs' => 'used-heavy-piling-drilling',
+        'piling-drilling' => 'used-heavy-piling-drilling',
+        'heavy-piling-drilling' => 'used-heavy-piling-drilling',
+        'used-grinding-machines' => 'used-grinding-machining',
+        'grinding-machines' => 'used-grinding-machining',
+        'grinding-machining' => 'used-grinding-machining',
+        'cold-header-bolt-former' => 'used-cold-formers-headers',
+        'cold-header-bolt-formers' => 'used-cold-formers-headers',
+        'used-cold-header-bolt-former' => 'used-cold-formers-headers',
+        'used-cold-header-bolt-formers' => 'used-cold-formers-headers',
+        'cold-formers-headers' => 'used-cold-formers-headers',
+        'presses-stamping' => 'used-presses-stamping',
+        'lathes-turning' => 'used-lathes-turning',
+        'scissor-lifts-access-equipment' => 'used-scissor-lifts-access-equipment',
+        'filling-packaging-machinery' => 'used-filling-packaging-machinery',
+        'testing-inspection-equipment' => 'used-testing-inspection-equipment',
+        'cnc-machining-centers' => 'used-cnc-machining-centers',
+        'specialized-industrial-machinery' => 'used-specialized-industrial-machinery',
+        'plastic-injection-molding' => 'used-plastic-injection-molding',
+        'industrial-printing-machinery' => 'used-industrial-printing-machinery'
+    ];
+    if (isset($legacySlugs[$s]) && isset($categoryMap[$legacySlugs[$s]])) {
+        return $categoryMap[$legacySlugs[$s]];
+    }
+
     foreach ($categoryMap as $k => $cat) {
         if (strtolower($cat['name']) === $s || $k === $s) return $cat;
         if (preg_replace('/^used-/', '', $k) === preg_replace('/^used-/', '', $s)) return $cat;

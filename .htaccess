@@ -15,6 +15,36 @@ ErrorDocument 404 /404.php
     RewriteCond %{HTTP_HOST} ^joulemachinehub\.com$ [NC]
     RewriteRule ^(.*)$ https://joulemachinehub.com/$1 [L,R=301]
 
+    # 2. Canonical 301 Permanent Redirects for index.php / index.html to Root /
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /(?:index\.php|index\.html)[?\s] [NC]
+    RewriteRule ^index\.(?:php|html)$ https://joulemachinehub.com/ [L,R=301]
+
+    # 3. Canonical 301 Permanent Redirects for Legacy Category Slugs (Flagged in Google Search Console)
+    RewriteRule ^category/used-wire-strip-forming-machinery/?$ https://joulemachinehub.com/category/used-wire-strip-forming [L,R=301]
+    RewriteRule ^category/wire-strip-forming-machinery/?$ https://joulemachinehub.com/category/used-wire-strip-forming [L,R=301]
+    RewriteRule ^category/wire-strip-forming/?$ https://joulemachinehub.com/category/used-wire-strip-forming [L,R=301]
+    RewriteRule ^category/used-piling-drilling-rigs/?$ https://joulemachinehub.com/category/used-heavy-piling-drilling [L,R=301]
+    RewriteRule ^category/piling-drilling-rigs/?$ https://joulemachinehub.com/category/used-heavy-piling-drilling [L,R=301]
+    RewriteRule ^category/heavy-piling-drilling/?$ https://joulemachinehub.com/category/used-heavy-piling-drilling [L,R=301]
+    RewriteRule ^category/piling-drilling/?$ https://joulemachinehub.com/category/used-heavy-piling-drilling [L,R=301]
+    RewriteRule ^category/used-grinding-machines/?$ https://joulemachinehub.com/category/used-grinding-machining [L,R=301]
+    RewriteRule ^category/grinding-machines/?$ https://joulemachinehub.com/category/used-grinding-machining [L,R=301]
+    RewriteRule ^category/grinding-machining/?$ https://joulemachinehub.com/category/used-grinding-machining [L,R=301]
+    RewriteRule ^category/cold-header-bolt-former/?$ https://joulemachinehub.com/category/used-cold-formers-headers [L,R=301]
+    RewriteRule ^category/cold-header-bolt-formers/?$ https://joulemachinehub.com/category/used-cold-formers-headers [L,R=301]
+    RewriteRule ^category/used-cold-header-bolt-former/?$ https://joulemachinehub.com/category/used-cold-formers-headers [L,R=301]
+    RewriteRule ^category/used-cold-header-bolt-formers/?$ https://joulemachinehub.com/category/used-cold-formers-headers [L,R=301]
+    RewriteRule ^category/cold-formers-headers/?$ https://joulemachinehub.com/category/used-cold-formers-headers [L,R=301]
+    RewriteRule ^category/presses-stamping/?$ https://joulemachinehub.com/category/used-presses-stamping [L,R=301]
+    RewriteRule ^category/lathes-turning/?$ https://joulemachinehub.com/category/used-lathes-turning [L,R=301]
+    RewriteRule ^category/scissor-lifts-access-equipment/?$ https://joulemachinehub.com/category/used-scissor-lifts-access-equipment [L,R=301]
+    RewriteRule ^category/filling-packaging-machinery/?$ https://joulemachinehub.com/category/used-filling-packaging-machinery [L,R=301]
+    RewriteRule ^category/testing-inspection-equipment/?$ https://joulemachinehub.com/category/used-testing-inspection-equipment [L,R=301]
+    RewriteRule ^category/cnc-machining-centers/?$ https://joulemachinehub.com/category/used-cnc-machining-centers [L,R=301]
+    RewriteRule ^category/specialized-industrial-machinery/?$ https://joulemachinehub.com/category/used-specialized-industrial-machinery [L,R=301]
+    RewriteRule ^category/plastic-injection-molding/?$ https://joulemachinehub.com/category/used-plastic-injection-molding [L,R=301]
+    RewriteRule ^category/industrial-printing-machinery/?$ https://joulemachinehub.com/category/used-industrial-printing-machinery [L,R=301]
+
     # Prevent rewriting existing real files or directories
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d

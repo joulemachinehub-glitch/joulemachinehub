@@ -8,6 +8,14 @@ if ($uri === '/sitemap.xml') {
     return true;
 }
 
+// 301 Permanent Redirect /index.php or /index.html to / (GSC Canonical Fix)
+if ($uri === '/index.php' || $uri === '/index.html') {
+    $qs = !empty($_SERVER['QUERY_STRING']) ? ('?' . $_SERVER['QUERY_STRING']) : '';
+    header("HTTP/1.1 301 Moved Permanently");
+    header("Location: /" . $qs);
+    exit;
+}
+
 // Serve static assets directly if file exists
 if ($uri !== '/' && file_exists(__DIR__ . $uri)) {
     return false;

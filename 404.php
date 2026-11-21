@@ -44,7 +44,7 @@ require_once __DIR__ . '/includes/header.php';
     <!-- Action Buttons -->
     <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
       <a 
-        href="index.php" 
+        href="/" 
         class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all"
       >
         <i class="fa-solid fa-house"></i>
@@ -52,7 +52,7 @@ require_once __DIR__ . '/includes/header.php';
       </a>
 
       <a 
-        href="index.php#catalog" 
+        href="/#catalog" 
         class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm px-6 py-3 rounded-xl border border-slate-200 transition-all"
       >
         <i class="fa-solid fa-boxes-stacked text-blue-600"></i>

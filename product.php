@@ -262,7 +262,7 @@ require_once __DIR__ . '/includes/header.php';
 <!-- 1. BREADCRUMBS WITH CLICKABLE INTERNAL SEO LINKS -->
 <div class="bg-white border-b border-slate-200 py-3 px-4">
   <div class="max-w-7xl mx-auto flex items-center flex-wrap gap-2 text-xs text-slate-500">
-    <a href="index.php" class="hover:text-joule-brightblue font-bold flex items-center gap-1">
+    <a href="/" class="hover:text-joule-brightblue font-bold flex items-center gap-1">
       <i class="fa-solid fa-house text-slate-400 text-[10px]"></i>
       <span>Home</span>
     </a>
@@ -961,7 +961,7 @@ require_once __DIR__ . '/includes/header.php';
         <h2 class="text-lg sm:text-xl font-black text-slate-950">Similar Verified Machinery</h2>
         <p class="text-xs text-slate-500">Explore other available equipment in <?php echo htmlspecialchars($machine['category']); ?> and <?php echo htmlspecialchars($machine['country']); ?>.</p>
       </div>
-      <a href="index.php#catalog" class="text-xs font-bold text-joule-brightblue hover:underline hidden sm:inline">
+      <a href="/#catalog" class="text-xs font-bold text-joule-brightblue hover:underline hidden sm:inline">
         View All Equipment &rarr;
       </a>
     </div>

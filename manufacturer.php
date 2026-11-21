@@ -284,12 +284,12 @@ require_once __DIR__ . '/includes/header.php';
 <!-- BREADCRUMB BAR -->
 <div class="bg-white border-b border-slate-200 py-3 px-4">
   <div class="max-w-7xl mx-auto flex items-center flex-wrap gap-2 text-xs text-slate-500">
-    <a href="index.php" class="hover:text-joule-brightblue font-bold flex items-center gap-1">
+    <a href="/" class="hover:text-joule-brightblue font-bold flex items-center gap-1">
       <i class="fa-solid fa-house text-slate-400 text-[10px]"></i>
       <span>Home</span>
     </a>
     <span class="text-slate-300">/</span>
-    <a href="index.php#catalog" class="hover:text-joule-brightblue font-medium">Manufacturers</a>
+    <a href="/#catalog" class="hover:text-joule-brightblue font-medium">Manufacturers</a>
     <span class="text-slate-300">/</span>
     <span class="text-slate-900 font-black flex items-center gap-1.5">
       <span><?php echo htmlspecialchars($mfgName); ?></span>

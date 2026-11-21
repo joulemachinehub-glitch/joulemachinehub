@@ -23,11 +23,17 @@ if (empty($slugOrName) && !$categoryInfo) {
 $categoryName = $categoryInfo['name'];
 $categorySlug = $categoryInfo['slug'];
 
-// STRICT CLEAN SEO SLUG ENFORCEMENT: Redirect legacy .php URLs to canonical slug
+// STRICT CLEAN SEO SLUG ENFORCEMENT & CANONICAL 301 REDIRECT (GSC Canonical Fix):
+// Redirect legacy slugs, alias URLs, or .php queries permanently to canonical /category/{categorySlug}
 $requestUri = $_SERVER['REQUEST_URI'] ?? '';
-if (str_contains($requestUri, 'category.php')) {
+if (str_contains($requestUri, 'category.php') || (!empty($slugOrName) && $slugOrName !== $categorySlug) || isset($_GET['category'])) {
+    $extraParams = [];
+    if (!empty($_GET['country']) && $_GET['country'] !== 'All Countries') $extraParams['country'] = $_GET['country'];
+    if (!empty($_GET['sort']) && $_GET['sort'] !== 'featured') $extraParams['sort'] = $_GET['sort'];
+    $qs = !empty($extraParams) ? ('?' . http_build_query($extraParams)) : '';
+
     header("HTTP/1.1 301 Moved Permanently");
-    header("Location: /category/" . $categorySlug);
+    header("Location: /category/" . $categorySlug . $qs);
     exit;
 }
 
@@ -165,12 +171,12 @@ require_once __DIR__ . '/includes/header.php';
 <!-- BREADCRUMB BAR -->
 <div class="bg-white border-b border-slate-200 py-3 px-4">
   <div class="max-w-7xl mx-auto flex items-center flex-wrap gap-2 text-xs text-slate-500">
-    <a href="index.php" class="hover:text-joule-brightblue font-bold flex items-center gap-1">
+    <a href="/" class="hover:text-joule-brightblue font-bold flex items-center gap-1">
       <i class="fa-solid fa-house text-slate-400 text-[10px]"></i>
       <span>Home</span>
     </a>
     <span class="text-slate-300">/</span>
-    <a href="index.php#catalog" class="hover:text-joule-brightblue font-medium">Categories</a>
+    <a href="/#catalog" class="hover:text-joule-brightblue font-medium">Categories</a>
     <span class="text-slate-300">/</span>
     <span class="text-slate-900 font-black flex items-center gap-1.5">
       <i class="fa-solid <?php echo htmlspecialchars($categoryInfo['icon']); ?> text-joule-brightblue"></i>

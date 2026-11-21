@@ -66,7 +66,7 @@ require_once __DIR__ . '/includes/header.php';
 
       <!-- Top Breadcrumbs -->
       <nav class="flex items-center gap-2 text-xs text-slate-400 mb-8 font-semibold" aria-label="Breadcrumb">
-        <a href="index.php" class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+        <a href="/" class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
           <i class="fa-solid fa-house"></i>
           <span>Home</span>
         </a>
@@ -118,7 +118,7 @@ require_once __DIR__ . '/includes/header.php';
               <i class="fa-solid fa-store text-amber-400 text-xs shrink-0"></i>
               <span class="leading-tight">Become a Verified Seller</span>
             </a>
-            <a href="index.php#catalog" class="col-span-1 col-1 w-full sm:w-auto px-2 sm:px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider border border-white/20 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 min-h-[46px] hover:scale-105">
+            <a href="/#catalog" class="col-span-1 col-1 w-full sm:w-auto px-2 sm:px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider border border-white/20 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 min-h-[46px] hover:scale-105">
               <i class="fa-solid fa-boxes-stacked text-amber-400 text-xs shrink-0"></i>
               <span class="leading-tight">Explore Machinery</span>
             </a>
@@ -304,7 +304,7 @@ require_once __DIR__ . '/includes/header.php';
         <!-- CENTER WEBSITE LOGO (JOULE MACHINE HUB OFFICIAL LOGO) -->
         <div class="absolute z-20 flex items-center justify-center -translate-x-1/2 -translate-y-1/2" 
              style="left: 50%; top: 48%;">
-          <a href="index.php" title="Joule Machine Hub - Online Industrial Machinery Marketplace" class="block group">
+          <a href="/" title="Joule Machine Hub - Online Industrial Machinery Marketplace" class="block group">
             <img 
               src="/assets/images/logo-v2.png" 
               alt="Joule Machine Hub - Online Industrial Machinery Marketplace" 
@@ -387,7 +387,7 @@ require_once __DIR__ . '/includes/header.php';
         </a>
 
         <!-- CARD 4: BUYER ENQUIRY -->
-        <a href="index.php#catalog" 
+        <a href="/#catalog" 
            title="Step 4: Buyer Enquiry - Browse Catalog & Submit RFQs"
            class="absolute z-20 bg-gradient-to-b from-white to-slate-50 text-slate-900 rounded-3xl p-3.5 shadow-[0_16px_32px_-4px_rgba(0,0,0,0.5)] border border-slate-200/80 hover:border-amber-400 hover:ring-2 hover:ring-amber-400/60 hover:-translate-y-1 transition-all duration-300 block group"
            style="left: 36.3%; top: 69.6%; width: 27.3%; min-height: 115px;">
@@ -485,7 +485,7 @@ require_once __DIR__ . '/includes/header.php';
           <i class="fa-solid fa-store text-xs shrink-0"></i>
           <span class="leading-tight">Register as Seller</span>
         </a>
-        <a href="index.php#catalog" class="col-span-1 col-1 w-full sm:w-auto px-2.5 sm:px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider border border-white/20 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 hover:scale-105 min-h-[46px]">
+        <a href="/#catalog" class="col-span-1 col-1 w-full sm:w-auto px-2.5 sm:px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider border border-white/20 transition-all flex items-center justify-center text-center gap-1.5 sm:gap-2 hover:scale-105 min-h-[46px]">
           <i class="fa-solid fa-boxes-stacked text-amber-400 text-xs shrink-0"></i>
           <span class="leading-tight">Explore Machinery</span>
         </a>
@@ -656,7 +656,7 @@ require_once __DIR__ . '/includes/header.php';
           </div>
 
           <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-center">
-            <a href="index.php#catalog" class="text-xs font-black text-white bg-[#051833] hover:bg-slate-800 px-5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-2">
+            <a href="/#catalog" class="text-xs font-black text-white bg-[#051833] hover:bg-slate-800 px-5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-2">
               <i class="fa-solid fa-magnifying-glass text-amber-400"></i>
               <span>Browse 5,000+ Machinery Listings</span>
             </a>
@@ -917,7 +917,7 @@ require_once __DIR__ . '/includes/header.php';
       </p>
 
       <div class="pt-4 grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 sm:gap-4 max-w-xl sm:max-w-none mx-auto jmh-mobile-grid-2">
-        <a href="index.php#catalog" class="col-span-2 span-full w-full sm:w-auto px-4 sm:px-7 py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-400/25 transition-all hover:scale-105 flex items-center justify-center text-center gap-2 min-h-[46px]">
+        <a href="/#catalog" class="col-span-2 span-full w-full sm:w-auto px-4 sm:px-7 py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-400/25 transition-all hover:scale-105 flex items-center justify-center text-center gap-2 min-h-[46px]">
           <i class="fa-solid fa-boxes-stacked text-xs sm:text-sm shrink-0"></i>
           <span>Explore Machinery</span>
         </a>

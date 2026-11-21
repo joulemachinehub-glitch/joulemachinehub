@@ -6,8 +6,8 @@
           &copy; <?php echo date('Y'); ?> Joule Machine Hub. All rights reserved.
         </div>
         <div class="flex items-center gap-4 text-xs text-slate-500">
-          <a href="../index.php#faqs" class="hover:text-blue-600 transition-colors">Seller Help</a>
-          <a href="../index.php#faqs" class="hover:text-blue-600 transition-colors">Terms of Service</a>
+          <a href="/#faqs" class="hover:text-blue-600 transition-colors">Seller Help</a>
+          <a href="/#faqs" class="hover:text-blue-600 transition-colors">Terms of Service</a>
           <a href="membership.php" class="text-blue-600 font-bold hover:underline">Membership</a>
         </div>
       </footer>

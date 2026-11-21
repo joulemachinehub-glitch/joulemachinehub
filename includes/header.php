@@ -234,7 +234,7 @@ $currActiveSymbol = $currSymbols[$activeCurr] ?? '₹';
       <div class="flex items-center justify-between gap-1 sm:gap-6">
         
         <!-- Logo (Top navigation left) -->
-        <a href="index.php" class="flex items-center group shrink min-w-0" title="Joule Machine Hub - Worldwide Used / New Industrial Machinery Network">
+        <a href="/" class="flex items-center group shrink min-w-0" title="Joule Machine Hub - Worldwide Used / New Industrial Machinery Network">
           <img 
             src="/assets/images/logo-v2.png?v=<?php echo $assetVer; ?>" 
             alt="Joule Machine Hub - Worldwide Used / New Industrial Machinery Network" 
@@ -246,7 +246,7 @@ $currActiveSymbol = $currSymbols[$activeCurr] ?? '₹';
 
         <!-- CENTER NAVIGATION LINKS (Visible on lg screens only) -->
         <nav class="hidden lg:flex items-center gap-1 text-xs font-bold text-slate-700">
-          <a href="index.php#catalog" class="px-3 py-2 rounded-xl hover:text-joule-blue hover:bg-slate-100 transition-colors flex items-center gap-1.5">
+          <a href="/#catalog" class="px-3 py-2 rounded-xl hover:text-joule-blue hover:bg-slate-100 transition-colors flex items-center gap-1.5">
             <i class="fa-solid fa-boxes-stacked text-amber-500"></i>
             <span>Browse Machines</span>
           </a>
@@ -406,7 +406,7 @@ $currActiveSymbol = $currSymbols[$activeCurr] ?? '₹';
 
       <!-- Mobile Navigation Links Grid -->
       <nav class="grid grid-cols-2 gap-2 text-xs font-bold text-slate-700 pt-1">
-        <a href="index.php#catalog" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center gap-2 border border-slate-200">
+        <a href="/#catalog" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center gap-2 border border-slate-200">
           <i class="fa-solid fa-boxes-stacked text-amber-500"></i>
           <span>Browse Machines</span>
         </a>

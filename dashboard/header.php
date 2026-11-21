@@ -75,7 +75,7 @@ $pageTitle = isset($pageTitle) ? $pageTitle : "Seller Dashboard | Joule Machine 
       >
         <i class="fa-solid fa-bars text-sm"></i>
       </button>
-      <a href="index.php" class="flex items-center gap-2">
+      <a href="/dashboard" class="flex items-center gap-2">
         <span class="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center font-black text-white text-[11px] shadow-sm">
           JMH
         </span>
@@ -91,7 +91,7 @@ $pageTitle = isset($pageTitle) ? $pageTitle : "Seller Dashboard | Joule Machine 
         <?php echo htmlspecialchars($userSub['plan_name']); ?>
       </a>
       <a 
-        href="../index.php" 
+        href="/" 
         target="_blank" 
         class="w-8 h-8 rounded-lg bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center text-xs"
         title="View Public Marketplace"
@@ -111,7 +111,7 @@ $pageTitle = isset($pageTitle) ? $pageTitle : "Seller Dashboard | Joule Machine 
     >
       <!-- Sidebar Brand Header -->
       <div class="p-5 border-b border-slate-800/80 flex items-center justify-between">
-        <a href="index.php" class="flex items-center gap-2.5 group">
+        <a href="/dashboard" class="flex items-center gap-2.5 group">
           <span class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-xs shadow-md group-hover:bg-blue-500 transition-colors shrink-0">
             JMH
           </span>
@@ -160,7 +160,7 @@ $pageTitle = isset($pageTitle) ? $pageTitle : "Seller Dashboard | Joule Machine 
         
         <!-- 1. Dashboard Overview -->
         <a 
-          href="index.php" 
+          href="/dashboard" 
           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors <?php echo $currentScript === 'index.php' ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'; ?>"
         >
           <i class="fa-solid fa-gauge-high w-4 text-center"></i>
@@ -268,7 +268,7 @@ $pageTitle = isset($pageTitle) ? $pageTitle : "Seller Dashboard | Joule Machine 
       <!-- Sidebar Bottom Link: Public Marketplace -->
       <div class="p-3 border-t border-slate-800/80">
         <a 
-          href="../index.php" 
+          href="/" 
           class="w-full flex items-center justify-center gap-2 bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 text-xs font-bold py-2.5 px-3 rounded-xl transition-colors"
         >
           <i class="fa-solid fa-globe text-blue-400"></i>
@@ -302,7 +302,7 @@ $pageTitle = isset($pageTitle) ? $pageTitle : "Seller Dashboard | Joule Machine 
         <div class="flex items-center gap-3">
           <!-- Public Site Button -->
           <a 
-            href="../index.php" 
+            href="/" 
             target="_blank" 
             class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-joule-blue bg-slate-100 hover:bg-slate-200 px-3.5 py-2 rounded-xl transition-colors border border-slate-200"
           >
