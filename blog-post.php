@@ -229,7 +229,7 @@ $schemaArticle = [
         'name' => 'Joule Machine Hub',
         'logo' => [
             '@type' => 'ImageObject',
-            'url' => 'https://joulemachinehub.com/assets/images/logo.png'
+            'url' => 'https://joulemachinehub.com/assets/images/logo-v2.png'
         ]
     ]
 ];

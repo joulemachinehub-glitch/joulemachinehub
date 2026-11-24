@@ -93,15 +93,14 @@ usort($filteredMachines, function($a, $b) {
 $pageRobots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
 
 // SEO Metadata Configuration (Clean Primary Keywords, Enriched OpenGraph & Schema)
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
-$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$canonicalUrl = $protocol . $host . '/';
+$canonicalBase = 'https://joulemachinehub.com';
+$canonicalUrl = $canonicalBase . '/';
 $pageTitle = "Used Industrial Machinery for Sale | Joule Machine Hub";
 $pageDesc = "Buy used and new industrial machinery from verified sellers. Browse CNC machines, power presses, lathes and packaging equipment on Joule Machine Hub.";
 $pageKeywords = "used industrial machinery for sale, new industrial machinery, b2b machinery marketplace, industrial equipment for sale, used manufacturing equipment, global machinery marketplace, used cnc machines for sale, power presses for sale, industrial lathes, injection moulding machines";
 $ogTitle = $pageTitle;
 $ogDesc = $pageDesc;
-$ogImage = $protocol . $host . '/assets/images/haas-vmc-1.jpg';
+$ogImage = $canonicalBase . '/assets/images/haas-vmc-1.jpg';
 $ogImageAlt = "Joule Machine Hub - Global B2B Industrial Machinery Marketplace";
 $ogType = "website";
 $pageRobots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
@@ -114,8 +113,8 @@ foreach (array_slice($machines, 0, 8) as $pos => $m) {
         '@type' => 'ListItem',
         'position' => $pos + 1,
         'name' => ($m['year'] ? $m['year'] . ' ' : '') . ($m['title'] ?? ''),
-        'url' => $protocol . $host . '/' . getMachineUrl($m),
-        'image' => !empty($m['images'][0]) ? ($protocol . $host . '/' . ltrim($m['images'][0], '/')) : null
+        'url' => $canonicalBase . '/' . ltrim(getMachineUrl($m), '/'),
+        'image' => !empty($m['images'][0]) ? ($canonicalBase . '/' . ltrim($m['images'][0], '/')) : null
     ];
 }
 
@@ -124,11 +123,11 @@ $jsonLd = [
     '@graph' => [
         [
             '@type' => 'Organization',
-            '@id' => $protocol . $host . '/#organization',
+            '@id' => $canonicalBase . '/#organization',
             'name' => 'Joule Machine Hub',
-            'url' => $protocol . $host . '/',
-            'logo' => $protocol . $host . '/assets/images/logo.png',
-            'image' => $protocol . $host . '/assets/images/haas-vmc-1.jpg',
+            'url' => $canonicalBase . '/',
+            'logo' => $canonicalBase . '/assets/images/logo-v2.png',
+            'image' => $canonicalBase . '/assets/images/haas-vmc-1.jpg',
             'description' => 'Worldwide B2B marketplace for verified used and new industrial machinery directly from plant floors and OEMs worldwide.',
             'foundingDate' => '2018',
             'areaServed' => ['Worldwide', 'Japan', 'China', 'Germany', 'Switzerland', 'Singapore', 'Taiwan', 'India'],
@@ -149,13 +148,13 @@ $jsonLd = [
         ],
         [
             '@type' => 'WebSite',
-            '@id' => $protocol . $host . '/#website',
-            'url' => $protocol . $host . '/',
+            '@id' => $canonicalBase . '/#website',
+            'url' => $canonicalBase . '/',
             'name' => 'Joule Machine Hub',
-            'publisher' => ['@id' => $protocol . $host . '/#organization'],
+            'publisher' => ['@id' => $canonicalBase . '/#organization'],
             'potentialAction' => [
                 '@type' => 'SearchAction',
-                'target' => $protocol . $host . '/?search={search_term_string}#catalog',
+                'target' => $canonicalBase . '/?search={search_term_string}#catalog',
                 'query-input' => 'required name=search_term_string'
             ]
         ],
@@ -167,7 +166,7 @@ $jsonLd = [
         ],
         [
             '@type' => 'FAQPage',
-            '@id' => $protocol . $host . '/#faq',
+            '@id' => $canonicalBase . '/#faq',
             'mainEntity' => [
                 [
                     '@type' => 'Question',

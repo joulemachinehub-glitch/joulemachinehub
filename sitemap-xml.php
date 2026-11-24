@@ -45,10 +45,8 @@ function sitemapUrl($loc, $priority = '0.8', $changefreq = 'weekly', $lastmod = 
 sitemapUrl($baseUrl . '/', '1.0', 'daily');
 sitemapUrl($baseUrl . '/about', '0.9', 'weekly');
 sitemapUrl($baseUrl . '/category', '0.9', 'daily');
-sitemapUrl($baseUrl . '/register', '0.7', 'monthly');
-sitemapUrl($baseUrl . '/login', '0.6', 'monthly');
-sitemapUrl($baseUrl . '/sitemap.php', '0.6', 'weekly');
-sitemapUrl($baseUrl . '/blog', '0.7', 'weekly');
+sitemapUrl($baseUrl . '/blog', '0.8', 'daily');
+sitemapUrl($baseUrl . '/sitemap.php', '0.7', 'weekly');
 
 // 2. Category Pages
 global $categoryMap;

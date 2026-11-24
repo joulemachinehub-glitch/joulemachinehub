@@ -57,9 +57,8 @@ usort($countryMachines, function($a, $b) use ($sortBy) {
 });
 
 // SEO Setup (Clean URLs, Primary Keywords, Enriched Tags)
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
-$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$canonicalUrl = $protocol . $host . '/' . getCountryUrl($currentHub['name']);
+$canonicalBase = 'https://joulemachinehub.com';
+$canonicalUrl = $canonicalBase . '/' . ltrim(getCountryUrl($currentHub['name']), '/');
 $pageTitle = !empty($currentHub['meta_title']) ? $currentHub['meta_title'] : ("Used & New Industrial Machinery in " . $currentHub['name'] . " | Joule Machine Hub");
 $pageDesc = !empty($currentHub['meta_desc']) ? $currentHub['meta_desc'] : ("Explore verified used and new industrial machinery across " . $currentHub['name'] . ".");
 $pageKeywords = "used machinery " . strtolower($currentHub['name']) . ", new industrial machinery " . strtolower($currentHub['name']) . ", second hand machinery " . strtolower($currentHub['name']) . ", buy cnc " . strtolower($currentHub['name']) . ", factory liquidation " . strtolower($currentHub['name']) . ", manufacturing machinery " . strtolower($currentHub['name']);
@@ -67,7 +66,7 @@ $geoPlacename = $currentHub['name'];
 $geoRegion = $currentHub['code'] ?? '';
 $ogTitle = $pageTitle;
 $ogDesc = $pageDesc;
-$ogImage = $protocol . $host . '/' . ltrim($currentHub['image'], '/');
+$ogImage = $canonicalBase . '/' . ltrim($currentHub['image'], '/');
 $ogImageAlt = "Used & New Industrial Machinery Hub in " . $currentHub['name'];
 $pageRobots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 
@@ -83,7 +82,7 @@ $jsonLd = [
             'isPartOf' => [
                 '@type' => 'WebSite',
                 'name' => 'Joule Machine Hub',
-                'url' => $protocol . $host . '/'
+                'url' => $canonicalBase . '/'
             ]
         ],
         [
@@ -93,13 +92,13 @@ $jsonLd = [
                     '@type' => 'ListItem',
                     'position' => 1,
                     'name' => 'Home',
-                    'item' => $protocol . $host . '/'
+                    'item' => $canonicalBase . '/'
                 ],
                 [
                     '@type' => 'ListItem',
                     'position' => 2,
                     'name' => 'Global Hubs',
-                    'item' => $protocol . $host . '/#cities'
+                    'item' => $canonicalBase . '/#cities'
                 ],
                 [
                     '@type' => 'ListItem',
@@ -113,13 +112,13 @@ $jsonLd = [
             '@type' => 'ItemList',
             'name' => 'Available Machinery in ' . $currentHub['name'],
             'numberOfItems' => count($countryMachines),
-            'itemListElement' => array_values(array_map(function($m, $pos) use ($protocol, $host) {
+            'itemListElement' => array_values(array_map(function($m, $pos) use ($canonicalBase) {
                 return [
                     '@type' => 'ListItem',
                     'position' => $pos + 1,
                     'name' => ($m['year'] ? $m['year'] . ' ' : '') . ($m['title'] ?? ''),
-                    'url' => $protocol . $host . '/' . getMachineUrl($m),
-                    'image' => !empty($m['images'][0]) ? ($protocol . $host . '/' . ltrim($m['images'][0], '/')) : null
+                    'url' => $canonicalBase . '/' . ltrim(getMachineUrl($m), '/'),
+                    'image' => !empty($m['images'][0]) ? ($canonicalBase . '/' . ltrim($m['images'][0], '/')) : null
                 ];
             }, array_slice($countryMachines, 0, 10), array_keys(array_slice($countryMachines, 0, 10))))
         ]

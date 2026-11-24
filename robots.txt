@@ -10,7 +10,6 @@ Allow: /city/
 Allow: /collections/
 Allow: /sitemap.php
 Allow: /sitemap.xml
-Disallow: /*?*
 Disallow: /admin
 Disallow: /admin/
 Disallow: /admin.php

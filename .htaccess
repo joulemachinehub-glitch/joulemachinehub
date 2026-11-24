@@ -45,6 +45,9 @@ ErrorDocument 404 /404.php
     RewriteRule ^category/plastic-injection-molding/?$ https://joulemachinehub.com/category/used-plastic-injection-molding [L,R=301]
     RewriteRule ^category/industrial-printing-machinery/?$ https://joulemachinehub.com/category/used-industrial-printing-machinery [L,R=301]
 
+    # Dynamic XML Sitemap (Always auto-updated from database & catalog)
+    RewriteRule ^sitemap\.xml$ sitemap-xml.php [L]
+
     # Prevent rewriting existing real files or directories
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
@@ -182,13 +185,10 @@ ErrorDocument 404 /404.php
     SetEnvIf Request_URI "^/(admin|login|register|dashboard)" NOINDEX_RESTRICTED=1
     Header set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet" env=NOINDEX_RESTRICTED
 
-    # Blog Directory & Posts - User Requested noindex, nofollow
+    # Blog Directory & Posts - Indexed for B2B Buyer Organic Traffic
     <FilesMatch "^(blog|blog-post)\.php$">
-        Header set X-Robots-Tag "noindex, nofollow"
+        Header set X-Robots-Tag "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
     </FilesMatch>
-
-    SetEnvIf Request_URI "^/(blog|blogs)" NOINDEX_BLOG=1
-    Header set X-Robots-Tag "noindex, nofollow" env=NOINDEX_BLOG
 
     # 1 Year Cache for Static Images & Media
     <FilesMatch "\.(ico|jpe?g|png|gif|svg|webp|woff2?|ttf|eot)$">

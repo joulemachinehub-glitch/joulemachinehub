@@ -203,9 +203,8 @@ $cityProfiles = [
 $profile = $cityProfiles[$cityName] ?? $cityProfiles['Nagoya'];
 
 // SEO Setup
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
-$host = $_SERVER['HTTP_HOST'] ?? 'joulemachinehub.com';
-$canonicalUrl = $protocol . $host . '/' . getCityUrl($cityName);
+$canonicalBase = 'https://joulemachinehub.com';
+$canonicalUrl = $canonicalBase . '/' . ltrim(getCityUrl($cityName), '/');
 $pageTitle = !empty($cityData['meta_title']) ? $cityData['meta_title'] : ("Used & New Industrial Machinery in " . $cityName . " | Joule Machine Hub");
 $pageDesc = !empty($cityData['meta_desc']) ? $cityData['meta_desc'] : ("Buy verified used and new machinery in " . $cityName . ", " . $countryName . ".");
 $pageKeywords = "used machinery " . strtolower($cityName) . ", new industrial machinery " . strtolower($cityName) . ", used industrial equipment " . strtolower($cityName) . ", " . strtolower($specialty) . " " . strtolower($cityName);
@@ -213,7 +212,7 @@ $geoPlacename = $cityName . ", " . $countryName;
 $geoRegion = $cityData['country_code'];
 $ogTitle = $pageTitle;
 $ogDesc = $pageDesc;
-$ogImage = $protocol . $host . '/' . ltrim($cityData['image'], '/');
+$ogImage = $canonicalBase . '/' . ltrim($cityData['image'], '/');
 $ogType = "website";
 $pageRobots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 
@@ -249,7 +248,7 @@ $jsonLd = [
             'isPartOf' => [
                 '@type' => 'WebSite',
                 'name' => 'Joule Machine Hub',
-                'url' => $protocol . $host . '/'
+                'url' => $canonicalBase . '/'
             ]
         ],
         [
@@ -259,13 +258,13 @@ $jsonLd = [
                     '@type' => 'ListItem',
                     'position' => 1,
                     'name' => 'Home',
-                    'item' => $protocol . $host . '/'
+                    'item' => $canonicalBase . '/'
                 ],
                 [
                     '@type' => 'ListItem',
                     'position' => 2,
                     'name' => 'Cities',
-                    'item' => $protocol . $host . '/#cities'
+                    'item' => $canonicalBase . '/#cities'
                 ],
                 [
                     '@type' => 'ListItem',
@@ -279,13 +278,13 @@ $jsonLd = [
             '@type' => 'ItemList',
             'name' => 'Available Machinery in ' . $cityName,
             'numberOfItems' => count($cityMachines),
-            'itemListElement' => array_values(array_map(function($m, $pos) use ($protocol, $host) {
+            'itemListElement' => array_values(array_map(function($m, $pos) use ($canonicalBase) {
                 return [
                     '@type' => 'ListItem',
                     'position' => $pos + 1,
                     'name' => ($m['year'] ? $m['year'] . ' ' : '') . ($m['title'] ?? ''),
-                    'url' => $protocol . $host . '/' . getMachineUrl($m),
-                    'image' => !empty($m['images'][0]) ? ($protocol . $host . '/' . ltrim($m['images'][0], '/')) : null
+                    'url' => $canonicalBase . '/' . ltrim(getMachineUrl($m), '/'),
+                    'image' => !empty($m['images'][0]) ? ($canonicalBase . '/' . ltrim($m['images'][0], '/')) : null
                 ];
             }, array_slice($cityMachines, 0, 10), array_keys(array_slice($cityMachines, 0, 10))))
         ],

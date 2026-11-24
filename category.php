@@ -61,16 +61,15 @@ usort($catMachines, function($a, $b) use ($sortBy) {
 });
 
 // SEO Metadata Configuration
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
-$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$canonicalUrl = $protocol . $host . '/' . getCategoryUrl($categoryName);
+$canonicalBase = 'https://joulemachinehub.com';
+$canonicalUrl = $canonicalBase . '/' . ltrim(getCategoryUrl($categoryName), '/');
 
 $pageTitle = !empty($categoryInfo['meta_title']) ? $categoryInfo['meta_title'] : ("Used & New " . $categoryName . " for Sale | Joule Machine Hub");
 $pageDesc = !empty($categoryInfo['meta_desc']) ? $categoryInfo['meta_desc'] : ("Browse verified used and new " . strtolower($categoryName) . " from manufacturing plants and OEMs.");
 $pageKeywords = "used " . strtolower($categoryName) . ", new " . strtolower($categoryName) . ", second hand " . strtolower($categoryName) . ", buy " . strtolower($categoryName) . ", industrial " . strtolower($categoryName) . " for sale, plant liquidation";
 $ogTitle = $pageTitle;
 $ogDesc = $pageDesc;
-$ogImage = $protocol . $host . '/' . ltrim($categoryInfo['image'], '/');
+$ogImage = $canonicalBase . '/' . ltrim($categoryInfo['image'], '/');
 $ogType = "website";
 $pageRobots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"; // Clean SEO indexable collections page
 
@@ -126,7 +125,7 @@ $jsonLd = [
             'isPartOf' => [
                 '@type' => 'WebSite',
                 'name' => 'Joule Machine Hub',
-                'url' => $protocol . $host . '/'
+                'url' => $canonicalBase . '/'
             ]
         ],
         [
@@ -136,13 +135,13 @@ $jsonLd = [
                     '@type' => 'ListItem',
                     'position' => 1,
                     'name' => 'Home',
-                    'item' => $protocol . $host . '/'
+                    'item' => $canonicalBase . '/'
                 ],
                 [
                     '@type' => 'ListItem',
                     'position' => 2,
                     'name' => 'Categories',
-                    'item' => $protocol . $host . '/#catalog'
+                    'item' => $canonicalBase . '/category'
                 ],
                 [
                     '@type' => 'ListItem',

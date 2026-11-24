@@ -121,12 +121,13 @@ if (!function_exists('getEnrichedMachineData')) {
         $machineLocation = 'Seller-provided';
 
         // 6. Primary SEO Titles and Meta Description
-        // SEO Title: Used [Brand] [Model] [Machine Type] for Sale
-        // Meta Description: Buy a used [Brand] [Model] [Machine Type]. View technical specifications, machine details and connect directly with the seller.
-        // H1: Used [Brand] [Model] [Machine Type] for Sale
-        $h1Title = "Used " . $shortBrand . " " . $model . " " . $cleanType . " for Sale";
-        $seoTitle = "Used " . $shortBrand . " " . $model . " " . $shortType . " for Sale";
-        $metaDesc = "Buy a used " . $shortBrand . " " . $model . " " . strtolower($cleanType) . ". View technical specifications, machine details and connect directly with the seller.";
+        // SEO Title: Used [Year] [Brand] [Model] [Machine Type] for Sale
+        // Meta Description: Buy verified used [Year] [Brand] [Model] [Machine Type]. Review machine specs, condition, genuine photos & contact seller on Joule Machine Hub.
+        // H1: Used [Year] [Brand] [Model] [Machine Type] for Sale
+        $yearStr = (!empty($year) && is_numeric($year)) ? ($year . ' ') : '';
+        $h1Title = "Used " . $yearStr . $shortBrand . " " . $model . " " . $cleanType . " for Sale";
+        $seoTitle = "Used " . $yearStr . $shortBrand . " " . $model . " " . $shortType . " for Sale";
+        $metaDesc = "Buy verified used " . $yearStr . $shortBrand . " " . $model . " " . strtolower($cleanType) . ". Review machine specs, condition, genuine photos & contact seller on Joule Machine Hub.";
         $focusKeyword = "Used " . $shortBrand . " " . $model . " " . $shortType;
 
         $secondaryKeywords = [
@@ -166,9 +167,9 @@ if (!function_exists('getEnrichedMachineData')) {
         $isDingli = (stripos($model, 'JCPT1412HD') !== false);
 
         if ($isDingli) {
-            $seoTitle = "Used Dingli JCPT1412HD Scissor Lift for Sale";
-            $h1Title = "Used Dingli JCPT1412HD Self-Propelled Scissor Lift for Sale";
-            $metaDesc = "Buy a used Dingli JCPT1412HD self-propelled scissor lift. View technical specifications, machine details and connect directly with the seller.";
+            $seoTitle = "Used 2016 Dingli JCPT1412HD Scissor Lift for Sale";
+            $h1Title = "Used 2016 Dingli JCPT1412HD Self-Propelled Scissor Lift for Sale";
+            $metaDesc = "Buy verified used 2016 Dingli JCPT1412HD self-propelled scissor lift (14m). View technical specifications, machine details & contact seller on Joule Machine Hub.";
             $focusKeyword = "Used Dingli JCPT1412HD Scissor Lift";
             $secondaryKeywords = [
                 "Dingli scissor lift for sale",
