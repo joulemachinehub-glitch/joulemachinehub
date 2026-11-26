@@ -65,8 +65,8 @@ if (!empty($categoryMap)) {
 global $countryHubs;
 if (!empty($countryHubs)) {
     foreach ($countryHubs as $k => $ch) {
-        $slug = strtolower($ch['name'] ?? $k);
-        sitemapUrl($baseUrl . '/country/' . $slug, '0.8', 'weekly');
+        $cName = $ch['name'] ?? $k;
+        sitemapUrl($baseUrl . '/' . ltrim(getCountryUrl($cName), '/'), '0.8', 'weekly');
     }
 }
 
@@ -74,8 +74,8 @@ if (!empty($countryHubs)) {
 global $cityHubs;
 if (!empty($cityHubs)) {
     foreach ($cityHubs as $k => $ci) {
-        $slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $ci['name'] ?? $k));
-        sitemapUrl($baseUrl . '/city/' . $slug, '0.7', 'weekly');
+        $cName = $ci['name'] ?? $k;
+        sitemapUrl($baseUrl . '/' . ltrim(getCityUrl($cName), '/'), '0.7', 'weekly');
     }
 }
 

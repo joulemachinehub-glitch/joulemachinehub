@@ -22,15 +22,17 @@ if (!$machine) {
     $machine = $machines[0];
 }
 
-// STRICT CLEAN SEO SLUG ENFORCEMENT: Eliminate ?, =, & and direct .php query strings
+// STRICT CLEAN SEO SLUG ENFORCEMENT & CANONICAL REDIRECT:
+// Redirect direct .php queries, legacy slugs (e.g. used-used-...), or non-canonical paths to verified clean slug
 $requestUri = $_SERVER['REQUEST_URI'] ?? '';
 $hasQuerySymbols = str_contains($requestUri, '?') || str_contains($requestUri, '=');
 $isDirectPhpScript = str_contains($requestUri, 'product.php') || str_contains($requestUri, 'machine.php');
+$canonicalProductPath = '/' . getMachineUrl($machine);
+$requestedPath = parse_url($requestUri, PHP_URL_PATH);
 
-if ($hasQuerySymbols || $isDirectPhpScript) {
-    $cleanSlugUrl = '/' . getMachineUrl($machine);
+if ($hasQuerySymbols || $isDirectPhpScript || ($requestedPath && $requestedPath !== $canonicalProductPath && !str_starts_with($requestedPath, '/assets'))) {
     header("HTTP/1.1 301 Moved Permanently");
-    header("Location: " . $cleanSlugUrl);
+    header("Location: " . $canonicalProductPath);
     exit;
 }
 

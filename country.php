@@ -14,11 +14,17 @@ if (!$currentHub) {
     $currentHub = $countryHubs['Japan'];
 }
 
-// STRICT CLEAN SEO SLUG ENFORCEMENT: Redirect legacy .php URLs to canonical slug
+// STRICT CLEAN SEO SLUG ENFORCEMENT: Redirect legacy .php URLs, spaces, or non-canonical slugs to canonical slug
 $requestUri = $_SERVER['REQUEST_URI'] ?? '';
-if (str_contains($requestUri, 'country.php')) {
+$canonicalCountryPath = getCountryUrl($currentHub['name']);
+$requestedPath = trim(parse_url($requestUri, PHP_URL_PATH), '/');
+$hasRawSpace = str_contains($requestUri, ' ') || str_contains($requestUri, '%20') || str_contains($requestUri, '+');
+
+if (str_contains($requestUri, 'country.php') || $hasRawSpace || ($requestedPath !== $canonicalCountryPath && !empty($countryParam))) {
+    $qs = parse_url($requestUri, PHP_URL_QUERY);
+    $targetUrl = '/' . $canonicalCountryPath . ($qs ? ('?' . $qs) : '');
     header("HTTP/1.1 301 Moved Permanently");
-    header("Location: /" . getCountryUrl($currentHub['name']));
+    header("Location: " . $targetUrl);
     exit;
 }
 

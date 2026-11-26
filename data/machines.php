@@ -3880,6 +3880,15 @@ function findMachineBySlugOrId($slugOrId) {
     if (str_starts_with($s, 'product/')) $s = substr($s, 8);
     if (str_starts_with($s, 'machine/')) $s = substr($s, 8);
 
+    // Direct legacy alias mappings (e.g. from old sitemaps indexed by GSC)
+    $legacyMachineSlugs = [
+        'used-used-chun-zu-cbf-35s-cold-bolt-former-cold-header-cbf-35s' => 'used-chun-zu-cbf-35s-cold-bolt-former-header',
+        'used-chun-zu-cbf-35s-cold-bolt-former-cold-header-cbf-35s' => 'used-chun-zu-cbf-35s-cold-bolt-former-header',
+    ];
+    if (isset($legacyMachineSlugs[$s])) {
+        $s = $legacyMachineSlugs[$s];
+    }
+
     // 1. Direct slug, id, or item_no match
     foreach ($list as $idx => $m) {
         if ((isset($m['slug']) && $m['slug'] === $s) || 
@@ -4406,11 +4415,23 @@ foreach ($cityHubs as &$city) {
 unset($city);
 
 function getCountryUrl($country) {
-    return 'country/' . strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', trim($country)));
+    $c = strtolower(trim($country));
+    $slug = preg_replace('/[^a-zA-Z0-9]+/', '-', $c);
+    $slug = trim($slug, '-');
+    return 'country/' . $slug;
 }
 
 function getCityUrl($city) {
-    return 'city/' . strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', trim($city)));
+    $c = trim($city);
+    $c = str_replace(
+        ['ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß'],
+        ['ae', 'oe', 'ue', 'ae', 'oe', 'ue', 'ss'],
+        $c
+    );
+    $c = str_ireplace(['duesseldorf', 'dusseldorf'], 'dusseldorf', $c);
+    $slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $c));
+    $slug = trim($slug, '-');
+    return 'city/' . $slug;
 }
 
 function getCountryHub($param) {
@@ -4418,6 +4439,9 @@ function getCountryHub($param) {
     if (empty($param)) return $countryHubs['Japan'];
     
     $cleanParam = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $param));
+    if ($cleanParam === 'korea' || $cleanParam === 'southkorea') {
+        return $countryHubs['South Korea'] ?? $countryHubs['Japan'];
+    }
     
     foreach ($countryHubs as $k => $hub) {
         $cleanK = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $k));
@@ -4435,6 +4459,12 @@ function getCityData($param) {
     global $cityHubs;
     $default = $cityHubs['Nagoya'];
     if (empty($param)) return $default;
+    
+    // Normalize aliases for special characters / umlauts
+    $normParam = strtolower(trim($param));
+    if (in_array($normParam, ['dusseldorf', 'd-sseldorf', 'duesseldorf', 'düsseldorf'])) {
+        return $cityHubs['Düsseldorf'] ?? $default;
+    }
     
     $cleanParam = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $param));
     

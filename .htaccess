@@ -2,6 +2,9 @@
 DirectoryIndex index.php index.html
 ErrorDocument 404 /404.php
 
+# Prevent Content Negotiation (MultiViews) from intercepting extensionless routes like /category or /product
+Options -MultiViews
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
@@ -44,6 +47,19 @@ ErrorDocument 404 /404.php
     RewriteRule ^category/specialized-industrial-machinery/?$ https://joulemachinehub.com/category/used-specialized-industrial-machinery [L,R=301]
     RewriteRule ^category/plastic-injection-molding/?$ https://joulemachinehub.com/category/used-plastic-injection-molding [L,R=301]
     RewriteRule ^category/industrial-printing-machinery/?$ https://joulemachinehub.com/category/used-industrial-printing-machinery [L,R=301]
+
+    # Canonical 301 Permanent Redirects for Legacy Product Slugs (Flagged in Google Search Console)
+    RewriteRule ^product/used-used-chun-zu-cbf-35s-cold-bolt-former-cold-header-cbf-35s/?$ https://joulemachinehub.com/product/used-chun-zu-cbf-35s-cold-bolt-former-header [L,R=301]
+    RewriteRule ^used-used-chun-zu-cbf-35s-cold-bolt-former-cold-header-cbf-35s/?$ https://joulemachinehub.com/product/used-chun-zu-cbf-35s-cold-bolt-former-header [L,R=301]
+    RewriteRule ^product/used-chun-zu-cbf-35s-cold-bolt-former-cold-header-cbf-35s/?$ https://joulemachinehub.com/product/used-chun-zu-cbf-35s-cold-bolt-former-header [L,R=301]
+
+    # Canonical 301 Permanent Redirects for City Slugs (Umlaut Normalization)
+    RewriteRule ^city/d-sseldorf/?$ https://joulemachinehub.com/city/dusseldorf [L,R=301]
+    RewriteRule ^city/duesseldorf/?$ https://joulemachinehub.com/city/dusseldorf [L,R=301]
+
+    # Canonical 301 Permanent Redirects for Country URLs with spaces or %20
+    RewriteRule ^country/south[+\s%20]+korea/?$ https://joulemachinehub.com/country/south-korea [L,R=301,NC]
+    RewriteRule ^country/southkorea/?$ https://joulemachinehub.com/country/south-korea [L,R=301,NC]
 
     # Dynamic XML Sitemap (Always auto-updated from database & catalog)
     RewriteRule ^sitemap\.xml$ sitemap-xml.php [L]
@@ -88,11 +104,11 @@ ErrorDocument 404 /404.php
     RewriteRule ^product/([a-zA-Z0-9-]+)/?$ product.php?slug=$1 [L,QSA]
     RewriteRule ^machine/([a-zA-Z0-9-]+)/?$ product.php?slug=$1 [L,QSA]
 
-    # SEO Friendly URLs for Country Hubs: /country/country-name
-    RewriteRule ^country/([a-zA-Z0-9-]+)/?$ country.php?country=$1 [L,QSA]
+    # SEO Friendly URLs for Country Hubs: /country/country-name (tolerates spaces/%20 to redirect to canonical)
+    RewriteRule ^country/([a-zA-Z0-9\s%20+_-]+)/?$ country.php?country=$1 [L,QSA]
 
-    # SEO Friendly URLs for City Hubs: /city/city-name
-    RewriteRule ^city/([a-zA-Z0-9-]+)/?$ city.php?city=$1 [L,QSA]
+    # SEO Friendly URLs for City Hubs: /city/city-name (tolerates spaces/%20 to redirect to canonical)
+    RewriteRule ^city/([a-zA-Z0-9\s%20+_-]+)/?$ city.php?city=$1 [L,QSA]
 
     # SEO Friendly URLs for Manufacturer Hubs: /manufacturer/manufacturer-name
     RewriteRule ^manufacturer/([a-zA-Z0-9-]+)/?$ manufacturer.php?manufacturer=$1 [L,QSA]

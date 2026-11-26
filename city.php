@@ -12,11 +12,18 @@ $countryFlag = $cityData['country_flag'];
 $subzone = $cityData['subzone'];
 $specialty = $cityData['specialty'];
 
-// STRICT CLEAN SEO SLUG ENFORCEMENT: Redirect legacy .php URLs to canonical slug
+// STRICT CLEAN SEO SLUG ENFORCEMENT: Redirect legacy .php URLs, broken umlaut slugs (d-sseldorf), or space-containing URLs to canonical slug
 $requestUri = $_SERVER['REQUEST_URI'] ?? '';
-if (str_contains($requestUri, 'city.php')) {
+$canonicalCityPath = getCityUrl($cityName);
+$requestedPath = trim(parse_url($requestUri, PHP_URL_PATH), '/');
+$hasRawSpace = str_contains($requestUri, ' ') || str_contains($requestUri, '%20') || str_contains($requestUri, '+');
+$isLegacyUmlaut = str_contains($requestUri, 'd-sseldorf') || str_contains($requestUri, 'duesseldorf');
+
+if (str_contains($requestUri, 'city.php') || $isLegacyUmlaut || $hasRawSpace || ($requestedPath !== $canonicalCityPath && !empty($cityParam))) {
+    $qs = parse_url($requestUri, PHP_URL_QUERY);
+    $targetUrl = '/' . $canonicalCityPath . ($qs ? ('?' . $qs) : '');
     header("HTTP/1.1 301 Moved Permanently");
-    header("Location: /" . getCityUrl($cityParam));
+    header("Location: " . $targetUrl);
     exit;
 }
 

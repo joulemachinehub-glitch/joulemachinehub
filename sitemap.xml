@@ -151,7 +151,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://joulemachinehub.com/country/south korea</loc>
+    <loc>https://joulemachinehub.com/country/south-korea</loc>
     <lastmod>2026-11-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -223,7 +223,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://joulemachinehub.com/city/d-sseldorf</loc>
+    <loc>https://joulemachinehub.com/city/dusseldorf</loc>
     <lastmod>2026-11-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -996,16 +996,6 @@
     <image:image>
       <image:loc>https://joulemachinehub.com/assets/images/machines/42/used-haitian-ma1600ii-injection-molding-machine-03.jpg</image:loc>
       <image:title>Used Haitian MA1600Ⅱ/540 160-Ton Servo Plastic Injection Molding Machine</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://joulemachinehub.com/product/used-used-chun-zu-cbf-35s-cold-bolt-former-cold-header-cbf-35s</loc>
-    <lastmod>2026-11-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-    <image:image>
-      <image:loc>https://joulemachinehub.com/assets/images/machines/11/used-chun-zu-cbf-35s-bolt-former-01.jpg</image:loc>
-      <image:title>Used Chun Zu CBF-35S Cold Bolt Former (Cold Header)</image:title>
     </image:image>
   </url>
   <url>
