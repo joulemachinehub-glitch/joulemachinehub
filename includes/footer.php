@@ -372,13 +372,13 @@
 
       <div class="p-4 sm:p-6 overflow-y-auto flex-1">
         <div id="postSuccess" class="hidden text-center py-8 space-y-3">
-          <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-3xl font-bold">
-            ✓
+          <div class="w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto text-3xl font-bold">
+            <i class="fa-solid fa-clock-rotate-left"></i>
           </div>
-          <h4 class="text-xl font-black text-slate-900">Machine Listed Successfully!</h4>
-          <p class="text-xs text-slate-600">Your machinery listing is now active on Joule Machine Hub. Verified buyers can submit direct RFQ inquiries to your dashboard.</p>
+          <h4 class="text-xl font-black text-slate-900">Machine Submitted for Admin Approval!</h4>
+          <p class="text-xs text-slate-600">Notification has been sent to the Admin Desk. Once approved by our admin, your machine will be published live on Joule Machine Hub.</p>
           <button onclick="window.location.reload()" class="bg-joule-blue text-white font-bold text-xs py-2.5 px-6 rounded-xl mt-3 cursor-pointer">
-            Refresh Listings
+            Done
           </button>
         </div>
 
@@ -386,7 +386,7 @@
           <input type="hidden" name="form_type" value="post_machine">
           <div class="bg-amber-50 border border-amber-200 text-amber-900 p-3 rounded-xl text-[11px] flex items-center gap-2">
             <i class="fa-solid fa-shield-halved text-amber-600 text-base shrink-0"></i>
-            <span>List your machine on Joule Machine Hub to connect with qualified buyers worldwide through our mediated B2B desk.</span>
+            <span>Submit your machine details below. Admin receives an instant notification and reviews every listing before publishing it live.</span>
           </div>
 
           <div>
@@ -452,8 +452,8 @@
 
           <div class="pt-2">
             <button type="submit" id="postSubmitBtn" class="w-full bg-joule-yellow hover:bg-amber-400 text-slate-950 font-black py-3 px-4 rounded-xl text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
-              <i class="fa-solid fa-cloud-arrow-up"></i>
-              <span>Publish Machine Listing</span>
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>Submit Machine for Admin Approval</span>
             </button>
           </div>
         </form>

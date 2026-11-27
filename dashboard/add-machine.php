@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$canUpload && empty($_POST['is_draft'])) {
         $error = "Listing Quota Reached: Your {$userSub['plan_name']} allows up to {$userSub['listing_limit']} machines. Please upgrade your membership to list additional machinery.";
     } else {
-        $submissionStatus = !empty($_POST['is_draft']) ? 'draft' : 'pending';
+        $submissionStatus = !empty($_POST['is_draft']) ? 'draft' : 'pending_approval';
         
         // Populate seller upload payload
         $uploadData = $_POST;
@@ -53,7 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result['success']) {
             $publishedSlug = $result['product']['slug'] ?? '';
             $publishedRef = $result['product']['product_ref'] ?? '';
-            $success = "Your machine has been successfully added to Joule Machine Hub and is now live across the public website!";
+            $publishedStatus = $result['status'] ?? ($result['product']['status'] ?? 'pending_approval');
+            $success = $result['message'];
             // Refresh stats
             $userStats = getUserListingStats($userId);
             $canUpload = $userStats['can_upload'];
@@ -85,31 +86,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <?php if (!empty($success)): ?>
-  <div class="p-6 rounded-2xl bg-emerald-50 border-2 border-emerald-400 text-emerald-950 shadow-md flex items-start gap-4 animate-in fade-in">
-    <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-xl shrink-0 shadow-md">
-      <i class="fa-solid fa-circle-check"></i>
+  <?php
+    $isLiveNow = (($publishedStatus ?? '') === 'active');
+    $isDraftSaved = (($publishedStatus ?? '') === 'draft');
+    $boxColors = $isLiveNow
+      ? 'bg-emerald-50 border-emerald-400 text-emerald-950'
+      : ($isDraftSaved ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-amber-50 border-amber-400 text-amber-950');
+    $iconColors = $isLiveNow
+      ? 'bg-emerald-600 text-white'
+      : ($isDraftSaved ? 'bg-slate-600 text-white' : 'bg-amber-500 text-slate-950');
+    $badgeColors = $isLiveNow
+      ? 'bg-emerald-600 text-white'
+      : ($isDraftSaved ? 'bg-slate-600 text-white' : 'bg-amber-500 text-slate-950');
+  ?>
+  <div class="p-6 rounded-2xl border-2 shadow-md flex items-start gap-4 animate-in fade-in <?php echo $boxColors; ?>">
+    <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 shadow-md <?php echo $iconColors; ?>">
+      <i class="fa-solid <?php echo $isLiveNow ? 'fa-circle-check' : ($isDraftSaved ? 'fa-bookmark' : 'fa-clock-rotate-left'); ?>"></i>
     </div>
     <div class="space-y-2">
-      <div class="flex items-center gap-2">
-        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-600 text-white tracking-wider">Live on Marketplace</span>
-        <span class="text-xs text-emerald-800 font-bold">Listing Ref: #<?php echo htmlspecialchars($publishedRef); ?></span>
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider <?php echo $badgeColors; ?>">
+          <?php echo $isLiveNow ? 'Live on Marketplace' : ($isDraftSaved ? 'Saved as Draft' : 'Pending Admin Approval'); ?>
+        </span>
+        <span class="text-xs font-bold opacity-80">Listing Ref: #<?php echo htmlspecialchars($publishedRef); ?></span>
       </div>
-      <h3 class="font-black text-base text-emerald-950">Machine Published Directly to Website!</h3>
-      <p class="text-xs text-emerald-800 leading-relaxed max-w-xl">
-        <?php echo htmlspecialchars($success); ?> Buyers worldwide can now view full technical specifications, inspect photos, and submit RFQ inquiries.
+      <h3 class="font-black text-base">
+        <?php echo $isLiveNow ? 'Machine Published Directly to Website!' : ($isDraftSaved ? 'Draft Saved in Your Dashboard' : 'Submitted! Awaiting Admin Approval'); ?>
+      </h3>
+      <p class="text-xs opacity-90 leading-relaxed max-w-xl">
+        <?php echo htmlspecialchars($success); ?>
       </p>
       <div class="flex items-center gap-3 pt-2 flex-wrap">
-        <?php if (!empty($publishedSlug)): ?>
+        <?php if ($isLiveNow && !empty($publishedSlug)): ?>
           <a href="/product/<?php echo htmlspecialchars($publishedSlug); ?>" target="_blank" class="text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 px-4 py-2 rounded-xl shadow-md transition-all inline-flex items-center gap-1.5 border border-amber-300">
             <span>View Live Machine on Website</span>
             <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
           </a>
         <?php endif; ?>
-        <a href="my-machines.php" class="text-xs font-bold text-emerald-950 bg-white hover:bg-emerald-100 px-3.5 py-2 rounded-xl transition-colors border border-emerald-300 inline-flex items-center gap-1.5">
+        <a href="my-machines.php" class="text-xs font-bold text-slate-900 bg-white hover:bg-slate-100 px-3.5 py-2 rounded-xl transition-colors border border-slate-300 inline-flex items-center gap-1.5">
           <i class="fa-solid fa-boxes-stacked text-xs"></i>
           <span>View in My Machines</span>
         </a>
-        <a href="add-machine.php" class="text-xs font-bold text-emerald-800 hover:text-emerald-950 px-2 py-2">
+        <a href="add-machine.php" class="text-xs font-bold opacity-80 hover:opacity-100 px-2 py-2">
           + Upload Another Machine
         </a>
       </div>

@@ -17,10 +17,12 @@ CREATE TABLE IF NOT EXISTS `users` (
   `company` VARCHAR(200) DEFAULT NULL,
   `email` VARCHAR(150) NOT NULL UNIQUE,
   `phone` VARCHAR(50) DEFAULT NULL,
-  `role` ENUM('buyer', 'seller') DEFAULT 'buyer',
+  `role` ENUM('buyer', 'seller', 'admin') DEFAULT 'buyer',
   `city` VARCHAR(100) DEFAULT NULL,
   `gst` VARCHAR(50) DEFAULT NULL,
   `password` VARCHAR(255) NOT NULL,
+  `is_verified` TINYINT(1) DEFAULT 1,
+  `email_verified_at` DATETIME DEFAULT NULL,
   `joined` VARCHAR(50) DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX (`email`),
@@ -33,10 +35,10 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 INSERT INTO `users` (`user_id`, `name`, `company`, `email`, `phone`, `role`, `city`, `gst`, `password`, `joined`) 
 VALUES
-('usr-admin-joule', 'Joule Super Admin', 'Joule Machine Hub Global Desk', 'joulemachinehub@gmail.com', '', 'seller', 'Chennai', '33AAAAA0000A1Z5', 'Bala$#2001', 'March 2016'),
+('usr-admin-joule', 'Joule Super Admin', 'Joule Machine Hub Global Desk', 'joulemachinehub@gmail.com', '', 'admin', 'Chennai', '33AAAAA0000A1Z5', 'pbkdf2_sha256:100000:46217b291de490976a2d03005e0b747d:44e3af0d8cb7614b99df6dffb94cf3fae4415900a3459466c724603ab59ec612', 'March 2016'),
 ('usr-seller-01', 'Rajesh Kumar', 'Sri Balaji Precision Tech & Automation', 'seller@balajitech.com', '+91 98450 12389', 'seller', 'Nagoya', '29AAAAA0000A1Z5', 'seller123', 'March 2018'),
 ('usr-buyer-01', 'Vikram Deshmukh', 'Kirloskar Subcontractors Ltd', 'buyer@joulehub.com', '+91 98220 54120', 'buyer', 'Tokyo', '27BBBBB1111B2Z6', 'buyer123', 'January 2022')
-ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `password` = VALUES(`password`);
+ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `role` = VALUES(`role`);
 
 -- --------------------------------------------------------
 -- Table structure for table `leads` (Inquiries, Machine Listings, RFQs)

@@ -1,8 +1,10 @@
 <?php
 // Dynamic XML Sitemap Generator - Joule Machine Hub
 // Automatically updates whenever a new machine, category, or article is added.
-header('Content-Type: application/xml; charset=utf-8');
-header('X-Robots-Tag: noindex, follow');
+if (!defined('JMH_SITEMAP_SILENT') && !headers_sent()) {
+    header('Content-Type: application/xml; charset=utf-8');
+    header('X-Robots-Tag: noindex, follow');
+}
 
 require_once __DIR__ . '/data/machines.php';
 if (file_exists(__DIR__ . '/data/articles.php')) {
@@ -16,6 +18,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">' . "\n";
 
 // Helper function to output an entry
+if (!function_exists('sitemapUrl')) {
 function sitemapUrl($loc, $priority = '0.8', $changefreq = 'weekly', $lastmod = null, $images = []) {
     global $today;
     $lm = $lastmod ?: $today;
@@ -39,6 +42,7 @@ function sitemapUrl($loc, $priority = '0.8', $changefreq = 'weekly', $lastmod = 
         }
     }
     echo "  </url>\n";
+}
 }
 
 // 1. Core Pages

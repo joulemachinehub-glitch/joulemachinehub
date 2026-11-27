@@ -16,15 +16,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($act === 'delete') {
         $filtered = [];
         $deleted = false;
+        $deletedMachineId = '';
         foreach ($existing as $p) {
             if (($p['product_ref'] ?? '') === $ref && (($p['user_id'] ?? '') === $userId || empty($p['user_id']))) {
                 $deleted = true;
+                $deletedMachineId = (string)($p['id'] ?? '');
             } else {
                 $filtered[] = $p;
             }
         }
         if ($deleted) {
-            file_put_contents($jsonFile, json_encode($filtered, JSON_PRETTY_PRINT));
+            file_put_contents($jsonFile, json_encode($filtered, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            $pdo = getDbConnection();
+            if ($pdo) {
+                try {
+                    $stDel1 = $pdo->prepare("DELETE FROM `seller_products` WHERE `product_ref` = ?");
+                    $stDel1->execute([$ref]);
+                    if ($deletedMachineId !== '') {
+                        $stDel2 = $pdo->prepare("DELETE FROM `machines` WHERE `id` = ?");
+                        $stDel2->execute([$deletedMachineId]);
+                    }
+                } catch (Throwable $e) {}
+            }
+            regenerateStaticSitemap();
             $message = "Machine listing #{$ref} deleted successfully.";
         }
     } elseif ($act === 'toggle_sold') {
@@ -32,20 +46,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             if (($p['product_ref'] ?? '') === $ref && (($p['user_id'] ?? '') === $userId || empty($p['user_id']))) {
                 $currentStatus = strtolower($p['status'] ?? 'active');
                 $p['status'] = ($currentStatus === 'sold') ? 'active' : 'sold';
+                $pdo = getDbConnection();
+                if ($pdo) {
+                    try {
+                        $pdo->prepare("UPDATE `seller_products` SET `status` = ? WHERE `product_ref` = ?")->execute([$p['status'], $ref]);
+                        if (!empty($p['id'])) {
+                            $pdo->prepare("UPDATE `machines` SET `status` = ? WHERE `id` = ?")->execute([$p['status'], (string)$p['id']]);
+                        }
+                    } catch (Throwable $e) {}
+                }
                 $message = ($p['status'] === 'sold') ? "Machine marked as SOLD." : "Machine marked as ACTIVE.";
                 break;
             }
         }
-        file_put_contents($jsonFile, json_encode($existing, JSON_PRETTY_PRINT));
+        unset($p);
+        file_put_contents($jsonFile, json_encode($existing, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        regenerateStaticSitemap();
     } elseif ($act === 'resubmit') {
         foreach ($existing as &$p) {
             if (($p['product_ref'] ?? '') === $ref) {
-                $p['status'] = 'pending';
-                $message = "Machine #{$ref} resubmitted for admin approval.";
+                $p['status'] = 'pending_approval';
+                unset($p['rejection_reason']);
+                $pdo = getDbConnection();
+                if ($pdo) {
+                    try {
+                        $pdo->prepare("UPDATE `seller_products` SET `status` = 'pending_approval', `rejection_reason` = NULL WHERE `product_ref` = ?")->execute([$ref]);
+                    } catch (Throwable $e) {}
+                }
+                notifyAdminProductPendingApproval($p, 'product_resubmitted');
+                $message = "Machine #{$ref} submitted for admin approval! Admin notification sent.";
                 break;
             }
         }
-        file_put_contents($jsonFile, json_encode($existing, JSON_PRETTY_PRINT));
+        unset($p);
+        file_put_contents($jsonFile, json_encode($existing, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
     }
 }
 
@@ -243,9 +277,18 @@ $displayMachines = array_filter($allUserMachines, function($m) use ($activeTab) 
 
               <!-- Status Badge (Section 6 Specification) -->
               <td class="p-4 whitespace-nowrap">
+                <?php
+                  $statusLabel = ucfirst(str_replace('_', ' ', $status));
+                  $isApprovedLive = in_array($status, ['approved', 'active', 'published'], true);
+                ?>
                 <span class="inline-block px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border <?php echo $statusClass; ?>">
-                  <?php echo htmlspecialchars(ucfirst($status)); ?>
+                  <?php echo htmlspecialchars($statusLabel); ?>
                 </span>
+                <?php if ($status === 'rejected' && !empty($m['rejection_reason'])): ?>
+                  <div class="text-[10px] text-rose-600 mt-1 max-w-[180px] whitespace-normal leading-snug">
+                    Note: <?php echo htmlspecialchars($m['rejection_reason']); ?>
+                  </div>
+                <?php endif; ?>
               </td>
 
               <!-- Date -->
@@ -266,16 +309,36 @@ $displayMachines = array_filter($allUserMachines, function($m) use ($activeTab) 
                     <i class="fa-solid fa-pen-to-square"></i>
                   </a>
 
-                  <!-- View Live Product Page -->
-                  <a 
-                    href="../product.php?slug=<?php echo urlencode($m['slug'] ?? $ref); ?>" 
-                    target="_blank" 
-                    class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-blue-600 font-bold transition-colors"
-                    title="View Live Listing"
-                  >
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                  </a>
+                  <?php if ($isApprovedLive): ?>
+                    <!-- View Live Product Page (Only available once Admin approves) -->
+                    <a 
+                      href="../product.php?slug=<?php echo urlencode($m['slug'] ?? $ref); ?>" 
+                      target="_blank" 
+                      class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-blue-600 font-bold transition-colors"
+                      title="View Live Listing"
+                    >
+                      <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                  <?php elseif ($status === 'rejected' || $status === 'draft'): ?>
+                    <!-- Resubmit for Admin Approval -->
+                    <form action="my-machines.php" method="POST" class="inline">
+                      <input type="hidden" name="action" value="resubmit">
+                      <input type="hidden" name="ref" value="<?php echo htmlspecialchars($ref); ?>">
+                      <button 
+                        type="submit" 
+                        class="px-2.5 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-[10px] transition-colors cursor-pointer"
+                        title="Submit for Admin Approval"
+                      >
+                        Submit for Approval
+                      </button>
+                    </form>
+                  <?php else: ?>
+                    <span class="px-2 py-1.5 rounded-lg bg-amber-50 text-amber-700 font-bold text-[10px] border border-amber-200" title="Admin is reviewing this listing">
+                      Awaiting Approval
+                    </span>
+                  <?php endif; ?>
 
+                  <?php if ($isApprovedLive || $status === 'sold'): ?>
                   <!-- Mark as Sold Button Form -->
                   <form action="my-machines.php" method="POST" class="inline">
                     <input type="hidden" name="action" value="toggle_sold">
@@ -288,6 +351,7 @@ $displayMachines = array_filter($allUserMachines, function($m) use ($activeTab) 
                       <i class="fa-solid fa-tag"></i>
                     </button>
                   </form>
+                  <?php endif; ?>
 
                   <!-- Promote / Feature Machine CTA -->
                   <a 

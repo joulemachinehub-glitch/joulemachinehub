@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </td>
                 <td class="p-3.5">
                   <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider <?php echo $badgeClass; ?>">
-                    <?php echo htmlspecialchars(ucfirst($status)); ?>
+                    <?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $status))); ?>
                   </span>
                 </td>
                 <td class="p-3.5 text-right">

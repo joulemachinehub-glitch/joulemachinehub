@@ -1,14 +1,15 @@
 [
     {
         "id": "usr-admin-joule",
-        "name": "Joule Admin",
+        "name": "Joule Super Admin",
         "company": "Joule Machine Hub Global Desk",
         "email": "joulemachinehub@gmail.com",
         "phone": "",
         "role": "admin",
         "city": "Chennai",
         "gst": "33AAACJ1234F1Z0",
-        "password": "Bala$#2001",
+        "password_hash": "pbkdf2_sha256:100000:46217b291de490976a2d03005e0b747d:44e3af0d8cb7614b99df6dffb94cf3fae4415900a3459466c724603ab59ec612",
+        "is_verified": true,
         "joined": "November 2026"
     },
     {

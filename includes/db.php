@@ -62,10 +62,12 @@ function initDatabaseTables($pdo) {
         `company` VARCHAR(200) DEFAULT NULL,
         `email` VARCHAR(150) NOT NULL UNIQUE,
         `phone` VARCHAR(50) DEFAULT NULL,
-        `role` ENUM('buyer', 'seller') DEFAULT 'seller',
+        `role` ENUM('buyer', 'seller', 'admin') DEFAULT 'seller',
         `city` VARCHAR(100) DEFAULT NULL,
         `gst` VARCHAR(50) DEFAULT NULL,
         `password` VARCHAR(255) NOT NULL,
+        `is_verified` TINYINT(1) DEFAULT 1,
+        `email_verified_at` DATETIME DEFAULT NULL,
         `joined` VARCHAR(50) DEFAULT NULL,
         `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         INDEX (`email`),
@@ -143,7 +145,8 @@ function initDatabaseTables($pdo) {
         `contact_person` VARCHAR(150) NOT NULL,
         `seller_phone` VARCHAR(50) NOT NULL,
         `seller_email` VARCHAR(150) NOT NULL,
-        `status` ENUM('active', 'pending_approval', 'sold') DEFAULT 'active',
+        `status` VARCHAR(30) DEFAULT 'pending_approval',
+        `rejection_reason` TEXT DEFAULT NULL,
         `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         INDEX (`user_id`),
         INDEX (`category`),
@@ -180,7 +183,7 @@ function initDatabaseTables($pdo) {
         `short_desc` TEXT DEFAULT NULL,
         `detailed_desc` LONGTEXT DEFAULT NULL,
         `seller_json` TEXT DEFAULT NULL,
-        `status` ENUM('active', 'sold', 'draft') DEFAULT 'active',
+        `status` VARCHAR(30) DEFAULT 'active',
         `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX (`category`),
@@ -261,6 +264,25 @@ function initDatabaseTables($pdo) {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ";
 
+    // 9. Admin Notifications Table (Account Creation & Product Approval Alerts)
+    $adminNotificationsTable = "
+    CREATE TABLE IF NOT EXISTS `admin_notifications` (
+        `id` INT AUTO_INCREMENT PRIMARY KEY,
+        `notif_id` VARCHAR(60) NOT NULL UNIQUE,
+        `type` VARCHAR(50) NOT NULL,
+        `title` VARCHAR(255) NOT NULL,
+        `message` TEXT DEFAULT NULL,
+        `ref_id` VARCHAR(80) DEFAULT NULL,
+        `meta_json` LONGTEXT DEFAULT NULL,
+        `action_url` VARCHAR(255) DEFAULT '/admin?tab=approvals',
+        `is_read` TINYINT(1) NOT NULL DEFAULT 0,
+        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX (`type`),
+        INDEX (`is_read`),
+        INDEX (`created_at`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ";
+
     try {
         $pdo->exec($usersTable);
         $pdo->exec($leadsTable);
@@ -270,6 +292,24 @@ function initDatabaseTables($pdo) {
         $pdo->exec($subscriptionsTable);
         $pdo->exec($paymentsTable);
         $pdo->exec($passwordResetsTable);
+        $pdo->exec($adminNotificationsTable);
+
+        // Idempotent schema upgrades for pre-existing tables
+        $migrations = [
+            "ALTER TABLE `users` MODIFY COLUMN `role` ENUM('buyer', 'seller', 'admin') DEFAULT 'seller'",
+            "ALTER TABLE `users` ADD COLUMN `is_verified` TINYINT(1) NOT NULL DEFAULT 1",
+            "ALTER TABLE `users` ADD COLUMN `email_verified_at` DATETIME DEFAULT NULL",
+            "ALTER TABLE `seller_products` MODIFY COLUMN `status` VARCHAR(30) NOT NULL DEFAULT 'pending_approval'",
+            "ALTER TABLE `seller_products` ADD COLUMN `rejection_reason` TEXT DEFAULT NULL",
+            "ALTER TABLE `machines` MODIFY COLUMN `status` VARCHAR(30) NOT NULL DEFAULT 'active'"
+        ];
+        foreach ($migrations as $mSql) {
+            try {
+                $pdo->exec($mSql);
+            } catch (Throwable $me) {
+                // Ignore if column or definition already up to date
+            }
+        }
 
         // Pre-seed default plans if empty
         $planSeed = "
@@ -283,13 +323,16 @@ function initDatabaseTables($pdo) {
         ";
         $pdo->exec($planSeed);
 
-        // Pre-seed Admin User
-        $adminInsert = "
-        INSERT INTO `users` (`user_id`, `name`, `company`, `email`, `phone`, `role`, `city`, `password`, `joined`) 
-        VALUES ('usr-admin-joule', 'Joule Super Admin', 'Joule Machine Hub Global Desk', 'joulemachinehub@gmail.com', '', 'seller', 'Chennai', 'Bala$#2001', 'March 2016')
-        ON DUPLICATE KEY UPDATE `password` = 'Bala$#2001';
-        ";
-        $pdo->exec($adminInsert);
+        // Pre-seed Single Admin User with salted PBKDF2-SHA256 credential hash
+        $adminHash = 'pbkdf2_sha256:100000:46217b291de490976a2d03005e0b747d:44e3af0d8cb7614b99df6dffb94cf3fae4415900a3459466c724603ab59ec612';
+        $adminInsert = $pdo->prepare("
+            INSERT INTO `users` (`user_id`, `name`, `company`, `email`, `phone`, `role`, `city`, `password`, `joined`) 
+            VALUES ('usr-admin-joule', 'Joule Super Admin', 'Joule Machine Hub Global Desk', 'joulemachinehub@gmail.com', '', 'admin', 'Chennai', ?, 'March 2016')
+            ON DUPLICATE KEY UPDATE 
+                `role` = 'admin',
+                `password` = IF(`password` = 'Bala$#2001' OR `password` = '' OR `password` IS NULL, VALUES(`password`), `password`)
+        ");
+        $adminInsert->execute([$adminHash]);
     } catch (Throwable $e) {
         error_log("Database table initialization error: " . $e->getMessage());
     }

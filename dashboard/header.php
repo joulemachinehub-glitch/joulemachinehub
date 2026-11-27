@@ -157,6 +157,15 @@ $pageTitle = isset($pageTitle) ? $pageTitle : "Seller Dashboard | Joule Machine 
 
       <!-- Sidebar Navigation Menu Links -->
       <nav class="flex-1 px-3 py-2 space-y-1 overflow-y-auto text-xs font-semibold">
+        <?php if (isAdmin()): ?>
+        <a 
+          href="/admin?tab=approvals" 
+          class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-amber-400 text-slate-950 font-black shadow-md mb-2 hover:bg-amber-300 transition-colors"
+        >
+          <i class="fa-solid fa-shield-halved w-4 text-center"></i>
+          <span>Super Admin Desk</span>
+        </a>
+        <?php endif; ?>
         
         <!-- 1. Dashboard Overview -->
         <a 

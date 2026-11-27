@@ -1,6 +1,7 @@
 <?php
 // Joule Machine Hub - Super Administrator Portal
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/seller.php';
 require_once __DIR__ . '/data/machines.php';
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -15,10 +16,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     exit;
 }
 
-$isAdmin = !empty($_SESSION['admin_authenticated']) 
-    && !empty($_SESSION['admin_access']) 
-    && !empty($_SESSION['user']) 
-    && (strtolower($_SESSION['user']['email'] ?? '') === 'joulemachinehub@gmail.com');
+$isAdmin = isAdmin()
+    && !empty($_SESSION['admin_authenticated'])
+    && !empty($_SESSION['admin_access']);
 
 // 2. If Not Logged In, Handle Admin Authentication Form
 $loginError = '';
@@ -47,7 +47,7 @@ if (!$isAdmin && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['admin_captcha_n1'] = $n1;
         $_SESSION['admin_captcha_n2'] = $n2;
         $_SESSION['admin_captcha_ans'] = $n1 + $n2;
-    } elseif ($email !== 'joulemachinehub@gmail.com' || $password !== 'Bala$#2001') {
+    } elseif (!verifyAdminCredentials($email, $password)) {
         $loginError = 'Authentication failed: Invalid administrator credentials.';
         $n1 = rand(6, 28);
         $n2 = rand(4, 18);
@@ -60,9 +60,10 @@ if (!$isAdmin && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['admin_access'] = true;
         $_SESSION['user'] = [
             'id' => 'usr-admin-joule',
+            'user_id' => 'usr-admin-joule',
             'name' => 'Joule Super Admin',
             'company' => 'Joule Machine Hub Global Desk',
-            'email' => 'joulemachinehub@gmail.com',
+            'email' => JMH_ADMIN_EMAIL,
             'phone' => '',
             'role' => 'admin',
             'city' => 'Chennai'
@@ -207,6 +208,71 @@ if (file_exists($leadsFile)) {
 }
 $totalLeads = count($leads);
 
+// Load seller product submissions & admin notifications
+$allSellerProducts = getSellerProductsList(null);
+$pendingProducts = [];
+$approvedSellerProducts = [];
+$rejectedProducts = [];
+foreach ($allSellerProducts as $spItem) {
+    $spSt = strtolower(trim((string)($spItem['status'] ?? 'pending_approval')));
+    if (in_array($spSt, ['pending', 'pending_approval'], true)) {
+        $pendingProducts[] = $spItem;
+    } elseif ($spSt === 'rejected') {
+        $rejectedProducts[] = $spItem;
+    } elseif (in_array($spSt, ['active', 'approved', 'published', 'sold'], true)) {
+        $approvedSellerProducts[] = $spItem;
+    }
+}
+$pendingCount = count($pendingProducts);
+
+$adminNotifications = getAdminNotifications(false);
+$unreadNotifsCount = 0;
+foreach ($adminNotifications as $an) {
+    if (empty($an['is_read'])) {
+        $unreadNotifsCount++;
+    }
+}
+
+// Load registered user accounts (merge MySQL + JSON)
+$accountsByEmail = [];
+foreach (getUsers() as $uItem) {
+    $uMail = strtolower(trim((string)($uItem['email'] ?? '')));
+    if ($uMail !== '' && $uMail !== JMH_ADMIN_EMAIL) {
+        $accountsByEmail[$uMail] = $uItem;
+    }
+}
+$pdoAcc = getDbConnection();
+if ($pdoAcc) {
+    try {
+        $stAcc = $pdoAcc->query("SELECT * FROM `users` ORDER BY `id` DESC");
+        foreach ($stAcc->fetchAll(PDO::FETCH_ASSOC) as $dbU) {
+            $uMail = strtolower(trim((string)($dbU['email'] ?? '')));
+            if ($uMail !== '' && $uMail !== JMH_ADMIN_EMAIL && !isset($accountsByEmail[$uMail])) {
+                $accountsByEmail[$uMail] = $dbU;
+            }
+        }
+    } catch (Throwable $e) {}
+}
+$registeredAccounts = array_values($accountsByEmail);
+$totalAccounts = count($registeredAccounts);
+
+// Choose initial tab cleanly (?tab=approvals|products|images|leads|accounts)
+$requestedTab = strtolower(trim((string)($_GET['tab'] ?? '')));
+$tabMap = [
+    'approvals' => 'approvalsTab',
+    'products'  => 'productsTab',
+    'images'    => 'imagesTab',
+    'leads'     => 'leadsTab',
+    'accounts'  => 'accountsTab'
+];
+if (isset($tabMap[$requestedTab])) {
+    $initialTab = $tabMap[$requestedTab];
+} elseif ($pendingCount > 0 || $unreadNotifsCount > 0) {
+    $initialTab = 'approvalsTab';
+} else {
+    $initialTab = 'productsTab';
+}
+
 $pageTitle = "Admin Portal - Joule Machine Hub";
 $pageRobots = "noindex, nofollow, noarchive, nosnippet"; // Strict Google non-index restriction for Admin Portal
 
@@ -220,21 +286,28 @@ require_once __DIR__ . '/includes/header.php';
     <div class="max-w-7xl mx-auto px-4 py-4 sm:py-6">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <span class="bg-amber-400 text-slate-950 text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full tracking-wider">
               Super Admin Control
             </span>
-            <span class="text-xs text-blue-200">Logged in as: <strong class="text-white"><?php echo htmlspecialchars($currentUser['email'] ?? 'joulemachinehub@gmail.com'); ?></strong></span>
+            <span class="text-xs text-blue-200">Logged in as: <strong class="text-white"><?php echo htmlspecialchars($currentUser['email'] ?? JMH_ADMIN_EMAIL); ?></strong></span>
           </div>
           <h1 class="text-2xl sm:text-3xl font-black text-white mt-1">
             Joule Machine Hub Admin Desk
           </h1>
           <p class="text-xs text-blue-200 mt-0.5">
-            Full content editing for all 42 machinery listings, 1-click image rotation, and live buyer RFQ tracking.
+            Approve seller listings, monitor account alerts, edit all <?php echo $totalMachines; ?> live machinery listings, rotate photos &amp; manage RFQs.
           </p>
         </div>
 
         <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <button type="button" onclick="switchAdminTab('approvalsTab')" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-black text-xs px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 border border-amber-400/50 cursor-pointer">
+            <i class="fa-solid fa-bell"></i>
+            <span>Alerts &amp; Approvals</span>
+            <?php if ($pendingCount > 0 || $unreadNotifsCount > 0): ?>
+              <span class="bg-rose-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full"><?php echo $pendingCount + $unreadNotifsCount; ?></span>
+            <?php endif; ?>
+          </button>
           <button type="button" onclick="purgeLiveCache()" id="purgeCacheBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 shadow-md border border-emerald-400 cursor-pointer" title="Purge LiteSpeed & OPcache">
             <i class="fa-solid fa-bolt text-xs text-yellow-300"></i>
             <span>Purge Cache</span>
@@ -257,41 +330,81 @@ require_once __DIR__ . '/includes/header.php';
       <!-- Quick KPI Counters -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
         <div class="bg-slate-900/60 rounded-xl p-3 border border-white/10">
-          <div class="text-[10px] uppercase font-bold text-blue-200">Catalog Inventory</div>
+          <div class="text-[10px] uppercase font-bold text-blue-200">Live Website Catalog</div>
           <div class="text-xl sm:text-2xl font-black text-white"><?php echo $totalMachines; ?> Machines</div>
         </div>
-        <div class="bg-slate-900/60 rounded-xl p-3 border border-white/10">
-          <div class="text-[10px] uppercase font-bold text-amber-300">Total Leads / RFQs</div>
-          <div class="text-xl sm:text-2xl font-black text-amber-300"><?php echo $totalLeads; ?> Submissions</div>
+        <div onclick="switchAdminTab('approvalsTab')" class="bg-slate-900/60 rounded-xl p-3 border <?php echo $pendingCount > 0 ? 'border-amber-400 bg-amber-500/15' : 'border-white/10'; ?> cursor-pointer transition-colors">
+          <div class="text-[10px] uppercase font-bold text-amber-300">Pending Approvals</div>
+          <div class="text-xl sm:text-2xl font-black text-amber-300"><?php echo $pendingCount; ?> Waiting</div>
         </div>
-        <div class="bg-slate-900/60 rounded-xl p-3 border border-white/10">
-          <div class="text-[10px] uppercase font-bold text-emerald-300">Catalog Images</div>
-          <div class="text-xl sm:text-2xl font-black text-emerald-300">125 Photos</div>
+        <div onclick="switchAdminTab('accountsTab')" class="bg-slate-900/60 rounded-xl p-3 border border-white/10 cursor-pointer transition-colors">
+          <div class="text-[10px] uppercase font-bold text-emerald-300">User Accounts</div>
+          <div class="text-xl sm:text-2xl font-black text-emerald-300"><?php echo $totalAccounts; ?> Registered</div>
         </div>
-        <div class="bg-slate-900/60 rounded-xl p-3 border border-white/10">
-          <div class="text-[10px] uppercase font-bold text-blue-200">Global Hubs</div>
-          <div class="text-xl sm:text-2xl font-black text-white">10 Countries</div>
+        <div onclick="switchAdminTab('leadsTab')" class="bg-slate-900/60 rounded-xl p-3 border border-white/10 cursor-pointer transition-colors">
+          <div class="text-[10px] uppercase font-bold text-blue-200">Total Leads / RFQs</div>
+          <div class="text-xl sm:text-2xl font-black text-white"><?php echo $totalLeads; ?> Submissions</div>
         </div>
       </div>
     </div>
   </div>
 
+  <?php if ($pendingCount > 0 || $unreadNotifsCount > 0): ?>
+    <div class="max-w-7xl mx-auto px-4 mt-4">
+      <div class="bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center text-lg shrink-0 font-black">
+            <i class="fa-solid fa-bell"></i>
+          </div>
+          <div class="text-xs text-amber-950">
+            <div class="font-black text-sm">
+              <?php if ($pendingCount > 0): ?>
+                <?php echo $pendingCount; ?> Product Listing<?php echo $pendingCount > 1 ? 's' : ''; ?> Waiting for Admin Approval!
+              <?php else: ?>
+                <?php echo $unreadNotifsCount; ?> Unread Admin Notification<?php echo $unreadNotifsCount > 1 ? 's' : ''; ?>
+              <?php endif; ?>
+            </div>
+            <div class="text-amber-800 mt-0.5">
+              User-submitted products remain hidden from the public website until you click <strong>Approve &amp; Publish</strong>.
+            </div>
+          </div>
+        </div>
+        <button type="button" onclick="switchAdminTab('approvalsTab')" class="bg-joule-blue hover:bg-blue-900 text-joule-yellow font-black text-xs px-4 py-2.5 rounded-xl shrink-0 cursor-pointer shadow-sm">
+          Review Queue Now &rarr;
+        </button>
+      </div>
+    </div>
+  <?php endif; ?>
+
   <!-- NAVIGATION TABS -->
   <div class="max-w-7xl mx-auto px-4 mt-6">
     <div class="bg-white rounded-2xl border-2 border-slate-200 p-2 shadow-xs flex items-center gap-2 overflow-x-auto">
-      <button type="button" onclick="switchAdminTab('productsTab')" id="btnProductsTab" class="admin-tab-btn flex-1 min-w-[160px] py-2.5 px-4 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all bg-joule-blue text-white shadow-sm">
+      <button type="button" onclick="switchAdminTab('approvalsTab')" id="btnApprovalsTab" class="admin-tab-btn flex-1 min-w-[175px] py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer <?php echo $initialTab === 'approvalsTab' ? 'bg-joule-blue text-white font-black shadow-sm' : 'font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100'; ?>">
+        <i class="fa-solid fa-clipboard-check text-amber-400"></i>
+        <span>Approvals &amp; Alerts</span>
+        <?php if ($pendingCount > 0 || $unreadNotifsCount > 0): ?>
+          <span class="bg-rose-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full"><?php echo $pendingCount + $unreadNotifsCount; ?></span>
+        <?php endif; ?>
+      </button>
+
+      <button type="button" onclick="switchAdminTab('productsTab')" id="btnProductsTab" class="admin-tab-btn flex-1 min-w-[165px] py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer <?php echo $initialTab === 'productsTab' ? 'bg-joule-blue text-white font-black shadow-sm' : 'font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100'; ?>">
         <i class="fa-solid fa-boxes-stacked text-amber-400"></i>
-        <span>1. Edit Products (42 Units)</span>
+        <span>Live Products (<?php echo $totalMachines; ?>)</span>
       </button>
 
-      <button type="button" onclick="switchAdminTab('imagesTab')" id="btnImagesTab" class="admin-tab-btn flex-1 min-w-[160px] py-2.5 px-4 rounded-xl font-bold text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center gap-2 transition-all">
+      <button type="button" onclick="switchAdminTab('imagesTab')" id="btnImagesTab" class="admin-tab-btn flex-1 min-w-[155px] py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer <?php echo $initialTab === 'imagesTab' ? 'bg-joule-blue text-white font-black shadow-sm' : 'font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100'; ?>">
         <i class="fa-solid fa-rotate text-blue-600"></i>
-        <span>2. 1-Click Image Rotator</span>
+        <span>Image Rotator</span>
       </button>
 
-      <button type="button" onclick="switchAdminTab('leadsTab')" id="btnLeadsTab" class="admin-tab-btn flex-1 min-w-[160px] py-2.5 px-4 rounded-xl font-bold text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center gap-2 transition-all">
+      <button type="button" onclick="switchAdminTab('leadsTab')" id="btnLeadsTab" class="admin-tab-btn flex-1 min-w-[165px] py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer <?php echo $initialTab === 'leadsTab' ? 'bg-joule-blue text-white font-black shadow-sm' : 'font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100'; ?>">
         <i class="fa-solid fa-envelope-open-text text-emerald-600"></i>
-        <span>3. Buyer Inquiries (<?php echo $totalLeads; ?>)</span>
+        <span>Buyer Leads (<?php echo $totalLeads; ?>)</span>
+      </button>
+
+      <button type="button" onclick="switchAdminTab('accountsTab')" id="btnAccountsTab" class="admin-tab-btn flex-1 min-w-[155px] py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer <?php echo $initialTab === 'accountsTab' ? 'bg-joule-blue text-white font-black shadow-sm' : 'font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100'; ?>">
+        <i class="fa-solid fa-users text-purple-600"></i>
+        <span>Accounts (<?php echo $totalAccounts; ?>)</span>
       </button>
     </div>
   </div>
@@ -299,10 +412,196 @@ require_once __DIR__ . '/includes/header.php';
   <!-- MAIN TAB CONTENT CONTAINER -->
   <div class="max-w-7xl mx-auto px-4 mt-6">
 
+    <!-- ========================================================== -->
+    <!-- TAB 0: PENDING PRODUCT APPROVALS & ADMIN NOTIFICATIONS     -->
+    <!-- ========================================================== -->
+    <div id="approvalsTab" class="admin-tab-content <?php echo $initialTab === 'approvalsTab' ? '' : 'hidden'; ?> space-y-6">
+
+      <!-- A. Admin Activity Notifications Feed -->
+      <div class="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h2 class="text-base font-black text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-bell text-amber-500"></i>
+              <span>Admin Notifications Feed</span>
+              <?php if ($unreadNotifsCount > 0): ?>
+                <span class="bg-rose-100 text-rose-800 text-[10px] font-black px-2 py-0.5 rounded-full"><?php echo $unreadNotifsCount; ?> Unread</span>
+              <?php endif; ?>
+            </h2>
+            <p class="text-[11px] text-slate-500">Real-time alerts when users register new accounts or add/update machine listings.</p>
+          </div>
+          <?php if ($unreadNotifsCount > 0): ?>
+            <button type="button" onclick="markAllAdminNotificationsRead()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-3 py-1.5 rounded-xl border border-slate-300 cursor-pointer shrink-0">
+              <i class="fa-solid fa-check-double text-emerald-600 mr-1"></i> Mark All Read
+            </button>
+          <?php endif; ?>
+        </div>
+
+        <?php if (empty($adminNotifications)): ?>
+          <div class="text-center py-6 text-xs text-slate-500">
+            No notifications recorded yet. Alerts for new account signups and seller product submissions will appear here and be emailed to <strong><?php echo htmlspecialchars(JMH_ADMIN_EMAIL); ?></strong>.
+          </div>
+        <?php else: ?>
+          <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+            <?php foreach (array_slice($adminNotifications, 0, 20) as $n): ?>
+              <?php
+                $isUnread = empty($n['is_read']);
+                $nType = $n['type'] ?? 'info';
+                $nIcon = ($nType === 'new_account') ? 'fa-user-plus text-purple-600 bg-purple-100' : 'fa-box-open text-amber-700 bg-amber-100';
+              ?>
+              <div class="p-3 rounded-xl border <?php echo $isUnread ? 'bg-amber-50/70 border-amber-300' : 'bg-slate-50 border-slate-200'; ?> flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 <?php echo $nIcon; ?>">
+                    <i class="fa-solid <?php echo explode(' ', $nIcon)[0]; ?>"></i>
+                  </div>
+                  <div>
+                    <div class="font-black text-slate-900 flex items-center gap-2">
+                      <span><?php echo htmlspecialchars($n['title'] ?? 'System Notification'); ?></span>
+                      <?php if ($isUnread): ?>
+                        <span class="bg-rose-600 text-white text-[9px] uppercase font-black px-1.5 py-0.5 rounded">NEW</span>
+                      <?php endif; ?>
+                    </div>
+                    <p class="text-[11px] text-slate-600 mt-0.5"><?php echo htmlspecialchars($n['message'] ?? ''); ?></p>
+                  </div>
+                </div>
+                <div class="text-[10px] text-slate-400 whitespace-nowrap shrink-0">
+                  <?php echo htmlspecialchars($n['created_at'] ?? ''); ?>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+      </div>
+
+      <!-- B. Pending Products Queue -->
+      <div class="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-xs space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h2 class="text-lg font-black text-slate-900">Pending Product Approvals (<?php echo $pendingCount; ?>)</h2>
+            <p class="text-xs text-slate-500">These products were uploaded by registered users and are held privately until approved.</p>
+          </div>
+        </div>
+
+        <?php if (empty($pendingProducts)): ?>
+          <div class="text-center py-10 text-slate-500 space-y-2">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto text-2xl">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="font-bold text-sm text-slate-800">All Caught Up!</div>
+            <p class="text-xs">There are zero machinery listings awaiting approval right now.</p>
+          </div>
+        <?php else: ?>
+          <div class="space-y-4">
+            <?php foreach ($pendingProducts as $p): ?>
+              <?php
+                $pRef = (string)($p['product_ref'] ?? $p['id'] ?? '');
+                $pImg = !empty($p['images'][0]) ? $p['images'][0] : '/assets/images/logo.png';
+                $pImg = '/' . ltrim((string)$pImg, '/');
+              ?>
+              <div class="border-2 border-amber-300 bg-amber-50/30 rounded-2xl p-4 sm:p-5 flex flex-col lg:flex-row gap-4 justify-between">
+                <div class="flex flex-col sm:flex-row gap-4 flex-1">
+                  <div class="w-full sm:w-44 h-36 bg-slate-950 rounded-xl overflow-hidden border border-slate-200 shrink-0 relative flex items-center justify-center">
+                    <img src="<?php echo htmlspecialchars($pImg); ?>" alt="Pending Machine" class="w-full h-full object-contain p-1" onerror="this.src='/assets/images/logo.png'">
+                    <span class="absolute top-2 left-2 bg-amber-500 text-slate-950 text-[9px] font-black px-2 py-0.5 rounded uppercase">Pending</span>
+                    <span class="absolute bottom-2 right-2 bg-slate-900/90 text-white text-[9px] font-bold px-2 py-0.5 rounded"><?php echo count($p['images'] ?? []); ?> photos</span>
+                  </div>
+
+                  <div class="space-y-2 text-xs flex-1">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-mono text-[10px] font-black bg-slate-900 text-amber-300 px-2 py-0.5 rounded">Ref: #<?php echo htmlspecialchars($pRef); ?></span>
+                      <span class="font-bold text-blue-700"><?php echo htmlspecialchars($p['category'] ?? 'Machinery'); ?></span>
+                      <span class="text-slate-400">•</span>
+                      <span class="text-slate-600 font-semibold"><?php echo htmlspecialchars(($p['city'] ?? '') . ', ' . ($p['country'] ?? '')); ?></span>
+                    </div>
+
+                    <h3 class="text-base font-black text-slate-950"><?php echo htmlspecialchars($p['title'] ?? 'Untitled Machine'); ?></h3>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-2.5 rounded-xl border border-slate-200 text-[11px]">
+                      <div><span class="text-slate-400 block text-[10px]">Brand / Model</span><strong><?php echo htmlspecialchars(($p['brand'] ?? '') . ' ' . ($p['model'] ?? '')); ?></strong></div>
+                      <div><span class="text-slate-400 block text-[10px]">Asking Price</span><strong class="text-emerald-700"><?php echo htmlspecialchars($p['price_display'] ?? ($p['value_raw'] ?? 'On Request')); ?></strong></div>
+                      <div><span class="text-slate-400 block text-[10px]">Seller Company</span><strong><?php echo htmlspecialchars($p['seller_company'] ?? 'Seller'); ?></strong></div>
+                      <div><span class="text-slate-400 block text-[10px]">Contact</span><strong><?php echo htmlspecialchars($p['seller_email'] ?: ($p['seller_phone'] ?: 'N/A')); ?></strong></div>
+                    </div>
+
+                    <p class="text-[11px] text-slate-600 line-clamp-2"><?php echo htmlspecialchars($p['detailed_desc'] ?? ($p['short_desc'] ?? '')); ?></p>
+                  </div>
+                </div>
+
+                <div class="flex flex-row lg:flex-col justify-end lg:justify-center gap-2 shrink-0 min-w-[190px]">
+                  <button type="button" onclick="approveListing('<?php echo htmlspecialchars($pRef, ENT_QUOTES); ?>', this)" class="flex-1 lg:flex-none bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-2.5 px-4 rounded-xl shadow-sm flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Approve &amp; Add to Site</span>
+                  </button>
+
+                  <button type="button" onclick='openApprovalEditModal(<?php echo json_encode($p, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)' class="flex-1 lg:flex-none bg-joule-blue hover:bg-blue-900 text-white font-bold text-xs py-2 px-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
+                    <i class="fa-solid fa-pen-to-square text-amber-400"></i>
+                    <span>Edit &amp; Approve</span>
+                  </button>
+
+                  <button type="button" onclick="rejectListing('<?php echo htmlspecialchars($pRef, ENT_QUOTES); ?>', this)" class="flex-1 lg:flex-none bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold text-xs py-2 px-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                    <span>Reject</span>
+                  </button>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+      </div>
+
+      <!-- C. Past Seller Submissions History -->
+      <?php if (!empty($approvedSellerProducts) || !empty($rejectedProducts)): ?>
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
+          <h3 class="text-sm font-black text-slate-900">Reviewed Seller Submissions (<?php echo count($approvedSellerProducts) + count($rejectedProducts); ?>)</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold border-b border-slate-200">
+                <tr>
+                  <th class="p-3">Ref</th>
+                  <th class="p-3">Machine</th>
+                  <th class="p-3">Seller</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <?php foreach (array_merge($approvedSellerProducts, $rejectedProducts) as $hist): ?>
+                  <?php
+                    $hRef = (string)($hist['product_ref'] ?? $hist['id'] ?? '');
+                    $hSt = strtolower(trim((string)($hist['status'] ?? 'active')));
+                    $isHActive = in_array($hSt, ['active', 'approved', 'published'], true);
+                  ?>
+                  <tr>
+                    <td class="p-3 font-mono text-[11px] font-bold">#<?php echo htmlspecialchars($hRef); ?></td>
+                    <td class="p-3 font-bold text-slate-900"><?php echo htmlspecialchars($hist['title'] ?? 'Machine'); ?></td>
+                    <td class="p-3 text-slate-600"><?php echo htmlspecialchars($hist['seller_company'] ?? ($hist['seller_email'] ?? 'Seller')); ?></td>
+                    <td class="p-3">
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase <?php echo $isHActive ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'; ?>">
+                        <?php echo htmlspecialchars($hSt); ?>
+                      </span>
+                    </td>
+                    <td class="p-3 text-right space-x-2">
+                      <?php if ($isHActive && !empty($hist['slug'])): ?>
+                        <a href="/product/<?php echo htmlspecialchars($hist['slug']); ?>" target="_blank" class="text-blue-600 hover:underline font-bold">View Live</a>
+                        <button type="button" onclick="rejectListing('<?php echo htmlspecialchars($hRef, ENT_QUOTES); ?>', this)" class="text-rose-600 hover:underline font-bold cursor-pointer">Unpublish</button>
+                      <?php else: ?>
+                        <button type="button" onclick="approveListing('<?php echo htmlspecialchars($hRef, ENT_QUOTES); ?>', this)" class="text-emerald-600 hover:underline font-bold cursor-pointer">Re-Approve Live</button>
+                      <?php endif; ?>
+                    </td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <?php endif; ?>
+
+    </div>
+
     <!-- ========================================== -->
-    <!-- TAB 1: PRODUCT CONTENT EDITOR (42 UNITS)  -->
+    <!-- TAB 1: PRODUCT CONTENT EDITOR              -->
     <!-- ========================================== -->
-    <div id="productsTab" class="admin-tab-content space-y-4">
+    <div id="productsTab" class="admin-tab-content <?php echo $initialTab === 'productsTab' ? '' : 'hidden'; ?> space-y-4">
       
       <!-- Search & Filters -->
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -605,6 +904,69 @@ require_once __DIR__ . '/includes/header.php';
       <?php endif; ?>
     </div>
 
+    <!-- ========================================================== -->
+    <!-- TAB 5: REGISTERED USER ACCOUNTS DIRECTORY                  -->
+    <!-- ========================================================== -->
+    <div id="accountsTab" class="admin-tab-content <?php echo $initialTab === 'accountsTab' ? '' : 'hidden'; ?> space-y-4">
+      <div class="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg font-black text-slate-900">Registered Seller &amp; Buyer Accounts (<?php echo $totalAccounts; ?>)</h2>
+          <p class="text-xs text-slate-500">All user accounts created on Joule Machine Hub. Products added by any user require Admin approval before publishing.</p>
+        </div>
+        <span class="bg-purple-100 text-purple-800 text-xs font-black px-3 py-1 rounded-full shrink-0">
+          <?php echo $totalAccounts; ?> Registered Users
+        </span>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <?php if (empty($registeredAccounts)): ?>
+          <div class="p-10 text-center text-xs text-slate-500">No external user accounts registered yet.</div>
+        <?php else: ?>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold border-b border-slate-200">
+                <tr>
+                  <th class="p-3.5">User / Company</th>
+                  <th class="p-3.5">Email &amp; Phone</th>
+                  <th class="p-3.5">Location</th>
+                  <th class="p-3.5">Role &amp; Status</th>
+                  <th class="p-3.5 text-right">Joined</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <?php foreach ($registeredAccounts as $acc): ?>
+                  <tr class="hover:bg-slate-50/70">
+                    <td class="p-3.5">
+                      <div class="font-bold text-slate-900"><?php echo htmlspecialchars($acc['name'] ?? 'User'); ?></div>
+                      <div class="text-[11px] text-slate-500"><?php echo htmlspecialchars($acc['company'] ?? ''); ?></div>
+                    </td>
+                    <td class="p-3.5">
+                      <div class="font-semibold text-blue-700"><?php echo htmlspecialchars($acc['email'] ?? ''); ?></div>
+                      <div class="text-[11px] text-slate-500"><?php echo htmlspecialchars($acc['phone'] ?? 'No phone'); ?></div>
+                    </td>
+                    <td class="p-3.5 text-slate-600">
+                      <?php echo htmlspecialchars(trim(($acc['city'] ?? '') . (!empty($acc['country']) ? ', ' . $acc['country'] : '')) ?: 'N/A'); ?>
+                    </td>
+                    <td class="p-3.5">
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-100 text-blue-800">
+                        <?php echo htmlspecialchars($acc['role'] ?? 'seller'); ?>
+                      </span>
+                      <?php if (!empty($acc['is_verified'])): ?>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800 ml-1">Verified</span>
+                      <?php endif; ?>
+                    </td>
+                    <td class="p-3.5 text-right text-[11px] text-slate-500">
+                      <?php echo htmlspecialchars($acc['joined'] ?? ($acc['created_at'] ?? '')); ?>
+                    </td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php endif; ?>
+      </div>
+    </div>
+
   </div>
 
 </div>
@@ -629,6 +991,7 @@ require_once __DIR__ . '/includes/header.php';
     <!-- Scrollable Edit Form -->
     <form id="productEditForm" onsubmit="saveProductChanges(event)" class="overflow-y-auto p-4 sm:p-6 space-y-4 text-xs flex-1">
       <input type="hidden" name="id" id="editMachineId" value="">
+      <input type="hidden" id="editApprovalRef" value="">
 
       <div>
         <label class="block text-slate-700 font-black mb-1">Machine Title *</label>
@@ -931,21 +1294,23 @@ const ALL_MACHINES = <?php echo json_encode($machines, JSON_HEX_TAG | JSON_HEX_A
 function switchAdminTab(tabId) {
   document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.admin-tab-btn').forEach(btn => {
-    btn.classList.remove('bg-joule-blue', 'text-white', 'shadow-sm');
-    btn.classList.add('text-slate-700', 'hover:bg-slate-100');
+    btn.classList.remove('bg-joule-blue', 'text-white', 'shadow-sm', 'font-black');
+    btn.classList.add('text-slate-700', 'hover:bg-slate-100', 'font-bold');
   });
 
   const target = document.getElementById(tabId);
   if (target) target.classList.remove('hidden');
 
   let activeBtnId = 'btnProductsTab';
+  if (tabId === 'approvalsTab') activeBtnId = 'btnApprovalsTab';
   if (tabId === 'imagesTab') activeBtnId = 'btnImagesTab';
   if (tabId === 'leadsTab') activeBtnId = 'btnLeadsTab';
+  if (tabId === 'accountsTab') activeBtnId = 'btnAccountsTab';
 
   const btn = document.getElementById(activeBtnId);
   if (btn) {
-    btn.classList.remove('text-slate-700', 'hover:bg-slate-100');
-    btn.classList.add('bg-joule-blue', 'text-white', 'shadow-sm');
+    btn.classList.remove('text-slate-700', 'hover:bg-slate-100', 'font-bold');
+    btn.classList.add('bg-joule-blue', 'text-white', 'shadow-sm', 'font-black');
   }
 
   if (tabId === 'imagesTab') {
@@ -973,22 +1338,36 @@ function filterAdminMachines() {
   if (countEl) countEl.innerText = visible;
 }
 
-function openEditModal(machine) {
+function populateProductEditFields(machine) {
   document.getElementById('editMachineId').value = machine.id || '';
   document.getElementById('editTitle').value = machine.title || '';
   document.getElementById('editBrand').value = machine.brand || '';
   document.getElementById('editModel').value = machine.model || '';
   document.getElementById('editCategory').value = machine.category || '';
   document.getElementById('editYear').value = machine.year || '';
-  document.getElementById('editCondition').value = machine.condition || '';
+  document.getElementById('editCondition').value = machine.condition || machine.condition_state || '';
   document.getElementById('editPrice').value = machine.price || '';
   document.getElementById('editPriceUsd').value = machine.price_usd || '';
   document.getElementById('editCity').value = machine.city || '';
   document.getElementById('editCountry').value = machine.country || '';
   document.getElementById('editShortDesc').value = machine.short_desc || '';
   document.getElementById('editDetailedDesc').value = machine.detailed_desc || '';
-  
+}
+
+function openEditModal(machine) {
+  populateProductEditFields(machine);
+  document.getElementById('editApprovalRef').value = '';
+  document.getElementById('saveEditBtn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i><span>Save Changes Live</span>';
   document.getElementById('editModalHeading').innerText = 'Edit #' + machine.id + ': ' + machine.title;
+  document.getElementById('editProductModal').classList.remove('hidden');
+}
+
+function openApprovalEditModal(pendingProd) {
+  populateProductEditFields(pendingProd);
+  const ref = pendingProd.product_ref || pendingProd.id || '';
+  document.getElementById('editApprovalRef').value = ref;
+  document.getElementById('saveEditBtn').innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Save Edits &amp; Approve Live</span>';
+  document.getElementById('editModalHeading').innerText = 'Review & Approve #' + ref;
   document.getElementById('editProductModal').classList.remove('hidden');
 }
 
@@ -1083,6 +1462,7 @@ function saveProductChanges(e) {
   e.preventDefault();
   const form = document.getElementById('productEditForm');
   const btn = document.getElementById('saveEditBtn');
+  const approvalRef = (document.getElementById('editApprovalRef')?.value || '').trim();
   const origHtml = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
@@ -1091,19 +1471,24 @@ function saveProductChanges(e) {
   const json = {};
   formData.forEach((value, key) => json[key] = value);
 
-  fetch('/api/update-product.php', {
+  const endpoint = approvalRef ? '/api/admin-approval.php' : '/api/update-product.php';
+  const payload = approvalRef
+    ? { action: 'approve', ref: approvalRef, edits: json }
+    : json;
+
+  fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(json)
+    body: JSON.stringify(payload)
   })
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert('Product saved successfully! The updates are now live.');
+      alert(data.message || 'Saved successfully! The listing is now live on the website.');
       closeEditModal();
-      window.location.reload();
+      window.location.href = '/admin?tab=' + (approvalRef ? 'approvals' : 'products');
     } else {
-      alert('Error: ' + (data.error || 'Failed to save product.'));
+      alert('Error: ' + (data.error || data.message || 'Failed to save product.'));
     }
   })
   .catch(err => {
@@ -1258,6 +1643,88 @@ function saveSmtpSettings() {
     }
   })
   .catch(err => alert('Network error: ' + err));
+}
+
+function approveListing(ref, btnEl) {
+  if (!confirm('Approve listing #' + ref + ' and publish it live on joulemachinehub.com?')) return;
+  const orig = btnEl ? btnEl.innerHTML : '';
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Approving...';
+  }
+  fetch('/api/admin-approval.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'approve', ref: ref })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert('✓ ' + (data.message || 'Listing approved and published to live website!'));
+      window.location.href = '/admin?tab=approvals';
+    } else {
+      alert('Error: ' + (data.error || data.message || 'Approval failed'));
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.innerHTML = orig;
+      }
+    }
+  })
+  .catch(err => {
+    alert('Network error: ' + err);
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.innerHTML = orig;
+    }
+  });
+}
+
+function rejectListing(ref, btnEl) {
+  const reason = prompt('Enter reason for rejecting/unpublishing #' + ref + ' (sent to seller):', 'Please verify specifications and clear machine photos.');
+  if (reason === null) return;
+  const orig = btnEl ? btnEl.innerHTML : '';
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+  }
+  fetch('/api/admin-approval.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'reject', ref: ref, reason: reason })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(data.message || 'Listing rejected and kept off the live site.');
+      window.location.href = '/admin?tab=approvals';
+    } else {
+      alert('Error: ' + (data.error || data.message || 'Rejection failed'));
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.innerHTML = orig;
+      }
+    }
+  })
+  .catch(err => {
+    alert('Network error: ' + err);
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.innerHTML = orig;
+    }
+  });
+}
+
+function markAllAdminNotificationsRead() {
+  fetch('/api/admin-approval.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'mark_notifications_read' })
+  })
+  .then(res => res.json())
+  .then(() => {
+    window.location.href = '/admin?tab=approvals';
+  })
+  .catch(() => window.location.reload());
 }
 </script>
 

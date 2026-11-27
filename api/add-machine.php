@@ -4,6 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/seller.php';
 require_once __DIR__ . '/../data/machines.php';
 
 // Authentication guard: super admin or logged-in seller
@@ -12,6 +13,9 @@ if (!isAdmin() && !isLoggedIn()) {
     echo json_encode(['success' => false, 'error' => 'Authorization required. Please log in to add machinery.']);
     exit;
 }
+
+$isAdminUser = isAdmin();
+$listingStatus = $isAdminUser ? 'active' : 'pending_approval';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -53,28 +57,10 @@ $hoursRun = trim($input['hours_run'] ?? 'Plant Maintained');
 $shortDesc = trim($input['short_desc'] ?? ($title . ' in ' . $condition . ' located in ' . $city . ', ' . $country . '.'));
 $detailedDesc = trim($input['detailed_desc'] ?? $shortDesc);
 
-// Country Flag & Code Mapping
-$flagMap = [
-    'india' => ['flag' => '🇮🇳', 'code' => 'IN'],
-    'japan' => ['flag' => '🇯🇵', 'code' => 'JP'],
-    'germany' => ['flag' => '🇩🇪', 'code' => 'DE'],
-    'taiwan' => ['flag' => '🇹🇼', 'code' => 'TW'],
-    'south korea' => ['flag' => '🇰🇷', 'code' => 'KR'],
-    'korea' => ['flag' => '🇰🇷', 'code' => 'KR'],
-    'china' => ['flag' => '🇨🇳', 'code' => 'CN'],
-    'switzerland' => ['flag' => '🇨🇭', 'code' => 'CH'],
-    'singapore' => ['flag' => '🇸🇬', 'code' => 'SG'],
-    'united states' => ['flag' => '🇺🇸', 'code' => 'US'],
-    'usa' => ['flag' => '🇺🇸', 'code' => 'US'],
-    'united kingdom' => ['flag' => '🇬🇧', 'code' => 'GB'],
-    'uk' => ['flag' => '🇬🇧', 'code' => 'GB'],
-    'italy' => ['flag' => '🇮🇹', 'code' => 'IT'],
-    'spain' => ['flag' => '🇪🇸', 'code' => 'ES'],
-    'netherlands' => ['flag' => '🇳🇱', 'code' => 'NL'],
-];
-$countryLower = strtolower($country);
-$flag = $flagMap[$countryLower]['flag'] ?? '🌐';
-$countryCode = $flagMap[$countryLower]['code'] ?? 'GLOBAL';
+// Country Flag & Code Mapping (Shared helper)
+$geoMeta = buildCountryFlagMeta($country);
+$flag = $geoMeta['flag'];
+$countryCode = $geoMeta['code'];
 
 // Handle Image Uploads or Image URLs
 $images = [];
@@ -188,9 +174,14 @@ $seller = [
     'member_since' => date('Y')
 ];
 
+// Ensure unique SEO slug
+$slug = ensureUniqueMachineSlug($slug, $productRef);
+
 // Complete Machine Object
 $newMachine = [
     'id' => $machineId,
+    'product_ref' => $productRef,
+    'user_id' => $currentUser['id'] ?? ($currentUser['user_id'] ?? ($isAdminUser ? 'usr-admin-joule' : 'usr-seller')),
     'item_no' => (string)$nextIndex,
     'slug' => $slug,
     'title' => $title,
@@ -207,85 +198,94 @@ $newMachine = [
     'currency_origin' => 'USD',
     'value_raw' => $valueRaw,
     'condition' => $condition,
+    'condition_state' => $condition,
     'hours_run' => $hoursRun,
     'location' => 'Direct Plant Floor • Global Network',
     'city' => $city,
     'country' => $country,
     'country_code' => $countryCode,
     'flag' => $flag,
-    'is_featured' => true,
+    'is_featured' => $isAdminUser,
     'images' => $images,
     'seller' => $seller,
+    'seller_company' => $seller['name'],
+    'contact_person' => $seller['contact_person'],
+    'seller_phone' => $currentUser['phone'] ?? '',
+    'seller_email' => $seller['email'],
     'specs' => $specs,
     'features' => $features,
+    'status' => $listingStatus,
     'created_at' => date('Y-m-d H:i:s T')
 ];
 
 // ========================================================
-// 1. SAVE INTO MYSQL DATABASE (`machines` & `seller_products`)
+// 1. SAVE INTO MYSQL DATABASE (`machines` ONLY WHEN ADMIN-APPROVED & `seller_products`)
 // ========================================================
 $dbSaved = false;
 $dbError = '';
 $pdo = getDbConnection();
 if ($pdo) {
     try {
-        // A. Insert into `machines` table
-        $stmtM = $pdo->prepare("
-            INSERT INTO `machines` (
-                `id`, `slug`, `title`, `brand`, `model`, `category`, `equipment_type`,
-                `year`, `price_inr`, `price_usd`, `currency_origin`, `value_raw`,
-                `condition_state`, `hours_run`, `city`, `country`, `country_code`, `flag`,
-                `images_json`, `specs_json`, `features_json`, `short_desc`, `detailed_desc`,
-                `seller_json`, `status`
-            ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?,
-                ?, 'active'
-            )
-            ON DUPLICATE KEY UPDATE
-                `title` = VALUES(`title`),
-                `brand` = VALUES(`brand`),
-                `model` = VALUES(`model`),
-                `category` = VALUES(`category`),
-                `year` = VALUES(`year`),
-                `price_inr` = VALUES(`price_inr`),
-                `price_usd` = VALUES(`price_usd`),
-                `condition_state` = VALUES(`condition_state`),
-                `city` = VALUES(`city`),
-                `country` = VALUES(`country`),
-                `short_desc` = VALUES(`short_desc`),
-                `detailed_desc` = VALUES(`detailed_desc`)
-        ");
-        $stmtM->execute([
-            $machineId,
-            $slug,
-            $title,
-            $brand,
-            $model,
-            $category,
-            $equipmentType,
-            $year,
-            $priceInr,
-            $priceUsd,
-            'USD',
-            $valueRaw,
-            $condition,
-            $hoursRun,
-            $city,
-            $country,
-            $countryCode,
-            $flag,
-            json_encode($images, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-            json_encode($specs, JSON_UNESCAPED_UNICODE),
-            json_encode($features, JSON_UNESCAPED_UNICODE),
-            $shortDesc,
-            $detailedDesc,
-            json_encode($seller, JSON_UNESCAPED_UNICODE)
-        ]);
+        // A. Insert into `machines` live catalog table ONLY when Admin publishes directly
+        if ($listingStatus === 'active') {
+            $stmtM = $pdo->prepare("
+                INSERT INTO `machines` (
+                    `id`, `slug`, `title`, `brand`, `model`, `category`, `equipment_type`,
+                    `year`, `price_inr`, `price_usd`, `currency_origin`, `value_raw`,
+                    `condition_state`, `hours_run`, `city`, `country`, `country_code`, `flag`,
+                    `images_json`, `specs_json`, `features_json`, `short_desc`, `detailed_desc`,
+                    `seller_json`, `status`
+                ) VALUES (
+                    ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?,
+                    ?, 'active'
+                )
+                ON DUPLICATE KEY UPDATE
+                    `title` = VALUES(`title`),
+                    `brand` = VALUES(`brand`),
+                    `model` = VALUES(`model`),
+                    `category` = VALUES(`category`),
+                    `year` = VALUES(`year`),
+                    `price_inr` = VALUES(`price_inr`),
+                    `price_usd` = VALUES(`price_usd`),
+                    `condition_state` = VALUES(`condition_state`),
+                    `city` = VALUES(`city`),
+                    `country` = VALUES(`country`),
+                    `short_desc` = VALUES(`short_desc`),
+                    `detailed_desc` = VALUES(`detailed_desc`),
+                    `status` = 'active'
+            ");
+            $stmtM->execute([
+                $machineId,
+                $slug,
+                $title,
+                $brand,
+                $model,
+                $category,
+                $equipmentType,
+                $year,
+                $priceInr,
+                $priceUsd,
+                'USD',
+                $valueRaw,
+                $condition,
+                $hoursRun,
+                $city,
+                $country,
+                $countryCode,
+                $flag,
+                json_encode($images, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                json_encode($specs, JSON_UNESCAPED_UNICODE),
+                json_encode($features, JSON_UNESCAPED_UNICODE),
+                $shortDesc,
+                $detailedDesc,
+                json_encode($seller, JSON_UNESCAPED_UNICODE)
+            ]);
+        }
 
-        // B. Insert into `seller_products` table
+        // B. Insert into `seller_products` table with strict approval status
         $stmtS = $pdo->prepare("
             INSERT INTO `seller_products` (
                 `product_ref`, `user_id`, `title`, `brand`, `model`, `category`,
@@ -302,13 +302,13 @@ if ($pdo) {
                 ?, ?, ?, ?, ?,
                 ?, ?, ?, ?, ?,
                 ?, ?, ?, ?,
-                ?, ?, ?, ?, 'active'
+                ?, ?, ?, ?, ?
             )
-            ON DUPLICATE KEY UPDATE `title` = VALUES(`title`)
+            ON DUPLICATE KEY UPDATE `title` = VALUES(`title`), `status` = VALUES(`status`)
         ");
         $stmtS->execute([
             $productRef,
-            $currentUser['id'] ?? 'usr-admin-joule',
+            $newMachine['user_id'],
             $title,
             $brand,
             $model,
@@ -340,7 +340,8 @@ if ($pdo) {
             $seller['name'],
             $seller['contact_person'],
             $currentUser['phone'] ?? '',
-            $seller['email']
+            $seller['email'],
+            $listingStatus
         ]);
 
         $dbSaved = true;
@@ -359,50 +360,51 @@ $existingSellerProds = [];
 if (file_exists($sellerProductsFile)) {
     $existingSellerProds = json_decode(@file_get_contents($sellerProductsFile), true) ?: [];
 }
-$existingSellerProds[] = $newMachine;
-@file_put_contents($sellerProductsFile, json_encode($existingSellerProds, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+array_unshift($existingSellerProds, $newMachine);
+@file_put_contents($sellerProductsFile, json_encode($existingSellerProds, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
-// Also record in data/machines_custom.json for overrides
-$customFile = __DIR__ . '/../data/machines_custom.json';
-$existingOverrides = [];
-if (file_exists($customFile)) {
-    $existingOverrides = json_decode(@file_get_contents($customFile), true) ?: [];
-}
-$existingOverrides[$machineId] = [
-    'title' => $title,
-    'brand' => $brand,
-    'model' => $model,
-    'category' => $category,
-    'year' => $year,
-    'price' => $priceInr,
-    'price_usd' => $priceUsd,
-    'condition' => $condition,
-    'city' => $city,
-    'country' => $country,
-    'short_desc' => $shortDesc,
-    'detailed_desc' => $detailedDesc,
-    'updated_at' => date('Y-m-d H:i:s T')
-];
-@file_put_contents($customFile, json_encode($existingOverrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-// Auto-update static sitemap.xml
-if (file_exists(__DIR__ . '/../sitemap-xml.php')) {
-    try {
-        ob_start();
-        include __DIR__ . '/../sitemap-xml.php';
-        $xmlContent = ob_get_clean();
-        if (!empty($xmlContent) && str_starts_with($xmlContent, '<?xml')) {
-            @file_put_contents(__DIR__ . '/../sitemap.xml', $xmlContent);
-        }
-    } catch (Throwable $e) {
-        // Silently continue
+if ($listingStatus === 'active') {
+    // Also record in data/machines_custom.json for immediate live overrides when published by Admin
+    $customFile = __DIR__ . '/../data/machines_custom.json';
+    $existingOverrides = [];
+    if (file_exists($customFile)) {
+        $existingOverrides = json_decode(@file_get_contents($customFile), true) ?: [];
     }
+    $existingOverrides[$machineId] = [
+        'title' => $title,
+        'brand' => $brand,
+        'model' => $model,
+        'category' => $category,
+        'year' => $year,
+        'price' => $priceInr,
+        'price_usd' => $priceUsd,
+        'condition' => $condition,
+        'city' => $city,
+        'country' => $country,
+        'short_desc' => $shortDesc,
+        'detailed_desc' => $detailedDesc,
+        'updated_at' => date('Y-m-d H:i:s T')
+    ];
+    @file_put_contents($customFile, json_encode($existingOverrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+    if (isset($GLOBALS['machines']) && is_array($GLOBALS['machines'])) {
+        $GLOBALS['machines'][] = $newMachine;
+    }
+    regenerateStaticSitemap();
+} else {
+    // Notify admin when submitted by non-admin seller
+    notifyAdminProductPendingApproval($newMachine, 'product_submitted');
 }
 
 echo json_encode([
     'success' => true,
-    'message' => 'Machine data added and saved successfully in MySQL database and live catalog!',
+    'message' => $listingStatus === 'active'
+        ? 'Machine data added and saved successfully in MySQL database and live catalog!'
+        : 'Machine submitted for Admin approval! Notification sent to admin and it will go live once approved.',
+    'status' => $listingStatus,
+    'pending_approval' => ($listingStatus === 'pending_approval'),
     'machine_id' => $machineId,
+    'product_ref' => $productRef,
     'slug' => $slug,
     'db_saved' => $dbSaved,
     'db_error' => $dbError ? $dbError : null,

@@ -21,34 +21,69 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $email = trim(strtolower($_POST['email'] ?? ''));
         if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error = 'Please enter a valid registered email address.';
+        } elseif ($email === JMH_ADMIN_EMAIL) {
+            $success = "If that email is registered in our database, password reset instructions have been sent via secure administrator channel.";
         } else {
-            // Check if user exists
+            // Check if user exists in JSON or MySQL
             $users = getUsers();
             $found = false;
+            $recipientName = 'Valued Member';
             foreach ($users as $u) {
                 if (strtolower($u['email'] ?? '') === $email) {
                     $found = true;
+                    $recipientName = $u['name'] ?? $recipientName;
                     break;
                 }
             }
+            if (!$found) {
+                $pdo = getDbConnection();
+                if ($pdo) {
+                    try {
+                        $stmt = $pdo->prepare("SELECT `name` FROM `users` WHERE LOWER(`email`) = ? LIMIT 1");
+                        $stmt->execute([$email]);
+                        $row = $stmt->fetch();
+                        if ($row) {
+                            $found = true;
+                            $recipientName = $row['name'] ?? $recipientName;
+                        }
+                    } catch (Throwable $e) {}
+                }
+            }
+
             if ($found) {
-                // Generate a reset token (valid for 1 hour)
+                // Generate a reset token (valid for 1 hour) and email ONLY — never expose token on HTML page
                 $resetToken = bin2hex(random_bytes(16));
                 $tokenFile = __DIR__ . '/data/password_resets.json';
-                $resets = file_exists($tokenFile) ? (json_decode(file_get_contents($tokenFile), true) ?: []) : [];
+                $resets = file_exists($tokenFile) ? (json_decode(@file_get_contents($tokenFile), true) ?: []) : [];
                 $resets[$resetToken] = [
                     'email'      => $email,
                     'token'      => $resetToken,
                     'expires_at' => date('Y-m-d H:i:s', strtotime('+1 hour'))
                 ];
-                file_put_contents($tokenFile, json_encode($resets, JSON_PRETTY_PRINT));
-                
-                $resetLink = "forgot-password.php?token=" . $resetToken;
-                $success = "Password reset instructions have been generated. Click the link below to set a new password: <br><a href='{$resetLink}' class='text-blue-600 underline font-bold mt-2 inline-block'>Proceed to Reset Password Now &rarr;</a>";
-            } else {
-                // Security practice: Don't disclose whether email exists
-                $success = "If that email is registered in our database, password reset instructions have been sent.";
+                @file_put_contents($tokenFile, json_encode($resets, JSON_PRETTY_PRINT));
+
+                $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                $baseHost = $_SERVER['HTTP_HOST'] ?? 'joulemachinehub.com';
+                $resetUrl = $scheme . '://' . $baseHost . '/forgot-password.php?token=' . urlencode($resetToken);
+                $safeName = htmlspecialchars($recipientName);
+                $mailHtml = "<div style='font-family: Arial, sans-serif; padding: 24px; background: #f8fafc;'>
+                    <div style='max-width: 560px; margin: 0 auto; background: #ffffff; border: 2px solid #0B2545; border-radius: 14px; padding: 24px;'>
+                        <h2 style='color: #0B2545; margin-top: 0;'>Password Reset Request</h2>
+                        <p>Hello {$safeName},</p>
+                        <p>Click the button below to reset your Joule Machine Hub account password. This link expires in 1 hour.</p>
+                        <p style='margin: 24px 0; text-align: center;'>
+                            <a href='{$resetUrl}' style='background: #0B2545; color: #facc15; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;'>Reset Account Password</a>
+                        </p>
+                        <p style='font-size: 12px; color: #64748b;'>If you did not request this password reset, you can safely ignore this email.</p>
+                    </div>
+                </div>";
+                try {
+                    JmhMailer::sendDirect($email, '[Joule Machine Hub] Password Reset Request', $mailHtml);
+                } catch (Throwable $e) {
+                    error_log("Password reset mail error: " . $e->getMessage());
+                }
             }
+            $success = "If that email is registered in our database, password reset instructions have been sent to your email inbox.";
         }
     } elseif ($action === 'reset') {
         $token = trim($_POST['token'] ?? '');
@@ -61,20 +96,29 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $error = 'Passwords do not match.';
         } else {
             $tokenFile = __DIR__ . '/data/password_resets.json';
-            $resets = file_exists($tokenFile) ? (json_decode(file_get_contents($tokenFile), true) ?: []) : [];
-            if (isset($resets[$token]) && strtotime($resets[$token]['expires_at']) > time()) {
-                $email = $resets[$token]['email'];
+            $resets = file_exists($tokenFile) ? (json_decode(@file_get_contents($tokenFile), true) ?: []) : [];
+            if (isset($resets[$token]) && strtotime($resets[$token]['expires_at']) > time() && strtolower($resets[$token]['email'] ?? '') !== JMH_ADMIN_EMAIL) {
+                $email = strtolower($resets[$token]['email']);
+                $newHash = password_hash($newPass, PASSWORD_BCRYPT);
                 $users = getUsers();
                 foreach ($users as &$u) {
                     if (strtolower($u['email'] ?? '') === $email) {
                         $u['password'] = $newPass;
-                        $u['password_hash'] = password_hash($newPass, PASSWORD_BCRYPT);
+                        $u['password_hash'] = $newHash;
                         break;
                     }
                 }
+                unset($u);
                 saveUsers($users);
+                $pdo = getDbConnection();
+                if ($pdo) {
+                    try {
+                        $stmt = $pdo->prepare("UPDATE `users` SET `password` = ? WHERE LOWER(`email`) = ?");
+                        $stmt->execute([$newHash, $email]);
+                    } catch (Throwable $e) {}
+                }
                 unset($resets[$token]);
-                file_put_contents($tokenFile, json_encode($resets, JSON_PRETTY_PRINT));
+                @file_put_contents($tokenFile, json_encode($resets, JSON_PRETTY_PRINT));
                 header('Location: login.php?reset_success=1');
                 exit;
             } else {

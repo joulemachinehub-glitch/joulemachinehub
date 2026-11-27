@@ -3,6 +3,109 @@
 // Handles strict validation, up to 20 images upload, MySQL database persistence, and local JSON storage
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/notifications.php';
+
+/**
+ * Map a country name to its ISO code and emoji flag.
+ */
+function buildCountryFlagMeta(string $country): array {
+    $flagMap = [
+        'india' => ['flag' => '🇮🇳', 'code' => 'IN'],
+        'japan' => ['flag' => '🇯🇵', 'code' => 'JP'],
+        'germany' => ['flag' => '🇩🇪', 'code' => 'DE'],
+        'taiwan' => ['flag' => '🇹🇼', 'code' => 'TW'],
+        'south korea' => ['flag' => '🇰🇷', 'code' => 'KR'],
+        'korea' => ['flag' => '🇰🇷', 'code' => 'KR'],
+        'china' => ['flag' => '🇨🇳', 'code' => 'CN'],
+        'switzerland' => ['flag' => '🇨🇭', 'code' => 'CH'],
+        'singapore' => ['flag' => '🇸🇬', 'code' => 'SG'],
+        'malaysia' => ['flag' => '🇲🇾', 'code' => 'MY'],
+        'united states' => ['flag' => '🇺🇸', 'code' => 'US'],
+        'usa' => ['flag' => '🇺🇸', 'code' => 'US'],
+        'united kingdom' => ['flag' => '🇬🇧', 'code' => 'GB'],
+        'uk' => ['flag' => '🇬🇧', 'code' => 'GB'],
+        'italy' => ['flag' => '🇮🇹', 'code' => 'IT'],
+        'spain' => ['flag' => '🇪🇸', 'code' => 'ES'],
+        'netherlands' => ['flag' => '🇳🇱', 'code' => 'NL'],
+    ];
+    $key = strtolower(trim($country));
+    return $flagMap[$key] ?? ['flag' => '🌐', 'code' => 'GLOBAL'];
+}
+
+/**
+ * Ensure machine SEO slug does not collide with existing catalog or seller listings.
+ */
+function ensureUniqueMachineSlug(string $baseSlug, ?string $ignoreRefOrId = null): string {
+    $cleanBase = trim(preg_replace('/-+/', '-', strtolower($baseSlug)), '-');
+    if ($cleanBase === '') {
+        $cleanBase = 'used-industrial-machine';
+    }
+
+    $usedSlugs = [];
+    if (!empty($GLOBALS['machines']) && is_array($GLOBALS['machines'])) {
+        foreach ($GLOBALS['machines'] as $m) {
+            $mRef = (string)($m['product_ref'] ?? $m['id'] ?? '');
+            if ($ignoreRefOrId !== null && $mRef === $ignoreRefOrId) {
+                continue;
+            }
+            if (!empty($m['slug'])) {
+                $usedSlugs[$m['slug']] = true;
+            }
+        }
+    }
+
+    $jsonFile = __DIR__ . '/../data/seller_products.json';
+    if (file_exists($jsonFile)) {
+        $list = json_decode(@file_get_contents($jsonFile), true) ?: [];
+        foreach ($list as $sp) {
+            $spRef = (string)($sp['product_ref'] ?? '');
+            $spId = (string)($sp['id'] ?? '');
+            if ($ignoreRefOrId !== null && ($spRef === $ignoreRefOrId || $spId === $ignoreRefOrId)) {
+                continue;
+            }
+            if (!empty($sp['slug'])) {
+                $usedSlugs[$sp['slug']] = true;
+            }
+        }
+    }
+
+    if (!isset($usedSlugs[$cleanBase])) {
+        return $cleanBase;
+    }
+
+    $counter = 2;
+    while (isset($usedSlugs[$cleanBase . '-' . $counter])) {
+        $counter++;
+    }
+    return $cleanBase . '-' . $counter;
+}
+
+/**
+ * Rebuild static `sitemap.xml` silently without overwriting API HTTP headers.
+ */
+function regenerateStaticSitemap(): bool {
+    $sitemapScript = __DIR__ . '/../sitemap-xml.php';
+    if (!file_exists($sitemapScript)) {
+        return false;
+    }
+    if (!defined('JMH_SITEMAP_SILENT')) {
+        define('JMH_SITEMAP_SILENT', true);
+    }
+    try {
+        ob_start();
+        include $sitemapScript;
+        $xmlContent = ob_get_clean();
+        if (!empty($xmlContent) && str_starts_with($xmlContent, '<?xml')) {
+            return (bool)@file_put_contents(__DIR__ . '/../sitemap.xml', $xmlContent);
+        }
+    } catch (Throwable $e) {
+        if (ob_get_level() > 0) {
+            @ob_end_clean();
+        }
+        error_log("Sitemap rebuild failed: " . $e->getMessage());
+    }
+    return false;
+}
 
 /**
  * Validates and saves a seller machinery upload.
@@ -175,10 +278,23 @@ function handleSellerMachineUpload($data, $files, $user) {
         $cleanTitle = $rawTitle;
     }
 
-    // Generate unique ID and clean SEO slug
+    // Generate unique ID and unique SEO slug
     $id = 'sp-' . time() . '-' . rand(100, 999);
     $slugBase = 'used-' . strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $brand . '-' . $model . '-' . substr($cleanTitle, 0, 35)));
-    $slug = trim(preg_replace('/-+/', '-', $slugBase), '-');
+    $slug = ensureUniqueMachineSlug($slugBase, $productRef);
+
+    // Enforce admin approval gate: only admins publish immediately; sellers enter 'pending_approval' (unless saved as draft)
+    $isAdminUploader = function_exists('isAdmin') && isAdmin();
+    $requestedStatus = strtolower(trim($data['status'] ?? 'pending_approval'));
+    if ($requestedStatus === 'draft') {
+        $finalStatus = 'draft';
+    } elseif ($isAdminUploader) {
+        $finalStatus = 'active';
+    } else {
+        $finalStatus = 'pending_approval';
+    }
+
+    $geoMeta = buildCountryFlagMeta((string)($data['country'] ?? ''));
 
     // Build Specifications Dictionary
     $specs = array_filter([
@@ -237,6 +353,8 @@ function handleSellerMachineUpload($data, $files, $user) {
         'price_display'   => $priceDisplay,
         'country'         => trim($data['country']),
         'city'            => trim($data['city']),
+        'country_code'    => $geoMeta['code'],
+        'flag'            => $geoMeta['flag'],
         'location'        => 'Direct Plant Floor • ' . trim($data['city'] . ', ' . $data['country']),
         'plant_address'   => trim($data['plant_address']),
         'condition'       => trim($data['condition_state'] ?? 'Used'),
@@ -260,7 +378,7 @@ function handleSellerMachineUpload($data, $files, $user) {
         'contact_person'  => $contactPerson,
         'seller_phone'    => $sellerPhone,
         'seller_email'    => $sellerEmail,
-        'status'          => 'active',
+        'status'          => $finalStatus,
         'created_at'      => date('Y-m-d H:i:s')
     ];
 
@@ -283,7 +401,7 @@ function handleSellerMachineUpload($data, $files, $user) {
                     :city, :addr, :cond, :hrs, :pwr,
                     :cap, :stroke, :speed, :die, :motor,
                     :weight, :dim, :sdesc, :ddesc, :feats,
-                    :imgs, :comp, :person, :phone, :email, 'active'
+                    :imgs, :comp, :person, :phone, :email, :status
                 )
             ");
             $dbSaved = $stmt->execute([
@@ -319,7 +437,8 @@ function handleSellerMachineUpload($data, $files, $user) {
                 ':comp'    => $productRecord['seller_company'],
                 ':person'  => $productRecord['contact_person'],
                 ':phone'   => $productRecord['seller_phone'],
-                ':email'   => $productRecord['seller_email']
+                ':email'   => $productRecord['seller_email'],
+                ':status'  => $finalStatus
             ]);
         } catch (Throwable $e) {
             error_log("Database insert error in seller_products: " . $e->getMessage());
@@ -341,12 +460,25 @@ function handleSellerMachineUpload($data, $files, $user) {
     array_unshift($existing, $productRecord);
     file_put_contents($jsonFile, json_encode($existing, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
+    // 7. Trigger Admin Notification if submitted for approval
+    if ($finalStatus === 'pending_approval') {
+        notifyAdminProductPendingApproval($productRecord, 'product_submitted');
+        $responseMessage = "Machine submitted for Admin approval! Notification sent to admin and it will appear on the website once approved.";
+    } elseif ($finalStatus === 'draft') {
+        $responseMessage = "Machinery listing saved as draft in your dashboard.";
+    } else {
+        regenerateStaticSitemap();
+        $responseMessage = "Machinery listing approved and published successfully!";
+    }
+
     return [
-        'success'  => true,
-        'message'  => "Machinery listing published successfully!",
-        'ref'      => $productRef,
-        'product'  => $productRecord,
-        'db_saved' => $dbSaved
+        'success'          => true,
+        'message'          => $responseMessage,
+        'ref'              => $productRef,
+        'status'           => $finalStatus,
+        'pending_approval' => ($finalStatus === 'pending_approval'),
+        'product'          => $productRecord,
+        'db_saved'         => $dbSaved
     ];
 }
 
@@ -384,16 +516,22 @@ function getSellerProductsList($userId = null) {
         }
     }
 
-    // Merge with local JSON file
+    // Merge with local JSON file (preserve rich JSON metadata such as slug & price_display alongside DB status)
     $jsonFile = __DIR__ . '/../data/seller_products.json';
     if (file_exists($jsonFile)) {
         $raw = file_get_contents($jsonFile);
         $decoded = json_decode($raw, true);
         if (is_array($decoded)) {
             foreach ($decoded as $item) {
+                $itemRef = $item['product_ref'] ?? '';
+                if ($itemRef === '') {
+                    continue;
+                }
                 if (empty($userId) || (isset($item['user_id']) && $item['user_id'] === $userId)) {
-                    if (!isset($products[$item['product_ref']])) {
-                        $products[$item['product_ref']] = $item;
+                    if (!isset($products[$itemRef])) {
+                        $products[$itemRef] = $item;
+                    } else {
+                        $products[$itemRef] = array_merge($item, $products[$itemRef]);
                     }
                 }
             }
@@ -401,4 +539,359 @@ function getSellerProductsList($userId = null) {
     }
 
     return array_values($products);
+}
+
+/**
+ * Approve a pending seller product and publish it into the live catalog (`machines` table + JSON + sitemap).
+ */
+function approveSellerProduct(string $refOrId, string $approvedBy = 'joulemachinehub@gmail.com', ?array $edits = null): array {
+    $refOrId = trim($refOrId);
+    if ($refOrId === '') {
+        return ['success' => false, 'message' => 'Missing product reference.'];
+    }
+
+    $jsonFile = __DIR__ . '/../data/seller_products.json';
+    $jsonList = file_exists($jsonFile) ? (json_decode(@file_get_contents($jsonFile), true) ?: []) : [];
+    $foundIndex = null;
+    $product = null;
+
+    foreach ($jsonList as $idx => $item) {
+        if ((string)($item['product_ref'] ?? '') === $refOrId || (string)($item['id'] ?? '') === $refOrId) {
+            $foundIndex = $idx;
+            $product = $item;
+            break;
+        }
+    }
+
+    $pdo = getDbConnection();
+    if (!$product && $pdo) {
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM `seller_products` WHERE `product_ref` = ? OR `id` = ? LIMIT 1");
+            $stmt->execute([$refOrId, $refOrId]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                $row['features'] = json_decode($row['features_json'] ?? '[]', true) ?: [];
+                $row['images'] = json_decode($row['images_json'] ?? '[]', true) ?: [];
+                $product = $row;
+            }
+        } catch (Throwable $e) {
+            error_log("Lookup seller_product error: " . $e->getMessage());
+        }
+    }
+
+    if (!$product) {
+        return ['success' => false, 'message' => "Listing #{$refOrId} not found."];
+    }
+
+    // Apply optional Admin edits prior to publishing
+    if (is_array($edits)) {
+        foreach (['title', 'brand', 'model', 'category', 'condition', 'city', 'country', 'short_desc', 'detailed_desc', 'year'] as $field) {
+            if (isset($edits[$field]) && trim((string)$edits[$field]) !== '') {
+                $product[$field] = trim((string)$edits[$field]);
+                if ($field === 'condition') {
+                    $product['condition_state'] = $product[$field];
+                }
+            }
+        }
+        if (isset($edits['price']) && is_numeric($edits['price'])) {
+            $product['price'] = floatval($edits['price']);
+        }
+        if (isset($edits['price_usd']) && is_numeric($edits['price_usd'])) {
+            $product['price_usd'] = floatval($edits['price_usd']);
+        }
+    }
+
+    // Ensure identifiers, normalized pricing, geo flags, and unique SEO slug
+    $ref = (string)($product['product_ref'] ?? $refOrId);
+    if (empty($product['id'])) {
+        $product['id'] = 'sp-' . time() . '-' . rand(100, 999);
+    }
+    $machineId = (string)$product['id'];
+
+    $brand = trim((string)($product['brand'] ?? 'Industrial'));
+    $model = trim((string)($product['model'] ?? 'Equipment'));
+    $title = trim((string)($product['title'] ?? ($brand . ' ' . $model)));
+    $product['title'] = $title;
+
+    $slugBase = !empty($product['slug'])
+        ? (string)$product['slug']
+        : ('used-' . strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $brand . '-' . $model . '-' . substr($title, 0, 35))));
+    $product['slug'] = ensureUniqueMachineSlug($slugBase, $ref);
+
+    $priceUsd = floatval($product['price_usd'] ?? 0);
+    $priceInr = floatval($product['price'] ?? $product['price_inr'] ?? 0);
+    if ($priceInr <= 0 && $priceUsd > 0) {
+        $priceInr = round($priceUsd * 85);
+    } elseif ($priceUsd <= 0 && $priceInr > 0) {
+        $priceUsd = round($priceInr / 85, 2);
+    }
+    $product['price'] = $priceInr;
+    $product['price_usd'] = $priceUsd;
+    if (empty($product['price_display']) && $priceUsd > 0) {
+        $product['price_display'] = '$' . number_format($priceUsd) . ' USD (₹' . number_format($priceInr / 100000, 2) . ' Lakhs)';
+    }
+
+    $geo = buildCountryFlagMeta((string)($product['country'] ?? 'India'));
+    $product['country_code'] = $product['country_code'] ?? $geo['code'];
+    $product['flag'] = $product['flag'] ?? $geo['flag'];
+
+    if (empty($product['images']) || !is_array($product['images'])) {
+        $product['images'] = ['/assets/images/logo.png'];
+    }
+    if (empty($product['specs']) || !is_array($product['specs'])) {
+        $product['specs'] = array_filter([
+            'Manufacturer' => $brand,
+            'Model' => $model,
+            'Year' => (string)($product['year'] ?? ''),
+            'Capacity' => $product['capacity'] ?? '',
+            'Motor Power' => $product['motor_power'] ?? ''
+        ]);
+    }
+    if (empty($product['seller']) || !is_array($product['seller'])) {
+        $product['seller'] = [
+            'name'           => $product['seller_company'] ?? 'Verified Seller',
+            'contact_person' => $product['contact_person'] ?? 'Sales Desk',
+            'phone'          => $product['seller_phone'] ?? '',
+            'email'          => $product['seller_email'] ?? '',
+            'verified'       => true,
+            'rating'         => 5.0
+        ];
+    }
+
+    $product['status'] = 'active';
+    $product['approved_at'] = date('Y-m-d H:i:s T');
+    $product['approved_by'] = $approvedBy;
+    unset($product['rejection_reason']);
+
+    // Save into `data/seller_products.json`
+    if ($foundIndex !== null) {
+        $jsonList[$foundIndex] = $product;
+    } else {
+        array_unshift($jsonList, $product);
+    }
+    @file_put_contents($jsonFile, json_encode($jsonList, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+    // Sync MySQL (`seller_products` + `machines` live catalog table)
+    if ($pdo) {
+        try {
+            $stmtUp = $pdo->prepare("
+                UPDATE `seller_products`
+                SET `status` = 'active', `rejection_reason` = NULL, `title` = ?, `price_usd` = ?
+                WHERE `product_ref` = ?
+            ");
+            $stmtUp->execute([$title, $priceUsd, $ref]);
+
+            $stmtM = $pdo->prepare("
+                INSERT INTO `machines` (
+                    `id`, `slug`, `title`, `brand`, `model`, `category`, `equipment_type`,
+                    `year`, `price_inr`, `price_usd`, `currency_origin`, `value_raw`,
+                    `condition_state`, `hours_run`, `city`, `country`, `country_code`, `flag`,
+                    `images_json`, `specs_json`, `features_json`, `short_desc`, `detailed_desc`,
+                    `seller_json`, `status`
+                ) VALUES (
+                    ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?,
+                    ?, 'active'
+                )
+                ON DUPLICATE KEY UPDATE
+                    `title` = VALUES(`title`),
+                    `brand` = VALUES(`brand`),
+                    `model` = VALUES(`model`),
+                    `category` = VALUES(`category`),
+                    `price_inr` = VALUES(`price_inr`),
+                    `price_usd` = VALUES(`price_usd`),
+                    `short_desc` = VALUES(`short_desc`),
+                    `detailed_desc` = VALUES(`detailed_desc`),
+                    `images_json` = VALUES(`images_json`),
+                    `status` = 'active'
+            ");
+            $stmtM->execute([
+                $machineId,
+                $product['slug'],
+                $title,
+                $brand,
+                $model,
+                (string)($product['category'] ?? 'Industrial Machinery'),
+                (string)($product['equipment_type'] ?? ($product['category'] ?? 'Industrial Machine')),
+                intval($product['year'] ?? date('Y')),
+                $priceInr,
+                $priceUsd,
+                (string)($product['currency_origin'] ?? 'USD'),
+                (string)($product['value_raw'] ?? ('$' . number_format($priceUsd) . ' USD')),
+                (string)($product['condition_state'] ?? ($product['condition'] ?? 'Used')),
+                (string)($product['hours_run'] ?? 'Plant Maintained'),
+                (string)($product['city'] ?? 'Chennai'),
+                (string)($product['country'] ?? 'India'),
+                (string)$product['country_code'],
+                (string)$product['flag'],
+                json_encode($product['images'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                json_encode($product['specs'], JSON_UNESCAPED_UNICODE),
+                json_encode($product['features'] ?? [], JSON_UNESCAPED_UNICODE),
+                (string)($product['short_desc'] ?? ''),
+                (string)($product['detailed_desc'] ?? ''),
+                json_encode($product['seller'], JSON_UNESCAPED_UNICODE)
+            ]);
+        } catch (Throwable $e) {
+            error_log("MySQL approve sync error: " . $e->getMessage());
+        }
+    }
+
+    // Update live `$GLOBALS['machines']` if already loaded in current request so sitemap rebuild includes it immediately
+    if (isset($GLOBALS['machines']) && is_array($GLOBALS['machines'])) {
+        $replaced = false;
+        foreach ($GLOBALS['machines'] as &$gm) {
+            if ((string)($gm['id'] ?? '') === $machineId || (string)($gm['product_ref'] ?? '') === $ref) {
+                $gm = array_merge($gm, $product);
+                $replaced = true;
+                break;
+            }
+        }
+        unset($gm);
+        if (!$replaced) {
+            $GLOBALS['machines'][] = $product;
+        }
+    }
+
+    markAdminNotificationsRead(null, $ref);
+    regenerateStaticSitemap();
+
+    // Notify seller via email that listing is now live
+    $sellerEmail = trim((string)($product['seller_email'] ?? ($product['seller']['email'] ?? '')));
+    if ($sellerEmail !== '' && filter_var($sellerEmail, FILTER_VALIDATE_EMAIL)) {
+        $liveUrl = 'https://joulemachinehub.com/product/' . $product['slug'];
+        $safeTitle = htmlspecialchars($title);
+        $safeCompany = htmlspecialchars((string)($product['seller_company'] ?? 'Partner'));
+        $html = "<div style='font-family: Arial, sans-serif; padding: 24px; background: #f8fafc;'>
+            <div style='max-width: 600px; margin: 0 auto; background: #ffffff; border: 2px solid #0B2545; border-radius: 14px; overflow: hidden;'>
+                <div style='background: #0B2545; color: #ffffff; padding: 20px 24px; border-bottom: 4px solid #facc15;'>
+                    <h2 style='margin: 0; color: #facc15;'>Listing Approved &amp; Live on Marketplace!</h2>
+                </div>
+                <div style='padding: 24px; color: #1e293b;'>
+                    <p>Hello <strong>{$safeCompany}</strong>,</p>
+                    <p>Good news! Our Admin Team has reviewed and approved your machinery listing <strong>{$safeTitle}</strong> (#{$ref}).</p>
+                    <p>It is now published on Joule Machine Hub and visible to global industrial buyers.</p>
+                    <p style='margin: 24px 0; text-align: center;'>
+                        <a href='{$liveUrl}' style='background: #0B2545; color: #facc15; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;'>View Live Listing on Website</a>
+                    </p>
+                </div>
+            </div>
+        </div>";
+        try {
+            JmhMailer::sendDirect($sellerEmail, "[Joule Machine Hub] Approved & Live: {$title}", $html);
+        } catch (Throwable $e) {
+            error_log("Seller approval email failed: " . $e->getMessage());
+        }
+    }
+
+    return [
+        'success'    => true,
+        'message'    => "Listing #{$ref} approved and published live to website!",
+        'product'    => $product,
+        'live_url'   => '/product/' . $product['slug']
+    ];
+}
+
+/**
+ * Reject a seller product submission and keep it off the public website catalog.
+ */
+function rejectSellerProduct(string $refOrId, string $reason = '', string $rejectedBy = 'joulemachinehub@gmail.com'): array {
+    $refOrId = trim($refOrId);
+    if ($refOrId === '') {
+        return ['success' => false, 'message' => 'Missing product reference.'];
+    }
+    $cleanReason = trim($reason) !== '' ? trim($reason) : 'Please verify machine specifications, pricing, and clear photos, then resubmit.';
+
+    $jsonFile = __DIR__ . '/../data/seller_products.json';
+    $jsonList = file_exists($jsonFile) ? (json_decode(@file_get_contents($jsonFile), true) ?: []) : [];
+    $product = null;
+    $updated = false;
+
+    foreach ($jsonList as &$item) {
+        if ((string)($item['product_ref'] ?? '') === $refOrId || (string)($item['id'] ?? '') === $refOrId) {
+            $item['status'] = 'rejected';
+            $item['rejection_reason'] = $cleanReason;
+            $item['rejected_at'] = date('Y-m-d H:i:s T');
+            $item['rejected_by'] = $rejectedBy;
+            $product = $item;
+            $updated = true;
+            break;
+        }
+    }
+    unset($item);
+
+    if ($updated) {
+        @file_put_contents($jsonFile, json_encode($jsonList, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    }
+
+    $pdo = getDbConnection();
+    if ($pdo) {
+        try {
+            if (!$product) {
+                $stFind = $pdo->prepare("SELECT * FROM `seller_products` WHERE `product_ref` = ? OR `id` = ? LIMIT 1");
+                $stFind->execute([$refOrId, $refOrId]);
+                $product = $stFind->fetch(PDO::FETCH_ASSOC) ?: null;
+            }
+            $st1 = $pdo->prepare("UPDATE `seller_products` SET `status` = 'rejected', `rejection_reason` = ? WHERE `product_ref` = ?");
+            $st1->execute([$cleanReason, $product['product_ref'] ?? $refOrId]);
+
+            $mId = (string)($product['id'] ?? $refOrId);
+            $st2 = $pdo->prepare("UPDATE `machines` SET `status` = 'rejected' WHERE `id` = ?");
+            $st2->execute([$mId]);
+        } catch (Throwable $e) {
+            error_log("MySQL reject sync error: " . $e->getMessage());
+        }
+    }
+
+    if (!$product) {
+        return ['success' => false, 'message' => "Listing #{$refOrId} not found."];
+    }
+
+    $ref = (string)($product['product_ref'] ?? $refOrId);
+    $machineId = (string)($product['id'] ?? $ref);
+
+    if (isset($GLOBALS['machines']) && is_array($GLOBALS['machines'])) {
+        $GLOBALS['machines'] = array_values(array_filter($GLOBALS['machines'], function ($gm) use ($machineId, $ref) {
+            return (string)($gm['id'] ?? '') !== $machineId && (string)($gm['product_ref'] ?? '') !== $ref;
+        }));
+    }
+
+    markAdminNotificationsRead(null, $ref);
+    regenerateStaticSitemap();
+
+    // Notify seller politely with feedback
+    $sellerEmail = trim((string)($product['seller_email'] ?? ($product['seller']['email'] ?? '')));
+    if ($sellerEmail !== '' && filter_var($sellerEmail, FILTER_VALIDATE_EMAIL)) {
+        $safeTitle = htmlspecialchars((string)($product['title'] ?? 'Machinery Listing'));
+        $safeReason = htmlspecialchars($cleanReason);
+        $html = "<div style='font-family: Arial, sans-serif; padding: 24px; background: #f8fafc;'>
+            <div style='max-width: 600px; margin: 0 auto; background: #ffffff; border: 2px solid #0B2545; border-radius: 14px; overflow: hidden;'>
+                <div style='background: #0B2545; color: #ffffff; padding: 20px 24px; border-bottom: 4px solid #f43f5e;'>
+                    <h2 style='margin: 0; color: #ffffff;'>Listing Update Required (#{$ref})</h2>
+                </div>
+                <div style='padding: 24px; color: #1e293b;'>
+                    <p>Hello,</p>
+                    <p>Your submission <strong>{$safeTitle}</strong> requires updates before it can be published on Joule Machine Hub:</p>
+                    <div style='background: #fff1f2; border-left: 4px solid #e11d48; padding: 12px 16px; margin: 16px 0; color: #881337;'>
+                        <strong>Admin Note:</strong> {$safeReason}
+                    </div>
+                    <p>You can edit and resubmit your listing anytime from your Seller Dashboard:</p>
+                    <p style='margin: 20px 0; text-align: center;'>
+                        <a href='https://joulemachinehub.com/dashboard/my-machines.php' style='background: #0B2545; color: #facc15; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;'>Open My Machines in Dashboard</a>
+                    </p>
+                </div>
+            </div>
+        </div>";
+        try {
+            JmhMailer::sendDirect($sellerEmail, "[Joule Machine Hub] Action Needed for Listing #{$ref}", $html);
+        } catch (Throwable $e) {
+            error_log("Seller rejection email failed: " . $e->getMessage());
+        }
+    }
+
+    return [
+        'success' => true,
+        'message' => "Listing #{$ref} rejected and removed from public marketplace."
+    ];
 }

@@ -3497,7 +3497,7 @@ if (file_exists(__DIR__ . '/../includes/db.php')) {
         $pdo = getDbConnection();
         if ($pdo) {
             try {
-                $stmt = $pdo->query("SELECT * FROM `machines` WHERE `status` = 'active' ORDER BY `created_at` ASC");
+                $stmt = $pdo->query("SELECT * FROM `machines` WHERE `status` IN ('active', 'approved', 'published') ORDER BY `created_at` ASC");
                 $dbMachines = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
                 if (!empty($dbMachines)) {
                     $existingIds = array_column($machines, 'id');
@@ -3555,13 +3555,17 @@ if (file_exists(__DIR__ . '/../includes/db.php')) {
     }
 }
 
-// 2. Load newly added machines from data/seller_products.json (Dual Redundancy)
+// 2. Load ONLY admin-approved / active machines from data/seller_products.json (Approval Gate)
 $sellerProductsFile = __DIR__ . '/seller_products.json';
 if (file_exists($sellerProductsFile)) {
     $sellerProds = json_decode(@file_get_contents($sellerProductsFile), true);
     if (!empty($sellerProds) && is_array($sellerProds)) {
         $existingIds = array_column($machines, 'id');
         foreach ($sellerProds as $sp) {
+            $spStatus = strtolower(trim($sp['status'] ?? 'pending_approval'));
+            if (!in_array($spStatus, ['active', 'approved', 'published'], true)) {
+                continue;
+            }
             $spId = (string)($sp['id'] ?? $sp['product_ref'] ?? '');
             if (!empty($spId) && !in_array($spId, $existingIds)) {
                 $sp['id'] = $spId;

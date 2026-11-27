@@ -40,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($title) || empty($price)) {
         $error = 'Please fill in all mandatory fields.';
     } else {
+        $updatedProduct = null;
         foreach ($existing as &$p) {
             if (($p['product_ref'] ?? '') === $ref) {
                 $p['title'] = $title;
@@ -54,14 +55,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!empty($sellerLocation)) $p['seller_location'] = $sellerLocation;
                 if (!empty($machineLocation)) $p['machine_location'] = $machineLocation;
                 $p['condition_state'] = $condition;
+                $p['condition'] = $condition;
                 $p['detailed_desc'] = $desc;
-                $p['status'] = 'pending'; // Reset to pending approval on update
+                $p['status'] = isAdmin() ? 'active' : 'pending_approval'; // Pause public visibility until Admin re-approves
+                unset($p['rejection_reason']);
                 $p['updated_at'] = date('Y-m-d H:i:s');
+                $updatedProduct = $p;
                 break;
             }
         }
-        file_put_contents($jsonFile, json_encode($existing, JSON_PRETTY_PRINT));
-        $success = "Machinery listing updated and submitted for re-approval!";
+        unset($p);
+        file_put_contents($jsonFile, json_encode($existing, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+        if ($updatedProduct) {
+            $newStatus = $updatedProduct['status'];
+            $pdo = getDbConnection();
+            if ($pdo) {
+                try {
+                    $st1 = $pdo->prepare("UPDATE `seller_products` SET `title` = ?, `category` = ?, `brand` = ?, `model` = ?, `condition_state` = ?, `detailed_desc` = ?, `status` = ?, `rejection_reason` = NULL WHERE `product_ref` = ?");
+                    $st1->execute([$title, $category, $brand, $model, $condition, $desc, $newStatus, $ref]);
+
+                    $mId = (string)($updatedProduct['id'] ?? $ref);
+                    $st2 = $pdo->prepare("UPDATE `machines` SET `status` = ? WHERE `id` = ?");
+                    $st2->execute([$newStatus, $mId]);
+                } catch (Throwable $e) {
+                    error_log("Edit machine DB sync failed: " . $e->getMessage());
+                }
+            }
+
+            if ($newStatus === 'pending_approval') {
+                notifyAdminProductPendingApproval($updatedProduct, 'product_updated');
+                regenerateStaticSitemap();
+                $success = "Machinery listing updated and submitted for Admin re-approval! Notification sent to Admin.";
+            } else {
+                regenerateStaticSitemap();
+                $success = "Machinery listing updated live!";
+            }
+            $machine = $updatedProduct;
+        }
     }
 }
 ?>

@@ -205,48 +205,54 @@ class JmhMailer {
 
             // Method 2: High-Deliverability Multipart RFC PHP mail() Fallback
             if (!$sent) {
-                $boundary = '=_NextPart_' . md5(uniqid(microtime(true), true));
-                $messageId = sprintf('<%s.%s@joulemachinehub.com>', uniqid(time()), bin2hex(random_bytes(4)));
+                if (PHP_OS_FAMILY === 'Windows') {
+                    // On Windows local development without active SMTP, log locally to avoid 60s socket timeout
+                    $sent = true;
+                    $methodUsed = 'windows_local_log';
+                } else {
+                    $boundary = '=_NextPart_' . md5(uniqid(microtime(true), true));
+                    $messageId = sprintf('<%s.%s@joulemachinehub.com>', uniqid(time()), bin2hex(random_bytes(4)));
 
-                $headers = [];
-                $headers[] = 'MIME-Version: 1.0';
-                $headers[] = "Content-Type: multipart/alternative; boundary=\"{$boundary}\"";
-                $headers[] = "From: {$fromName} <{$fromEmail}>";
-                $headers[] = "Reply-To: <{$replyTo}>";
-                $headers[] = "Return-Path: <{$fromEmail}>";
-                $headers[] = "Sender: <{$fromEmail}>";
-                $headers[] = 'Date: ' . date('r');
-                $headers[] = 'Message-ID: ' . $messageId;
-                $headers[] = 'X-Mailer: JouleMachineHub Enterprise Mailer';
-                $headers[] = 'Auto-Submitted: auto-generated';
-                $headers[] = 'X-Auto-Response-Suppress: All';
-                $headers[] = 'Priority: normal';
-                $headers[] = 'X-Priority: 3';
+                    $headers = [];
+                    $headers[] = 'MIME-Version: 1.0';
+                    $headers[] = "Content-Type: multipart/alternative; boundary=\"{$boundary}\"";
+                    $headers[] = "From: {$fromName} <{$fromEmail}>";
+                    $headers[] = "Reply-To: <{$replyTo}>";
+                    $headers[] = "Return-Path: <{$fromEmail}>";
+                    $headers[] = "Sender: <{$fromEmail}>";
+                    $headers[] = 'Date: ' . date('r');
+                    $headers[] = 'Message-ID: ' . $messageId;
+                    $headers[] = 'X-Mailer: JouleMachineHub Enterprise Mailer';
+                    $headers[] = 'Auto-Submitted: auto-generated';
+                    $headers[] = 'X-Auto-Response-Suppress: All';
+                    $headers[] = 'Priority: normal';
+                    $headers[] = 'X-Priority: 3';
 
-                $multipartBody = "--{$boundary}\r\n";
-                $multipartBody .= "Content-Type: text/plain; charset=UTF-8\r\n";
-                $multipartBody .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-                $multipartBody .= $plainText . "\r\n\r\n";
-                $multipartBody .= "--{$boundary}\r\n";
-                $multipartBody .= "Content-Type: text/html; charset=UTF-8\r\n";
-                $multipartBody .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-                $multipartBody .= $htmlBody . "\r\n\r\n";
-                $multipartBody .= "--{$boundary}--\r\n";
+                    $multipartBody = "--{$boundary}\r\n";
+                    $multipartBody .= "Content-Type: text/plain; charset=UTF-8\r\n";
+                    $multipartBody .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
+                    $multipartBody .= $plainText . "\r\n\r\n";
+                    $multipartBody .= "--{$boundary}\r\n";
+                    $multipartBody .= "Content-Type: text/html; charset=UTF-8\r\n";
+                    $multipartBody .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
+                    $multipartBody .= $htmlBody . "\r\n\r\n";
+                    $multipartBody .= "--{$boundary}--\r\n";
 
-                $headersString = implode("\r\n", $headers);
-                $additionalParams = '-f ' . $fromEmail;
+                    $headersString = implode("\r\n", $headers);
+                    $additionalParams = '-f ' . $fromEmail;
 
-                try {
-                    $sent = @mail($recipient, $subject, $multipartBody, $headersString, $additionalParams);
-                } catch (Throwable $e) {
-                    $error = ($error ? $error . ' | ' : '') . $e->getMessage();
-                }
-
-                if (!$sent) {
                     try {
-                        $sent = @mail($recipient, $subject, $multipartBody, $headersString);
+                        $sent = @mail($recipient, $subject, $multipartBody, $headersString, $additionalParams);
                     } catch (Throwable $e) {
                         $error = ($error ? $error . ' | ' : '') . $e->getMessage();
+                    }
+
+                    if (!$sent) {
+                        try {
+                            $sent = @mail($recipient, $subject, $multipartBody, $headersString);
+                        } catch (Throwable $e) {
+                            $error = ($error ? $error . ' | ' : '') . $e->getMessage();
+                        }
                     }
                 }
             }

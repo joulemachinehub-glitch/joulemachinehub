@@ -3,6 +3,14 @@
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/mailer.php';
 require_once __DIR__ . '/sms.php';
+require_once __DIR__ . '/notifications.php';
+
+if (!defined('JMH_ADMIN_EMAIL')) {
+    define('JMH_ADMIN_EMAIL', 'joulemachinehub@gmail.com');
+}
+if (!defined('JMH_ADMIN_PASSWORD_HASH')) {
+    define('JMH_ADMIN_PASSWORD_HASH', 'pbkdf2_sha256:100000:46217b291de490976a2d03005e0b747d:44e3af0d8cb7614b99df6dffb94cf3fae4415900a3459466c724603ab59ec612');
+}
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -64,12 +72,75 @@ function isLoggedIn() {
     return isset($_SESSION['user']) && !empty($_SESSION['user']['id']);
 }
 
+/**
+ * Timing-safe verification supporting salted PBKDF2-SHA256, bcrypt/Argon, and legacy non-admin plaintext.
+ */
+function verifyPasswordString(string $inputPassword, ?string $storedSecret, bool $allowPlaintext = true): bool {
+    if ($inputPassword === '' || $storedSecret === null || $storedSecret === '') {
+        return false;
+    }
+
+    if (str_starts_with($storedSecret, 'pbkdf2_sha256:')) {
+        $parts = explode(':', $storedSecret, 4);
+        if (count($parts) === 4) {
+            $iterations = max(1, (int)$parts[1]);
+            $salt = $parts[2];
+            $expectedHex = strtolower($parts[3]);
+            $derivedHex = bin2hex(hash_pbkdf2('sha256', $inputPassword, $salt, $iterations, 32, true));
+            return hash_equals($expectedHex, $derivedHex);
+        }
+        return false;
+    }
+
+    if (str_starts_with($storedSecret, '$2y$') || str_starts_with($storedSecret, '$2a$') || str_starts_with($storedSecret, '$2b$') || str_starts_with($storedSecret, '$argon')) {
+        return password_verify($inputPassword, $storedSecret);
+    }
+
+    return $allowPlaintext && hash_equals($storedSecret, $inputPassword);
+}
+
+/**
+ * Verify single super-admin credentials (joulemachinehub@gmail.com) strictly against strong hash.
+ */
+function verifyAdminCredentials(string $email, string $password): bool {
+    $cleanEmail = strtolower(trim($email));
+    if ($cleanEmail !== JMH_ADMIN_EMAIL || $password === '') {
+        return false;
+    }
+
+    // Check MySQL first if admin explicitly changed password to a modern hash
+    $pdo = getDbConnection();
+    if ($pdo) {
+        try {
+            $stmt = $pdo->prepare("SELECT `password` FROM `users` WHERE LOWER(`email`) = ? LIMIT 1");
+            $stmt->execute([JMH_ADMIN_EMAIL]);
+            $dbPass = (string)($stmt->fetchColumn() ?: '');
+            if ($dbPass !== '' && (str_starts_with($dbPass, 'pbkdf2_sha256:') || str_starts_with($dbPass, '$2') || str_starts_with($dbPass, '$argon'))) {
+                return verifyPasswordString($password, $dbPass, false);
+            }
+        } catch (Throwable $e) {
+            error_log("Admin DB credential check failed: " . $e->getMessage());
+        }
+    }
+
+    // Check JSON archive for modern hash
+    foreach (getUsers() as $u) {
+        if (strtolower($u['email'] ?? '') === JMH_ADMIN_EMAIL) {
+            $jsonHash = (string)($u['password_hash'] ?? '');
+            if ($jsonHash !== '') {
+                return verifyPasswordString($password, $jsonHash, false);
+            }
+        }
+    }
+
+    return verifyPasswordString($password, JMH_ADMIN_PASSWORD_HASH, false);
+}
+
 function isAdmin() {
     $u = getCurrentUser();
     if (!$u) return false;
-    $isEmailAdmin = (strtolower($u['email'] ?? '') === 'joulemachinehub@gmail.com');
-    $isRoleAdmin = (($u['role'] ?? '') === 'admin');
-    return $isEmailAdmin || $isRoleAdmin;
+    return (strtolower($u['email'] ?? '') === JMH_ADMIN_EMAIL)
+        && (($u['role'] ?? '') === 'admin');
 }
 
 /**
@@ -78,6 +149,28 @@ function isAdmin() {
 function loginUser($emailOrPhone, $password) {
     $cleanInput = trim(strtolower($emailOrPhone));
     $cleanDigits = preg_replace('/[^0-9]/', '', $cleanInput);
+
+    // 0. Dedicated Single Super-Admin Authentication Path
+    if ($cleanInput === JMH_ADMIN_EMAIL) {
+        if (verifyAdminCredentials($cleanInput, $password)) {
+            $adminUser = [
+                'id'      => 'usr-admin-joule',
+                'user_id' => 'usr-admin-joule',
+                'name'    => 'Joule Super Admin',
+                'company' => 'Joule Machine Hub Global Desk',
+                'email'   => JMH_ADMIN_EMAIL,
+                'phone'   => '',
+                'role'    => 'admin',
+                'city'    => 'Chennai',
+                'joined'  => 'March 2016'
+            ];
+            $_SESSION['user'] = $adminUser;
+            $_SESSION['admin_authenticated'] = true;
+            $_SESSION['admin_access'] = true;
+            return ['success' => true, 'user' => $adminUser];
+        }
+        return ['success' => false, 'message' => 'Invalid administrator email or password. Please try again.'];
+    }
 
     // 1. ATTEMPT MYSQL DATABASE AUTHENTICATION
     $pdo = getDbConnection();
@@ -92,17 +185,19 @@ function loginUser($emailOrPhone, $password) {
             $stmt->execute([$cleanInput, $cleanDigits]);
             $dbUser = $stmt->fetch();
 
-            if ($dbUser) {
-                // Verify password (supports plain text or bcrypt hash)
-                $passwordValid = ($dbUser['password'] === $password) || password_verify($password, $dbUser['password']);
-                if ($passwordValid) {
+            if ($dbUser && strtolower($dbUser['email'] ?? '') !== JMH_ADMIN_EMAIL) {
+                if (verifyPasswordString($password, (string)($dbUser['password'] ?? ''), true)) {
+                    $dbRole = strtolower($dbUser['role'] ?? 'seller');
+                    if ($dbRole === 'admin') {
+                        $dbRole = 'seller';
+                    }
                     $sessionUser = [
                         'id' => !empty($dbUser['user_id']) ? $dbUser['user_id'] : 'usr-' . $dbUser['id'],
                         'name' => $dbUser['name'],
                         'company' => $dbUser['company'] ?? '',
                         'email' => $dbUser['email'],
                         'phone' => $dbUser['phone'] ?? '',
-                        'role' => $dbUser['role'] ?? 'buyer',
+                        'role' => $dbRole,
                         'city' => $dbUser['city'] ?? '',
                         'gst' => $dbUser['gst'] ?? '',
                         'joined' => $dbUser['joined'] ?? date('F Y')
@@ -119,16 +214,19 @@ function loginUser($emailOrPhone, $password) {
     // 2. FALLBACK TO LOCAL JSON USERS
     $users = getUsers();
     foreach ($users as $user) {
-        $emailMatch = strtolower($user['email']) === $cleanInput;
+        $emailMatch = strtolower($user['email'] ?? '') === $cleanInput;
+        if (strtolower($user['email'] ?? '') === JMH_ADMIN_EMAIL) {
+            continue;
+        }
         $userDigits = preg_replace('/[^0-9]/', '', $user['phone'] ?? '');
         $phoneMatch = !empty($cleanDigits) && ($userDigits === $cleanDigits);
 
-        $isAdminSpecial = $emailMatch && ($cleanInput === 'joulemachinehub@gmail.com') && in_array($password, ['admin', 'admin123', 'Bala$#2001', 'JouleAdmin@2026']);
-        $passMatch = ($user['password'] === $password) || (isset($user['password_hash']) && password_verify($password, $user['password_hash'])) || $isAdminSpecial;
+        $passMatch = verifyPasswordString($password, (string)($user['password_hash'] ?? ''), false)
+                  || verifyPasswordString($password, (string)($user['password'] ?? ''), true);
 
         if (($emailMatch || $phoneMatch) && $passMatch) {
-            if ($emailMatch && $cleanInput === 'joulemachinehub@gmail.com') {
-                $user['role'] = 'admin';
+            if (($user['role'] ?? '') === 'admin') {
+                $user['role'] = 'seller';
             }
             $_SESSION['user'] = $user;
             return ['success' => true, 'user' => $user];
@@ -141,8 +239,11 @@ function loginUser($emailOrPhone, $password) {
 /**
  * Register user into MySQL database with dual storage in JSON archive
  */
-function registerUser($name, $company, $email, $phone, $role = 'seller', $city = '', $password = '', $gst = '', $country = 'India', $state = '') {
+function registerUser($name, $company, $email, $phone, $role = 'seller', $city = '', $password = '', $gst = '', $country = 'India', $state = '', bool $notifyAdmin = true) {
     $cleanEmail = trim(strtolower($email));
+    if ($cleanEmail === JMH_ADMIN_EMAIL) {
+        return ['success' => false, 'message' => 'This email address is reserved for system administration.'];
+    }
     $userId = 'usr-' . time() . '-' . rand(100, 999);
     $joined = date('F Y');
     $userRole = in_array(strtolower($role), ['buyer', 'seller', 'oem', 'dealer']) ? strtolower($role) : 'seller';
@@ -216,6 +317,9 @@ function registerUser($name, $company, $email, $phone, $role = 'seller', $city =
     saveUsers($users);
 
     $_SESSION['user'] = $newUser;
+    if ($notifyAdmin && function_exists('notifyAdminNewAccount')) {
+        notifyAdminNewAccount($newUser);
+    }
     return ['success' => true, 'user' => $newUser];
 }
 
@@ -283,15 +387,21 @@ function changeUserPassword($userId, $oldPassword, $newPassword) {
     $users = getUsers();
     foreach ($users as &$u) {
         if (($u['id'] ?? '') === $userId || ($u['user_id'] ?? '') === $userId) {
-            // Verify old password
-            $oldValid = ($u['password'] === $oldPassword) 
-                     || (isset($u['password_hash']) && password_verify($oldPassword, $u['password_hash']));
+            $isAdminRecord = (strtolower($u['email'] ?? '') === JMH_ADMIN_EMAIL);
+            $oldValid = $isAdminRecord
+                ? verifyAdminCredentials(JMH_ADMIN_EMAIL, $oldPassword)
+                : (verifyPasswordString($oldPassword, (string)($u['password_hash'] ?? ''), false)
+                    || verifyPasswordString($oldPassword, (string)($u['password'] ?? ''), true));
             if (!$oldValid) {
                 return ['success' => false, 'message' => 'Current password entered is incorrect.'];
             }
 
             $newHash = password_hash($newPassword, PASSWORD_BCRYPT);
-            $u['password'] = $newPassword;
+            if ($isAdminRecord) {
+                unset($u['password']);
+            } else {
+                $u['password'] = $newPassword;
+            }
             $u['password_hash'] = $newHash;
             saveUsers($users);
             $_SESSION['user'] = $u;
@@ -346,6 +456,9 @@ function savePendingOtps(array $otps): void {
  */
 function generateSellerRegistrationOtp(array $regData): array {
     $cleanEmail = strtolower(trim($regData['email'] ?? ''));
+    if ($cleanEmail === JMH_ADMIN_EMAIL) {
+        return ['success' => false, 'message' => 'This email address is reserved for system administration.'];
+    }
     if (!filter_var($cleanEmail, FILTER_VALIDATE_EMAIL)) {
         return ['success' => false, 'message' => 'Invalid email address provided for verification.'];
     }
@@ -602,7 +715,7 @@ function verifySellerRegistrationOtp(string $enteredEmailOtp, string $enteredMob
     $gst = $d['gst'] ?? '';
     $finalCity = $city ?: ($state ?: $country);
 
-    $regRes = registerUser($name, $company, $email, $phone, $role, $finalCity, $password, $gst, $country, $state);
+    $regRes = registerUser($name, $company, $email, $phone, $role, $finalCity, $password, $gst, $country, $state, false);
 
     if (!$regRes['success']) {
         return $regRes;
@@ -638,18 +751,8 @@ function verifySellerRegistrationOtp(string $enteredEmailOtp, string $enteredMob
     // Clear pending OTP state
     cancelPendingSellerRegistration();
 
-    // Notify admins of new verified quality seller
-    try {
-        JmhMailer::sendLeadNotification([
-            'Seller Name' => $name,
-            'Company Name' => $company,
-            'Seller Email' => $email,
-            'Phone / WhatsApp' => $phone,
-            'Location' => "{$finalCity}, {$country}",
-            'Verification Status' => '100% Email OTP Verified',
-            'Registered Date' => date('Y-m-d H:i:s T')
-        ], "New Verified Seller Registered: {$company}", "A new verified machinery seller has completed email OTP verification.");
-    } catch (Throwable $e) {}
+    // Notify admin (in-app notification feed + email alert) about newly created & verified account
+    notifyAdminNewAccount($user);
 
     return [
         'success' => true,

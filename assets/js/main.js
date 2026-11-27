@@ -165,7 +165,7 @@ function submitPostMachine(e) {
 
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Publishing Machine...</span>';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Submitting for Approval...</span>';
   }
 
   const formData = new FormData(form);

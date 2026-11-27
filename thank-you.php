@@ -16,8 +16,8 @@ $formType = htmlspecialchars($_GET['type'] ?? 'inquiry');
 $heading = "Thank You! Your Inquiry Has Been Received";
 $badgeText = "Verified Inquiry Submitted";
 if ($formType === 'post_machine') {
-    $heading = "Thank You! Machine Listing Submitted";
-    $badgeText = "Listing Under Review";
+    $heading = "Submitted for Admin Approval!";
+    $badgeText = "Pending Admin Review";
 } elseif ($formType === 'requirement') {
     $heading = "Thank You! Buy Requirement Broadcasted";
     $badgeText = "RFQ Active & Dispatched";
