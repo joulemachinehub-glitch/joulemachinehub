@@ -8,13 +8,13 @@
         <!-- Section 1 (Row 1 Left on Mobile, Col 1 on Desktop): Brand Logo, Bio & Socials -->
         <div class="col-span-1 lg:col-span-4 space-y-3.5">
           <!-- Logo matching Joule Machine Hub brand -->
-          <a href="/" class="inline-block group" title="Joule Machine Hub">
+          <a href="/" class="inline-block bg-white/95 px-3 py-1.5 rounded-xl shadow-sm group" title="Joule Machine Hub">
             <img 
-              src="/assets/images/logo-v2.png?v=<?php echo $assetVer ?? time(); ?>" 
+              src="/assets/images/logo-v2.png?v=<?php echo $logoVer ?? $assetVer ?? time(); ?>" 
               alt="Joule Machine Hub" 
-              class="h-11 sm:h-14 w-auto max-w-full object-contain rounded-none transition-transform group-hover:scale-105"
-              width="200"
-              height="52"
+              class="h-10 sm:h-12 w-auto max-w-full object-contain rounded-none transition-transform group-hover:scale-105"
+              width="168"
+              height="56"
             >
           </a>
 

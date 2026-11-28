@@ -55,6 +55,8 @@ if (!headers_sent()) {
 
 $cssFile = __DIR__ . '/../assets/css/style.css';
 $assetVer = file_exists($cssFile) ? filemtime($cssFile) : time();
+$logoFile = __DIR__ . '/../assets/images/logo-v2.png';
+$logoVer = file_exists($logoFile) ? filemtime($logoFile) : $assetVer;
 
 $activeCurr = getUserDetectedCurrency();
 $currFlags = ['INR' => '🇮🇳', 'USD' => '🇺🇸', 'EUR' => '🇪🇺'];
@@ -236,10 +238,10 @@ $currActiveSymbol = $currSymbols[$activeCurr] ?? '₹';
         <!-- Logo (Top navigation left) -->
         <a href="/" class="flex items-center group shrink min-w-0" title="Joule Machine Hub - Worldwide Used / New Industrial Machinery Network">
           <img 
-            src="/assets/images/logo-v2.png?v=<?php echo $assetVer; ?>" 
+            src="/assets/images/logo-v2.png?v=<?php echo $logoVer; ?>" 
             alt="Joule Machine Hub - Worldwide Used / New Industrial Machinery Network" 
             class="h-10 sm:h-11 md:h-12 lg:h-[56px] w-auto max-w-[48vw] sm:max-w-[220px] md:max-w-none object-contain transition-transform group-hover:scale-[1.02] rounded-none"
-            width="170"
+            width="168"
             height="56"
           >
         </a>

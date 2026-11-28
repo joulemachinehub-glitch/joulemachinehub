@@ -304,13 +304,13 @@ require_once __DIR__ . '/includes/header.php';
         <!-- CENTER WEBSITE LOGO (JOULE MACHINE HUB OFFICIAL LOGO) -->
         <div class="absolute z-20 flex items-center justify-center -translate-x-1/2 -translate-y-1/2" 
              style="left: 50%; top: 48%;">
-          <a href="/" title="Joule Machine Hub - Online Industrial Machinery Marketplace" class="block group">
+          <a href="/" title="Joule Machine Hub - Online Industrial Machinery Marketplace" class="block group bg-white/95 px-4 py-2 rounded-2xl shadow-lg">
             <img 
               src="/assets/images/logo-v2.png" 
               alt="Joule Machine Hub - Online Industrial Machinery Marketplace" 
-              class="w-[250px] h-auto object-contain drop-shadow-[0_0_30px_rgba(250,204,21,0.7)] group-hover:scale-105 group-hover:drop-shadow-[0_0_42px_rgba(250,204,21,0.95)] transition-all duration-300"
-              width="250"
-              height="77"
+              class="w-[240px] h-auto object-contain drop-shadow-[0_0_24px_rgba(250,204,21,0.55)] group-hover:scale-105 transition-all duration-300"
+              width="240"
+              height="80"
             >
           </a>
         </div>
